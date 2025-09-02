@@ -21,6 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiResponse } from "@/types/apiResponse";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function SignInPage() {
     const [loading, setLoading] = useState(false);
@@ -154,12 +155,12 @@ export default function SignInPage() {
                 <div className="grid gap-3">
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
-                    <a
+                    <Link
                       href="#"
                       className="ml-auto text-sm underline-offset-4 hover:underline"
                     >
                       Forgot your password?
-                    </a>
+                    </Link>
                   </div>
                   <Input
                     id="password"
@@ -179,12 +180,12 @@ export default function SignInPage() {
 
                 <div className="text-center text-sm">
                   Don&apos;t have an account?{" "}
-                  <a
+                  <Link
                     href="/auth/signup"
                     className="underline underline-offset-4"
                   >
                     Sign up
-                  </a>
+                  </Link>
                 </div>
               </form>
             </CardContent>

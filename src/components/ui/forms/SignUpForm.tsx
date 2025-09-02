@@ -21,6 +21,8 @@ import { signUpSchema } from "@/schemas/signUpSchema";
 import { ApiResponse } from "@/types/apiResponse";
 import { useEffect } from "react";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
+
 
 export default function SignUpForm() {
   const searchParams = useSearchParams();
@@ -141,8 +143,8 @@ export default function SignUpForm() {
 
           <div className="text-muted-foreground text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4 *:[a]:hover:text-primary">
             By clicking continue, you agree to our{" "}
-            <a href="#">Terms of Service</a> and{" "}
-            <a href="#">Privacy Policy</a>.
+            <Link href="#">Terms of Service</Link> and{" "}
+            <Link href="#">Privacy Policy</Link>.
           </div>
         </div>
       </div>

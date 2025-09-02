@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import WhatsAppSignup from "@/components/ui/wa/WhatsAppSignup";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -40,6 +41,7 @@ export default function DashboardPage() {
             <h2 className="text-xl font-semibold mb-2">Settings</h2>
             <p className="text-gray-400 text-sm">Manage preferences and account details.</p>
           </div>
+          <WhatsAppSignup />
         </div>
       </div>
     </main>

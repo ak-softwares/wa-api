@@ -17,17 +17,19 @@ function Navbar() {
       {/* Header */}
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-emerald-500/15 ring-1 ring-emerald-400/30 grid place-items-center">
-            <span className="text-xl">💬</span>
-          </div>
-          <span className="font-semibold tracking-tight">wa-api.me</span>
+          <Link href="/" className="flex items-center gap-2">
+            <div className="h-9 w-9 rounded-xl bg-emerald-500/15 ring-1 ring-emerald-400/30 grid place-items-center">
+              <span className="text-xl">💬</span>
+            </div>
+            <span className="font-semibold tracking-tight text-neutral-300 hover:text-white">wa-api.me</span>
+          </Link>
         </div>
 
         <nav className="hidden items-center gap-6 md:flex text-sm text-neutral-300">
-          <a href="#features" className="hover:text-white">Features</a>
-          <a href="#industries" className="hover:text-white">Industries</a>
-          <a href="#testimonials" className="hover:text-white">Testimonials</a>
-          <a href="#faq" className="hover:text-white">FAQ</a>
+          <Link href="#features" className="hover:text-white">Features</Link>
+          <Link href="#industries" className="hover:text-white">Industries</Link>
+          <Link href="#testimonials" className="hover:text-white">Testimonials</Link>
+          <Link href="#faq" className="hover:text-white">FAQ</Link>
         </nav>
 
         <div className="flex items-center gap-2">
