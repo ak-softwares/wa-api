@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import WhatsAppSignup from "../wa/WhatsAppSignup";
 
 // Paste this file as app/page.tsx (App Router) or pages/index.tsx (Pages Router)
 // TailwindCSS required. Dark-first design.
@@ -155,6 +156,7 @@ export default function LandingPage() {
               >
                 Download on Google Play
               </Link>
+              <WhatsAppSignup />
             </div>
             <p className="mt-4 text-xs text-neutral-400">
               No coding. No subscription fees. Full automation included.

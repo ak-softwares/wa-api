@@ -1,11 +1,16 @@
 'use client';
 
-import React, { useState } from "react";
-import { cn } from "@/lib/utils";
+import { signOut, useSession } from "next-auth/react";
+import React from "react";
 import Link from "next/link";
 
-function Navbar({ className }: { className?: string }) {
-  const [active, setActive] = useState<string | null>(null);
+function Navbar() {
+
+  const { data: session } = useSession();
+
+  const signOutUser = async () => {
+    await signOut();
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-neutral-800/80 bg-neutral-950/70 backdrop-blur"> 
@@ -39,6 +44,20 @@ function Navbar({ className }: { className?: string }) {
           >
             Get Started Free
           </a>
+          {session ? (
+            <button
+              onClick={signOutUser}
+              className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-black hover:bg-red-400"
+            >
+              Sign Out
+            </button>
+          ) : (
+            <Link href="/auth/signin">
+              <button className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400">
+                Login
+              </button>
+            </Link>
+          )}
         </div>
       </div>
     </header>
