@@ -6,7 +6,8 @@ import { signOut } from "next-auth/react";
 
 export default function Topbar() {
     const handleSignOut = () => {
-        signOut();
+        signOut({ callbackUrl: "/auth/login" });
+
     };
   return (
     <header className="bg-white shadow-sm p-4 flex justify-between items-center">

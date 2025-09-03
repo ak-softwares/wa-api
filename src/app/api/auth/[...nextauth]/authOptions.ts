@@ -119,11 +119,10 @@ export const authOptions: NextAuthOptions = {
         }
     },
     pages: {
-        signIn: '/auth/signin',
-        signOut: '/auth/signout',
-        error: '/auth/error',
-        verifyRequest: '/auth/verify-request',
-        // newUser: null // Will disable the new account creation screen
+        signIn: '/auth/login',   // <-- this is your login page
+        signOut: '/auth/login',  // <-- redirect to login after logout
+        error: "/auth/login",     // errors also go to login
+        // verifyRequest: '/auth/verify-request', // optional, can remove
     },
     session: {
         strategy: "jwt",
