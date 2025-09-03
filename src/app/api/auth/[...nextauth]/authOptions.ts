@@ -8,6 +8,7 @@ import Google from "next-auth/providers/google";
 export const authOptions: NextAuthOptions = {
     providers: [
         Credentials({
+            id: "credentials", // keep same id for email login
             name: "Credentials",
             credentials: {
                 email: { label: "Email", type: "text" },
@@ -31,6 +32,45 @@ export const authOptions: NextAuthOptions = {
                         id: user.id.toString(),
                         email: user.email
                     }
+                }catch(e){
+                    throw e;
+                }
+            },
+        }),
+
+        // 📌 New OTP login provider
+        Credentials({
+            id: "phone-otp", // unique id for phone login
+            name: "Phone OTP",
+            credentials: {
+                phone: { label: "Phone", type: "text" },
+                otp: { label: "OTP", type: "text" },
+            },
+            async authorize(credentials) {
+                if (!credentials?.phone || !credentials?.otp) {
+                    throw new Error("Missing phone or OTP");
+                }
+                try{
+                    // ✅ Validate OTP from otpStore
+                    const otpRecord = globalThis.otpStore?.[credentials.phone];
+                    if (!otpRecord) throw new Error("OTP expired or not found");
+
+                    if (otpRecord.code !== credentials.otp) throw new Error("Invalid OTP");
+                    if (Date.now() > otpRecord.expiresAt) throw new Error("OTP expired");
+
+                    // OTP is valid → check if user exists
+                    await connectDB();
+                    let user = await User.findOne({ phone: credentials.phone });
+
+                    if (!user) {
+                        throw new Error("User not found, Please Sign Up");
+                    }
+
+                    // ✅ OTP can only be used once
+                    delete globalThis.otpStore[credentials.phone];
+
+                    // ✅ Must return a plain object with id, phone, email, etc.
+                    return user;
                 }catch(e){
                     throw e;
                 }

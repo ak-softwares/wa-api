@@ -22,13 +22,26 @@ import { ApiResponse } from "@/types/apiResponse";
 import { useEffect } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 
 export default function SignUpForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  
+  const { data: session, status } = useSession();
 
-  useEffect(() => {
+  // Redirect to login if not authenticated
+  if (status === "loading") {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
+
+  if (session) {
+    router.push("/dashboard");
+    return null;
+  }
+
+  useEffect(() => { 
     if (searchParams.get("newUser") === "1") {
       const timer = setTimeout(() => {
         toast.info("Please complete your signup to continue");
@@ -133,9 +146,9 @@ export default function SignUpForm() {
 
                 <div className="text-center text-sm">
                   Already have an account?{" "}
-                  <a href="/auth/signin" className="underline underline-offset-4">
+                  <Link href="/auth/login" className="underline underline-offset-4">
                     Login
-                  </a>
+                  </Link>
                 </div>
               </form>
             </CardContent>

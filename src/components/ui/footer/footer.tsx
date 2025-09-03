@@ -1,31 +1,33 @@
-"use client";
+import Link from "next/link"
 
-import Link from "next/link";
-
-const Footer: React.FC = () => {
+export default function Footer() {
   return (
-      <footer className="py-10">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <div className="text-xs text-neutral-400">
-              © 2025 AraGroup of Companies. All rights reserved.
-            </div>
-            <div className="flex items-center gap-4 text-xs text-neutral-400">
-              <a href="#features" className="hover:text-neutral-200">Features</a>
-              <a href="#industries" className="hover:text-neutral-200">Industries</a>
-              <a href="#faq" className="hover:text-neutral-200">FAQ</a>
-              <Link
-                href="https://play.google.com/store/apps/details?id=com.ara.chatflow"
-                target="_blank"
-                className="hover:text-neutral-200"
-              >
-                Android App
-              </Link>
-            </div>
-          </div>
+    <footer className="border-t border-border bg-background/70 backdrop-blur">
+      <div className="mx-auto max-w-7xl px-4 py-6">
+        <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+          <p className="text-xs text-muted-foreground">
+            © 2025 WA-API of Companies. All rights reserved.
+          </p>
+          <nav className="flex items-center gap-4 text-xs text-muted-foreground">
+            <Link href="#features" className="transition-colors hover:text-foreground">
+              Features
+            </Link>
+            <Link href="#industries" className="transition-colors hover:text-foreground">
+              Industries
+            </Link>
+            <Link href="#faq" className="transition-colors hover:text-foreground">
+              FAQ
+            </Link>
+            <Link
+              href="https://play.google.com/store/apps/details?id=com.ara.chatflow"
+              target="_blank"
+              className="transition-colors hover:text-foreground"
+            >
+              Android App
+            </Link>
+          </nav>
         </div>
-      </footer>
-  );
-};
-
-export default Footer;
+      </div>
+    </footer>
+  )
+}

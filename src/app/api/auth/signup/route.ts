@@ -3,7 +3,6 @@ import { connectDB } from "@/lib/mongoose";
 import { User } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { signUpSchema } from "@/schemas/signUpSchema";
-import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
