@@ -26,7 +26,7 @@ import { useSession } from "next-auth/react";
 
 
 export default function SignUpForm() {
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const router = useRouter();
   
   const { data: session, status } = useSession();
@@ -41,23 +41,23 @@ export default function SignUpForm() {
     return null;
   }
 
-  useEffect(() => { 
-    if (searchParams.get("newUser") === "1") {
-      const timer = setTimeout(() => {
-        toast.info("Please complete your signup to continue");
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [searchParams]);
+  // useEffect(() => { 
+  //   if (searchParams.get("newUser") === "1") {
+  //     const timer = setTimeout(() => {
+  //       toast.info("Please complete your signup to continue");
+  //     }, 300);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [searchParams]);
 
-  const emailFromGoogle = searchParams.get("email") || "";
+  // const emailFromGoogle = searchParams.get("email") || "";
 
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       name: "",
       phone: "",
-      email: emailFromGoogle,
+      email: '',
       password: "",
     },
   });
