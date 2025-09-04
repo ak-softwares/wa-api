@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function WhatsAppSignup() {
   const [sessionInfo, setSessionInfo] = useState<any>(null);
   const [sdkResponse, setSdkResponse] = useState<any>(null);
+  const [permanentToken, setPermanentToken] = useState<string>("Null");
 
   useEffect(() => {
     // Only run on client, after FB SDK script has loaded
@@ -73,6 +75,37 @@ export default function WhatsAppSignup() {
     });
   };
 
+  const getPermanentToken = async (code: string) => {
+    if (!code) {
+      toast.error("No auth code available");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/facebook/exchange-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          code,
+        }),
+      });
+
+      const tokenData = await res.json();
+
+      if (res.ok && tokenData.success) {
+        setPermanentToken(tokenData.data?.access_token || "");
+        console.log("Permanent Token:", tokenData.data?.access_token);
+        toast.success("Token exchange successful ✅");
+      } else {
+        toast.error("Token exchange failed: " + (tokenData.error?.message || tokenData.message));
+        console.error("Token exchange failed:", tokenData);
+      }
+    } catch (err: any) {
+      toast.error("Unexpected error: " + err.message);
+      console.error("Unexpected error:", err);
+    }
+  };
+
   return (
     <div className="p-6 space-y-4">
       <button
@@ -91,8 +124,22 @@ export default function WhatsAppSignup() {
 
       <div>
         <h3 className="font-bold">SDK Response:</h3>
-        <pre className="bg-gray-100 p-2 text-sm rounded">
+        <pre className="bg-gray-100 p-2 text-sm rounded w-[1000px] overflow-x-auto">
           {JSON.stringify(sdkResponse, null, 2)}
+        </pre>
+      </div>
+
+      <button
+        onClick={() => getPermanentToken(sdkResponse?.authResponse?.code)}
+        className="px-6 py-3 text-white font-bold rounded-md bg-green-600 hover:bg-green-700"
+      >
+        Get permanent token
+      </button>
+
+      <div>
+        <h3 className="font-bold">Permanent token:</h3>
+        <pre className="bg-gray-100 p-2 text-sm rounded">
+          {permanentToken}
         </pre>
       </div>
     </div>

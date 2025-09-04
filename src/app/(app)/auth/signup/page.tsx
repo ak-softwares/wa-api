@@ -8,12 +8,10 @@ import Footer from "@/components/ui/footer/footer";
 export default function SignUpPageWrapper() {
 
   return (
-    // <Suspense fallback={<div>Loading...</div>}>
-    <div>
-      <Header />
+    <Suspense fallback={<div>Loading...</div>}>
+      <Header />  
       <SignUpForm />
       <Footer />
-    </div>
-    // </Suspense>
+    </Suspense>
   );
 }

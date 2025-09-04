@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       const response: ApiResponse = {
         success: false,
         message: "Invalid request",
-        errors: validation.error.flatten().fieldErrors,
+        error: validation.error.flatten().fieldErrors,
       };
       return NextResponse.json(response, { status: 400 });
     }
