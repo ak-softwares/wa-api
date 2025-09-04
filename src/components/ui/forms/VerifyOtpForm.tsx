@@ -20,16 +20,24 @@ import { ApiResponse } from "@/types/apiResponse";
 import { signIn } from "next-auth/react";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
-
-
-const VerifyOtpSchema = z.object({
-  otp: z.string().min(4, "OTP must be at least 4 digits"),
-});
+import { VerifyOtpSchema } from "@/schemas/verifyOtpSchema";
+import { useEffect, useState } from "react";
 
 export default function VerifyOtpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const phone = searchParams.get("phone"); // phone passed from login screen
+
+  // Countdown state for resend OTP
+  const [counter, setCounter] = useState(60);
+  const [isResending, setIsResending] = useState(false);
+
+  useEffect(() => {
+    if (counter > 0) {
+      const timer = setTimeout(() => setCounter(counter - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [counter]);
 
   const form = useForm<z.infer<typeof VerifyOtpSchema>>({
     resolver: zodResolver(VerifyOtpSchema),
@@ -57,6 +65,19 @@ export default function VerifyOtpForm() {
       const errorMessage =
         axiosError.response?.data?.message || "Something went wrong";
       toast.error("Failed to verify OTP", { description: errorMessage });
+    }
+  };
+
+  const handleResendOtp = async () => {
+    try {
+      setIsResending(true);
+      await axios.post("/api/auth/send-otp", { phone }); // 👈 replace with your OTP API
+      toast.success("OTP resent successfully!");
+      setCounter(60); // restart countdown
+    } catch (error) {
+      toast.error("Failed to resend OTP");
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -104,12 +125,29 @@ export default function VerifyOtpForm() {
                 {isSubmitting ? "Verifying..." : "Verify OTP"}
               </Button>
 
-                <div className="text-center text-sm">
-                    Don&apos;t have an account?{" "}
-                    <Link href="/auth/signup" className="underline underline-offset-4">
-                    Sign up
-                    </Link>
-                </div>
+              {/* Resend OTP Feature */}
+              <div className="text-center text-sm">
+                {counter > 0 ? (
+                  <p className="text-gray-500">
+                    Resend OTP in {counter}s
+                  </p>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="link"
+                    disabled={isResending}
+                    onClick={handleResendOtp}
+                  >
+                    {isResending ? "Resending..." : "Resend OTP"}
+                  </Button>
+                )}
+              </div>
+              <div className="text-center text-sm">
+                  Don&apos;t have an account?{" "}
+                  <Link href="/auth/signup" className="underline underline-offset-4">
+                  Sign up
+                  </Link>
+              </div>
             </form>
 
           </CardContent>

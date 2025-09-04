@@ -71,7 +71,7 @@ export default function LoginForm() {
       const errorMessage =
         axiosError.response?.data?.message || "Something went wrong";
       toast.error("Failed to send OTP", { description: errorMessage });
-}
+    }
   };
 
   // ✅ Google SignIn handler
