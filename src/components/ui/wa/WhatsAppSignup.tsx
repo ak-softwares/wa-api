@@ -71,7 +71,10 @@ export default function WhatsAppSignup() {
       config_id: process.env.NEXT_PUBLIC_FACEBOOK_CONFIG_ID,
       response_type: "code",
       override_default_response_type: true,
-      extras: { version: "v3" },
+      extras: { 
+        version: "v3",
+        redirect_uri: process.env.NEXT_PUBLIC_FACEBOOK_REDIRECT_URI
+       },
     });
   };
 

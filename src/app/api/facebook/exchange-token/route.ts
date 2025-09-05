@@ -29,7 +29,8 @@ export async function POST(req: Request) {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
     });
-
+    console.log("Exchange request redirect_uri:", process.env.NEXT_PUBLIC_FACEBOOK_REDIRECT_URI);
+    console.log("Full URL:", `https://graph.facebook.com/v21.0/oauth/access_token?${params.toString()}`);
     const data = await fbRes.json();
 
     if (!fbRes.ok) {
