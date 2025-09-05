@@ -11,7 +11,7 @@ export default withAuth(
                 const {pathname} = req.nextUrl;
                 
                 // Allow auth related path
-                if(pathname.startsWith('/api/auth') || pathname === "/auth/signin"){
+                if(pathname.startsWith('/api/auth') || pathname === "/auth"){
                     return true;
                 }
 
@@ -28,8 +28,6 @@ export default withAuth(
 
 export const config = {
     matcher: [
-        "/((?!api|_next/static|_next/image|favicon.ico).*)",
-        "/auth/(.*)",
-        "/auth/signin"
+        "/dashboard/:path*",   // Protect all dashboard routes
     ],
 };

@@ -12,27 +12,27 @@ import WhatsAppSignup from "@/components/ui/wa/WhatsAppSignup"
 import { useEffect } from "react";
 
 export default function Dashboard() {
-  const router = useRouter();
-  const { data: session, status } = useSession();
+  // const router = useRouter();
+  // const { data: session, status } = useSession();
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/login");
-    }
-  }, [status, router]);
+  // // Redirect to login if not authenticated
+  // useEffect(() => {
+  //   if (status === "unauthenticated") {
+  //     router.push("/auth/login");
+  //   }
+  // }, [status, router]);
 
-  if (status === "loading") {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
+  // if (status === "loading") {
+  //   return (
+  //     <div className="flex h-screen items-center justify-center">
+  //       Loading...
+  //     </div>
+  //   );
+  // }
 
-  if (!session) {
-    return null; // Wait for redirect
-  }
+  // if (!session) {
+  //   return null; // Wait for redirect
+  // }
 
   return (
     <div className="flex h-screen bg-gray-50">
