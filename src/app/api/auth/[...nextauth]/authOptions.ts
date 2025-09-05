@@ -100,7 +100,6 @@ export const authOptions: NextAuthOptions = {
             }
 
             return true; // ✅ allow sign in
-
         },
 
         async session({ session, user }) {

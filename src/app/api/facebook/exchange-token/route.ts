@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     const params = new URLSearchParams({
       client_id: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!,
       client_secret: process.env.FACEBOOK_APP_SECRET!,
-      redirect_uri: process.env.NEXT_PUBLIC_FACEBOOK_REDIRECT_URI!,
+      // redirect_uri: process.env.NEXT_PUBLIC_FACEBOOK_REDIRECT_URI!,
       code,
       grant_type: 'authorization_code',
     });
@@ -29,8 +29,7 @@ export async function POST(req: Request) {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
     });
-    console.log("Exchange request redirect_uri:", process.env.NEXT_PUBLIC_FACEBOOK_REDIRECT_URI);
-    console.log("Full URL:", `https://graph.facebook.com/v21.0/oauth/access_token?${params.toString()}`);
+
     const data = await fbRes.json();
 
     if (!fbRes.ok) {
@@ -51,7 +50,6 @@ export async function POST(req: Request) {
     return NextResponse.json(response, { status: 200 });
 
   } catch (err: any) {
-    console.error('Unexpected error in token exchange:', err);
     const response: ApiResponse = {
       success: false,
       message: err.message || 'Unexpected error',
