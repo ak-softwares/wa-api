@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Prose } from "@/components/ui/prose"
 import Header from '@/components/ui/header/header'
 import Footer from '@/components/ui/footer/footer'
 
@@ -16,7 +15,6 @@ export default function PrivacyPolicyPage() {
             <CardTitle className="text-2xl">Privacy Policy — WA-API</CardTitle>
             </CardHeader>
             <CardContent>
-            <Prose>
                 <h2>Introduction</h2>
                 <p>
                 WA-API ("we", "us", "our") operates the website <strong>wa-api.me</strong> and
@@ -77,7 +75,6 @@ export default function PrivacyPolicyPage() {
                 </p>
 
                 <p className="text-sm text-muted-foreground">Effective date: {new Date().toLocaleDateString()}</p>
-            </Prose>
             </CardContent>
         </Card>
         </main>

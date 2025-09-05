@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Prose } from '@/components/ui/prose'
 import Header from '@/components/ui/header/header'
 import Footer from '@/components/ui/footer/footer'
 
@@ -16,7 +15,6 @@ export default function TermsPage() {
             <CardTitle className="text-2xl">Terms & Conditions — WA-API</CardTitle>
             </CardHeader>
             <CardContent>
-            <Prose>
                 <h2>Agreement to Terms</h2>
                 <p>
                 These Terms &amp; Conditions ("Terms") govern your use of services provided by
@@ -74,7 +72,6 @@ export default function TermsPage() {
                 </p>
 
                 <p className="text-sm text-muted-foreground">Effective date: {new Date().toLocaleDateString()}</p>
-            </Prose>
             </CardContent>
         </Card>
         </main>
