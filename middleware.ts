@@ -22,6 +22,9 @@ export default withAuth(
 
                 return !!token;
             }
+        },
+        pages: {
+            signIn: '/auth/login',   // <-- this is your login page
         }
     }
 );
