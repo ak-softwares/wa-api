@@ -104,7 +104,7 @@ export const authOptions: NextAuthOptions = {
 
         async session({ session, user }) {
             if (user) {
-                session.user.id = user.id.toString();
+                session.user.id = user.id?.toString();
                 session.user.email = user.email;
             }
             return session;

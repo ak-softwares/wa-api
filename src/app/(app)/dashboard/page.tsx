@@ -8,43 +8,17 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/dashboard/sidebar/Sidebar";
 import Topbar from "@/components/dashboard/topbar/Topbar"
-import WhatsAppSignup from "@/components/ui/wa/WhatsAppSignup"
+import WhatsAppSignup from "@/components/dashboard/wa/WhatsAppSignup"
 import { useEffect } from "react";
+import RightBar from "@/components/dashboard/rightbar/RightBar";
 
 export default function Dashboard() {
-  // const router = useRouter();
-  // const { data: session, status } = useSession();
-
-  // // Redirect to login if not authenticated
-  // useEffect(() => {
-  //   if (status === "unauthenticated") {
-  //     router.push("/auth/login");
-  //   }
-  // }, [status, router]);
-
-  // if (status === "loading") {
-  //   return (
-  //     <div className="flex h-screen items-center justify-center">
-  //       Loading...
-  //     </div>
-  //   );
-  // }
-
-  // if (!session) {
-  //   return null; // Wait for redirect
-  // }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <Sidebar />
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
-        <Topbar />
-
-        {/* Content */}
-        <main className="flex-1 p-6 space-y-6 overflow-y-auto">
+    <main className="flex-1 p-6 overflow-y-auto">
+      <div className="grid grid-cols-10 gap-6 h-full">
+        {/* Left side (70%) */}
+        <div className="col-span-7 space-y-6">
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
@@ -91,7 +65,10 @@ export default function Dashboard() {
                   <CardTitle>Connect WhatsApp Number</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="mb-4">Connect your WhatsApp business number to start sending messages.</p>
+                  <p className="mb-4">
+                    Connect your WhatsApp business number to start sending
+                    messages.
+                  </p>
                   <Button>Connect Number</Button>
                 </CardContent>
               </Card>
@@ -102,7 +79,11 @@ export default function Dashboard() {
                   <CardTitle>Manage API Key</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Input placeholder="Your API Key" value="sk_test_xxxxxx" readOnly />
+                  <Input
+                    placeholder="Your API Key"
+                    value="sk_test_xxxxxx"
+                    readOnly
+                  />
                   <Button>Generate New Key</Button>
                 </CardContent>
               </Card>
@@ -120,9 +101,15 @@ export default function Dashboard() {
               </Card>
             </TabsContent>
           </Tabs>
+        </div>
+
+        {/* Right side (30%) */}
+        <div className="col-span-3 space-y-6">
+          <RightBar />
           <WhatsAppSignup />
-        </main>
+        </div>
       </div>
-    </div>
-  )
+    </main>
+)
+
 }

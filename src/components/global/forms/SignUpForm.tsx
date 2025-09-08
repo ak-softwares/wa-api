@@ -23,6 +23,7 @@ import { useEffect } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import FooterTerms from "../footer/footerTerms";
 
 
 export default function SignUpForm() {
@@ -154,11 +155,7 @@ export default function SignUpForm() {
             </CardContent>
           </Card>
 
-          <div className="text-muted-foreground text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4 *:[a]:hover:text-primary">
-            By clicking continue, you agree to our{" "}
-            <Link href="#">Terms of Service</Link> and{" "}
-            <Link href="#">Privacy Policy</Link>.
-          </div>
+          <FooterTerms />
         </div>
       </div>
     </div>

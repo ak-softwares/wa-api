@@ -2,9 +2,7 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
-import Header from "@/components/ui/header/header";
 import { useSession } from "next-auth/react"
-import Footer from "@/components/ui/footer/footer";
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
@@ -49,7 +47,6 @@ export default function LandingPage() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <Header />
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60rem_30rem_at_50%_-10%,rgba(16,185,129,0.15),transparent_60%)]" />
@@ -222,7 +219,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-      <Footer />
     </main>
   )
 }

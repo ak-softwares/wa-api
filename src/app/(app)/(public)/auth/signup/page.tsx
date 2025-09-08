@@ -1,17 +1,13 @@
 "use client";
 
 import { Suspense } from "react";
-import SignUpForm from "@/components/ui/forms/SignUpForm";
-import Header from "@/components/ui/header/header";
-import Footer from "@/components/ui/footer/footer";
+import SignUpForm from "@/components/global/forms/SignUpForm";
 
 export default function SignUpPageWrapper() {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <Header />  
       <SignUpForm />
-      <Footer />
     </Suspense>
   );
 }
