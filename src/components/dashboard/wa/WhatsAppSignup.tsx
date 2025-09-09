@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useSession, getSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
 
  
 export default function WhatsAppSignup() {
@@ -152,28 +153,10 @@ export default function WhatsAppSignup() {
 
 
   return (
-    <div className="p-6 space-y-4">
-      <button
-        onClick={launchWhatsAppSignup}
-        className="px-6 py-3 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700"
-      >
-        Login with Facebook
-      </button>
-
-      <div>
-        <h3 className="font-bold">Session Info Response:</h3>
-        <pre className="bg-gray-100 p-2 text-sm rounded">
-          {JSON.stringify(sessionInfo, null, 2)}
-        </pre>
-      </div>
-
-      <div>
-        <h3 className="font-bold">SDK Response:</h3>
-        <pre className="bg-gray-100 p-2 text-sm rounded w-[1000px] overflow-x-auto">
-          {JSON.stringify(sdkResponse, null, 2)}
-        </pre>
-      </div>
-
+    <div >
+      <Button onClick={launchWhatsAppSignup}>
+        Connect WhatsApp Number
+      </Button>
     </div>
   );
 }

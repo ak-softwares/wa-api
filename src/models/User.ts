@@ -13,6 +13,8 @@ export interface IUser extends Document {
   waAccounts?: IWaAccount; // Embedded WA accounts
   createdAt?: Date;
   updatedAt?: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -23,6 +25,8 @@ const UserSchema = new Schema<IUser>(
     phone: { type: Number, required: true },
     // force a single object, not an array
     waAccounts: { type: WaAccountSchema, required: false },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
   },
   { timestamps: true }
 );

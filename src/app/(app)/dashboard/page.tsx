@@ -4,12 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import Sidebar from "@/components/dashboard/sidebar/Sidebar";
-import Topbar from "@/components/dashboard/topbar/Topbar"
 import WhatsAppSignup from "@/components/dashboard/wa/WhatsAppSignup"
-import { useEffect } from "react";
 import RightBar from "@/components/dashboard/rightbar/RightBar";
 
 export default function Dashboard() {
@@ -59,20 +54,37 @@ export default function Dashboard() {
               <TabsTrigger value="api">API Keys</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
+
             <TabsContent value="phone">
               <Card>
                 <CardHeader>
                   <CardTitle>Connect WhatsApp Number</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="mb-4">
-                    Connect your WhatsApp business number to start sending
-                    messages.
-                  </p>
-                  <Button>Connect Number</Button>
+                  {true ? (
+                    // If WhatsApp is already connected
+                    <div className="space-y-2">
+                      <p className="text-green-600 font-medium">
+                        🎉 Congratulations! WhatsApp is connected ✅
+                      </p>
+                      <p>
+                        Connected number:{" "}
+                        <span className="font-semibold">+918265849298</span>
+                      </p>
+                    </div>
+                  ) : (
+                    // If WhatsApp not connected
+                    <>
+                      <p className="mb-4">
+                        Connect your WhatsApp business number to start sending messages.
+                      </p>
+                      <WhatsAppSignup />
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
+
             <TabsContent value="api">
               <Card>
                 <CardHeader>
@@ -106,7 +118,6 @@ export default function Dashboard() {
         {/* Right side (30%) */}
         <div className="col-span-3 space-y-6">
           <RightBar />
-          <WhatsAppSignup />
         </div>
       </div>
     </main>

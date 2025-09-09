@@ -51,7 +51,7 @@ async function sendOtpWhatsApp(phone: string, otp: string): Promise<boolean> {
   try {
     const url = `${process.env.WHATSAPP_API_URL}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
 
-    const payload1 = {
+    const payload = {
       messaging_product: "whatsapp",
       to: phone, // must be in full international format (e.g. 9198xxxxxxx)
       type: "template",
@@ -85,7 +85,7 @@ async function sendOtpWhatsApp(phone: string, otp: string): Promise<boolean> {
       },
     };
 
-    const payload = {
+    const payload1 = {
         messaging_product: "whatsapp",
         to: phone, // must be in full international format, e.g., "9198xxxxxxx"
         type: "text",
