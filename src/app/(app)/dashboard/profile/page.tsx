@@ -1,68 +1,149 @@
 "use client"
 
+import { useEffect } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { Input, ShadcnPhoneInput } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import ResetPasswordDialog from "@/components/dashboard/profile/ResetPassword"
+import DeleteAccount from "@/components/dashboard/profile/DeleteAccount"
+import { toast } from "sonner"
+import { useForm, Controller } from "react-hook-form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { profileSchema } from "@/schemas/profileSchema"
+
 
 export default function ProfilePage() {
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<z.infer<typeof profileSchema>>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      company: "",
+    },
+  })
+
+  // ✅ Load user profile on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch("/api/user/profile", { method: "GET" })
+        const data = await res.json()
+        if (res.ok && data.success) {
+          setValue("name", data.data.name || "")
+          setValue("email", data.data.email || "")
+          setValue("phone", String(data.data.phone || ""))
+          setValue("company", data.data.company || "")
+        }
+      } catch {
+        // toast.error("Error", { description: "Failed to load profile" })
+      }
+    }
+    fetchProfile()
+  }, [setValue])
+
+  // ✅ Submit updated profile
+  const onSubmit = async (values: z.infer<typeof profileSchema>) => {
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      })
+      const result = await res.json()
+
+      if (!res.ok) {
+        toast.error("Failed", { description: result.message })
+      } else {
+        toast.success("Success", { description: result.message })
+      }
+    } catch {
+      toast.error("Error", { description: "Something went wrong" })
+    }
+  }
+
   return (
-        <main className="flex-1 p-6 space-y-6 overflow-y-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle>My Profile</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Avatar Section */}
-              <div className="flex items-center space-x-4">
-                <Avatar className="w-20 h-20">
-                  <AvatarImage src="/profile.png" alt="Profile Picture" />
-                  <AvatarFallback>WA</AvatarFallback>
-                </Avatar>
-                <Button variant="outline">Change Picture</Button>
+    <main className="flex-1 p-6 space-y-6 overflow-y-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle>My Profile</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Avatar Section */}
+          <div className="flex items-center space-x-4">
+            <Avatar className="w-20 h-20">
+              <AvatarImage src="/profile.png" alt="Profile Picture" />
+              <AvatarFallback>WA</AvatarFallback>
+            </Avatar>
+            <Button variant="outline">Change Picture</Button>
+          </div>
+
+          {/* Profile Form */}
+          <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input id="name" {...register("name")} />
+                {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
               </div>
-
-              {/* Profile Form */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" placeholder="John Doe" defaultValue="John Doe" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" placeholder="you@example.com" defaultValue="support@wa-api.me" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input id="phone" placeholder="+91 98765 43210" defaultValue="+91 98765 43210" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="company">Company</Label>
-                  <Input id="company" placeholder="Company Name" defaultValue="WA-API" />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" {...register("email")} />
+                {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
               </div>
-
-              {/* Actions */}
-              <div className="flex justify-end space-x-4">
-                <Button variant="outline">Cancel</Button>
-                <Button>Save Changes</Button>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Controller
+                  name="phone"
+                  control={control}
+                  render={({ field }) => (
+                        <ShadcnPhoneInput
+                          value={field.value || ""}          // ✅ always a string
+                          onChange={(val: string) => field.onChange(val || "")} // ✅ enforce string
+                        />
+                  )}
+                />
+                {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
               </div>
-            </CardContent>
-          </Card>
+              <div className="space-y-2">
+                <Label htmlFor="company">Company</Label>
+                <Input id="company" {...register("company")} />
+                {errors.company && <p className="text-sm text-red-500">{errors.company.message}</p>}
+              </div>
+            </div>
 
-          {/* Account Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Account Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button variant="outline" className="w-full">Change Password</Button>
-              <Button variant="destructive" className="w-full">Delete Account</Button>
-            </CardContent>
-          </Card>
-        </main>
-      
+            {/* Actions */}
+            <div className="flex justify-end space-x-4">
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
 
+      {/* Account Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Account Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <ResetPasswordDialog />
+          <DeleteAccount />
+        </CardContent>
+      </Card>
+    </main>
   )
 }

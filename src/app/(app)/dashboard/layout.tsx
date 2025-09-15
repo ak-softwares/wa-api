@@ -8,7 +8,9 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+
   return (
+    
     <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
       {/* Sidebar */}
       <Sidebar />

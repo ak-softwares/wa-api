@@ -97,7 +97,8 @@ export default function ResetPasswordForm() {
             <CardHeader className="text-center">
               <CardTitle className="text-xl">Reset Password</CardTitle>
               <CardDescription>
-                Enter your new password below. Make sure it’s strong and something you can remember.
+                Set a new strong password you can remember. <br />
+                Email: {email}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -123,13 +124,11 @@ export default function ResetPasswordForm() {
                     {isSubmitting ? "Resetting Password..." : "Reset Password"}
                 </Button>
 
+
                 <div className="text-center text-sm">
-                  Don&apos;t have an account?{" "}
-                  <Link
-                    href="/auth/signup"
-                    className="underline underline-offset-4"
-                  >
-                    Sign up
+                  Already have an account?{" "}
+                  <Link href="/auth/signin" className="underline underline-offset-4">
+                    Sign In
                   </Link>
                 </div>
               </form>

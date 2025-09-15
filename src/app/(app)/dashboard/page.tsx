@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import WhatsAppSignup from "@/components/dashboard/wa/WhatsAppSignup"
 import RightBar from "@/components/dashboard/rightbar/RightBar";
 
+
 export default function Dashboard() {
 
   return (
@@ -61,7 +62,7 @@ export default function Dashboard() {
                   <CardTitle>Connect WhatsApp Number</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {true ? (
+                  {false ? (
                     // If WhatsApp is already connected
                     <div className="space-y-2">
                       <p className="text-green-600 font-medium">

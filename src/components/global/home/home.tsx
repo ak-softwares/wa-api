@@ -3,6 +3,7 @@
 import React, { useState } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
+import Image from "next/image"
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
@@ -77,7 +78,16 @@ export default function LandingPage() {
           <div className="z-10 flex items-center justify-center">
             <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl">
               <div className="mb-6 text-sm text-muted-foreground">Message Analytics</div>
-              <div className="h-40 rounded-xl bg-muted/50" />
+              {/* Image in black space */}
+              <div className="h-50 rounded-xl flex items-center justify-center overflow-hidden">
+                <Image
+                  src="/assets/home/launcher-dash.png"
+                  alt="Dashboard Preview"
+                  width={600}
+                  height={300}
+                  className="object-contain h-full w-auto"
+                />
+              </div>
               <div className="mt-6 grid grid-cols-3 gap-3 text-center text-xs">
                 {[
                   { label: "Sent", value: "12,450" },
