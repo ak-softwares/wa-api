@@ -12,10 +12,14 @@ export async function POST(req: Request) {
     // ✅ Validate input
     const validation = signInSchema.safeParse(body);
     if (!validation.success) {
+      // Collect all error messages into one string
+      const errors = Object.values(validation.error.flatten().fieldErrors)
+        .flat()
+        .filter(Boolean)
+        .join(", ");
       const response: ApiResponse = {
         success: false,
-        message: "Invalid request",
-        error: validation.error.flatten().fieldErrors,
+        message:  errors || "Invalid request",
       };
       return NextResponse.json(response, { status: 400 });
     }
