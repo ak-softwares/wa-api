@@ -56,7 +56,6 @@ export async function POST(req: Request) {
       const response: ApiResponse = {
         success: false,
         message: fbData.error?.message || "Failed to fetch phone numbers",
-        error: fbData.error
       };
       return NextResponse.json(response, { status: fbRes.status });
     }
