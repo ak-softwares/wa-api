@@ -9,7 +9,7 @@ import { authOptions } from "../../auth/[...nextauth]/authOptions";
 // ✅ Update a contact
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -21,8 +21,9 @@ export async function PUT(
       return NextResponse.json(response, { status: 401 });
     }
 
-    const { id } = params;
-    const { name, phone, email, tags } = await req.json();
+    // ⬅️ Await params because it’s a Promise
+    const { id } = await params
+    const { name, phone, email, tags } = await req.json()
 
     if (!name || !phone?.length) {
       const response: ApiResponse = {
@@ -74,7 +75,7 @@ export async function PUT(
 // ✅ Delete a contact
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -86,7 +87,8 @@ export async function DELETE(
       return NextResponse.json(response, { status: 401 });
     }
 
-    const { id } = params;
+    // ⬅️ Await params because it’s a Promise
+    const { id } = await params
 
     await connectDB();
     const user = await User.findOne({ email: session.user.email }).select("_id");
