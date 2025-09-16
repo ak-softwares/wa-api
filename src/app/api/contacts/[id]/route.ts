@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { connectDB } from "@/lib/mongoose";
 import { User } from "@/models/User";
@@ -7,27 +7,39 @@ import { ApiResponse } from "@/types/apiResponse";
 import { authOptions } from "../../auth/[...nextauth]/authOptions";
 
 // ✅ Update a contact
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+      const response: ApiResponse = {
+        success: false,
+        message: "Unauthorized",
+      };
+      return NextResponse.json(response, { status: 401 });
     }
 
     const { id } = params;
     const { name, phone, email, tags } = await req.json();
 
     if (!name || !phone?.length) {
-      return NextResponse.json(
-        { success: false, message: "Name and at least one phone number are required" },
-        { status: 400 }
-      );
+      const response: ApiResponse = {
+        success: false,
+        message: "Name and at least one phone number are required",
+      };
+      return NextResponse.json(response, { status: 400 });
     }
 
     await connectDB();
     const user = await User.findOne({ email: session.user.email }).select("_id");
     if (!user) {
-      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
+      const response: ApiResponse = {
+        success: false,
+        message: "User not found",
+      };
+      return NextResponse.json(response, { status: 404 });
     }
 
     const contact = await Contact.findOneAndUpdate(
@@ -37,7 +49,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     );
 
     if (!contact) {
-      return NextResponse.json({ success: false, message: "Contact not found" }, { status: 404 });
+      const response: ApiResponse = {
+        success: false,
+        message: "Contact not found",
+      };
+      return NextResponse.json(response, { status: 404 });
     }
 
     const response: ApiResponse = {
@@ -47,16 +63,27 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     };
     return NextResponse.json(response, { status: 200 });
   } catch (err: any) {
-    return NextResponse.json({ success: false, message: err.message || "Unexpected error" }, { status: 500 });
+    const response: ApiResponse = {
+      success: false,
+      message: err?.message || "Unexpected error",
+    };
+    return NextResponse.json(response, { status: 500 });
   }
 }
 
 // ✅ Delete a contact
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+      const response: ApiResponse = {
+        success: false,
+        message: "Unauthorized",
+      };
+      return NextResponse.json(response, { status: 401 });
     }
 
     const { id } = params;
@@ -64,20 +91,33 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     await connectDB();
     const user = await User.findOne({ email: session.user.email }).select("_id");
     if (!user) {
-      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
+      const response: ApiResponse = {
+        success: false,
+        message: "User not found",
+      };
+      return NextResponse.json(response, { status: 404 });
     }
 
     const contact = await Contact.findOneAndDelete({ _id: id, userId: user._id });
     if (!contact) {
-      return NextResponse.json({ success: false, message: "Contact not found" }, { status: 404 });
+      const response: ApiResponse = {
+        success: false,
+        message: "Contact not found",
+      };
+      return NextResponse.json(response, { status: 404 });
     }
 
     const response: ApiResponse = {
       success: true,
       message: "Contact deleted successfully",
+      data: contact,
     };
     return NextResponse.json(response, { status: 200 });
   } catch (err: any) {
-    return NextResponse.json({ success: false, message: err.message || "Unexpected error" }, { status: 500 });
+    const response: ApiResponse = {
+      success: false,
+      message: err?.message || "Unexpected error",
+    };
+    return NextResponse.json(response, { status: 500 });
   }
 }

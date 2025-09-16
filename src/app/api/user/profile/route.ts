@@ -78,6 +78,18 @@ export async function PUT(req: Request) {
       }
     }
 
+    // ✅ Check if phone is being changed & ensure it's unique
+    if (phone !== user.phone) {
+      const existingUser = await User.findOne({ phone });
+      if (existingUser) {
+        const response: ApiResponse = {
+          success: false,
+          message: "Phone number already in use by another account",
+        };
+        return NextResponse.json(response, { status: 400 });
+      }
+    }
+
     if (!user) {
       const response: ApiResponse = {
         success: false,

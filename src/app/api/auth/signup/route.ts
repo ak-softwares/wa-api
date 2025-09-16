@@ -11,10 +11,14 @@ export async function POST(req: Request) {
     // ✅ Validate body with Zod
     const validation = signUpSchema.safeParse(body);
     if (!validation.success) {
+      // Collect all error messages into one string
+      const errors = Object.values(validation.error.flatten().fieldErrors)
+        .flat()
+        .filter(Boolean)
+        .join(", ");
       const response: ApiResponse = {
         success: false,
-        message: "Invalid request",
-        error: validation.error.flatten().fieldErrors,
+        message:  errors || "Invalid request",
       };
       return NextResponse.json(response, { status: 400 });
     }
@@ -23,16 +27,28 @@ export async function POST(req: Request) {
 
     // ✅ Connect DB
     await connectDB();
-    const existingUser = await User.findOne({ email });
 
-    if (existingUser) {
+    // ✅ Check if email already exists
+    const existingUserByEmail = await User.findOne({ email });
+    if (existingUserByEmail) {
       const response: ApiResponse = {
         success: false,
-        message: "User already exists",
+        message: "Email already in use",
       };
       return NextResponse.json(response, { status: 400 });
     }
 
+    // ✅ Check if phone already exists
+    const existingUserByPhone = await User.findOne({ phone });
+    if (existingUserByPhone) {
+      const response: ApiResponse = {
+        success: false,
+        message: "Phone number already in use",
+      };
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    // ✅ Create new user
     const user = new User({
       name,
       email,
