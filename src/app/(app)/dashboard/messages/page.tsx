@@ -86,17 +86,17 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       <div className="max-w-6xl mx-auto flex h-screen">
         {/* Contacts Sidebar */}
-        <div className="w-1/3 bg-white border-r border-gray-200 flex flex-col">
+        <div className="w-1/3 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
           {/* Sidebar Header */}
-          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-green-550 flex items-center justify-center text-white font-bold mr-3">
+              <div className="w-10 h-10 rounded-full bg-green-550 flex items-center justify-center font-bold mr-3">
                 ME
               </div>
-              <h1 className="text-xl font-semibold text-gray-800">Chats</h1>
+              <h1 className="text-xl font-semibold">Chats</h1>
             </div>
             <Button variant="ghost" size="icon">
               <Menu className="h-5 w-5" />
@@ -104,7 +104,7 @@ export default function MessagesPage() {
           </div>
 
           {/* Search Bar */}
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
               <Input
@@ -126,21 +126,21 @@ export default function MessagesPage() {
               filteredContacts.map((contact) => (
                 <div 
                   key={contact.id} 
-                  className={`p-4 border-b border-gray-100 cursor-pointer transition-colors flex items-center ${
-                    activeContact?.id === contact.id ? "bg-green-50" : "hover:bg-gray-50"
+                  className={`p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer transition-colors flex items-center ${
+                    activeContact?.id === contact.id ? "bg-green-50 dark:bg-gray-800" : "hover:bg-gray-50 dark:hover:bg-gray-800"
                   }`}
                   onClick={() => setActiveContact(contact)}
                 >
-                  <div className="w-12 h-12 rounded-full bg-green-550 flex items-center justify-center text-white font-bold mr-3">
+                  <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-900 flex items-center justify-center font-bold mr-3">
                     {contact.avatar}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-800 truncate">{contact.name}</h3>
-                    <p className="text-sm text-gray-500 truncate">
+                    <h3 className="font-semibold truncate">{contact.name}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                       {messages[contact.id]?.[messages[contact.id]?.length - 1]?.text || "No messages yet"}
                     </p>
                   </div>
-                  <div className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2">
                     {contact.lastSeen}
                   </div>
                 </div>
@@ -152,8 +152,8 @@ export default function MessagesPage() {
         {/* Chat Area */}
         <div className="w-2/3 flex flex-col">
           {!activeContact ? (
-            <div className="flex-1 flex flex-col items-center justify-center bg-green-50 p-8">
-              <div className="w-24 h-24 rounded-full bg-green-550 flex items-center justify-center text-white mb-6">
+            <div className="flex-1 flex flex-col items-center justify-center bg-green-50 dark:bg-gray-900 p-8">
+              <div className="w-24 h-24 rounded-full bg-green-550 flex items-center justify-center text-gray-500 mb-6">
                 <Message className="h-12 w-12" />
               </div>
               <h2 className="text-2xl font-semibold text-gray-700 mb-2">Your Messages</h2>
@@ -164,39 +164,39 @@ export default function MessagesPage() {
           ) : (
             <>
               {/* Chat Header */}
-              <div className="bg-green-550 text-white p-4 flex items-center justify-between">
+              <div className="p-4 flex items-center justify-between bg-white dark:bg-gray-900">
                 <div className="flex items-center">
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="text-white md:hidden mr-4"
+                    className="md:hidden mr-4"
                     onClick={() => setActiveContact(null)}
                   >
                     <ArrowLeft className="h-5 w-5" />
                   </Button>
-                  <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold mr-3">
+                  <div className="w-10 h-10 text-white rounded-full bg-green-600 flex items-center justify-center font-bold mr-3">
                     {activeContact.avatar}
                   </div>
                   <div>
                     <h2 className="font-semibold">{activeContact.name}</h2>
-                    <p className="text-xs text-green-100">Last seen {activeContact.lastSeen}</p>
+                    <p className="text-xs text-gray-500">Last seen {activeContact.lastSeen}</p>
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <Button variant="ghost" size="icon" className="text-white">
+                  <Button variant="ghost" size="icon" className="">
                     <Phone className="h-5 w-5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="text-white">
+                  <Button variant="ghost" size="icon" className="">
                     <Video className="h-5 w-5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="text-white">
+                  <Button variant="ghost" size="icon" className="">
                     <MoreVertical className="h-5 w-5" />
                   </Button>
                 </div>
               </div>
 
               {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-4 bg-green-50">
+              <div className="flex-1 overflow-y-auto p-4 bg-green-50 dark:bg-gray-800">
                 <div className="space-y-3">
                   {messages[activeContact.id]?.map((message) => (
                     <div
@@ -207,7 +207,7 @@ export default function MessagesPage() {
                         className={`max-w-xs lg:max-w-md rounded-lg p-3 ${
                           message.sender === "user"
                             ? "bg-green-500 text-white rounded-br-none"
-                            : "bg-white text-gray-800 rounded-bl-none"
+                            : "bg-white dark:bg-gray-900 rounded-bl-none"
                         }`}
                       >
                         <p>{message.text}</p>
@@ -225,7 +225,7 @@ export default function MessagesPage() {
               </div>
 
               {/* Message Input */}
-              <div className="bg-white p-4 border-t">
+              <div className="bg-white dark:bg-gray-900 p-4 border-t">
                 <div className="flex items-center">
                   <Input
                     placeholder="Type a message"

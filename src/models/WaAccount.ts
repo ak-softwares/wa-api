@@ -1,5 +1,5 @@
 import { Schema } from "mongoose";
-import { encrypt, decrypt } from "@/lib/crypto";
+import { encrypt, decrypt, safeDecrypt} from "@/lib/crypto";
 
 export interface IWaAccount {
   phone_number_id: string;
@@ -20,13 +20,13 @@ export const WaAccountSchema = new Schema<IWaAccount>(
       type: String, 
       required: true,
       set: (value: string) => encrypt(String(value)),
-      get: (value: string) => decrypt(value)
+      get: (value: string) => safeDecrypt(value) ?? ""
     },
     permanent_token: { 
       type: String, 
       required: true,
       set: (value: string) => encrypt(String(value)),
-      get: (value: string) => decrypt(value)
+      get: (value: string) => safeDecrypt(value) ?? ""
     },
     verified_name: { type: String },
     display_phone_number: { type: String },

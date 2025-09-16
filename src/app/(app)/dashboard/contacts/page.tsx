@@ -21,13 +21,13 @@ export default function ContactsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Contacts</h1>
-            <p className="text-gray-500">Manage your contact list</p>
+            <h1 className="text-3xl font-bold">Contacts</h1>
+            <p>Manage your contact list</p>
           </div>
           
           <AddContactDialog onContactAdded={refreshContacts} />
@@ -47,8 +47,8 @@ export default function ContactsPage() {
         </Card>
 
         {/* Contacts List Header */}
-        <Card className="p-4 bg-gray-100 hidden md:block">
-          <div className="grid grid-cols-12 gap-4 font-semibold text-gray-700">
+        <Card className="p-4 hidden md:block">
+          <div className="grid grid-cols-12 gap-4 font-semibold">
             <div className="col-span-5 flex items-center">
               <User className="w-4 h-4 mr-2" />
               Name

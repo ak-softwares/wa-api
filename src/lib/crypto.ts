@@ -34,3 +34,28 @@ export function decrypt(encryptedText: string): string {
 
   return decrypted;
 }
+
+export function safeDecrypt(encryptedText: string): string | null {
+  try {
+    const [ivHex, authTagHex, encrypted] = encryptedText.split(":");
+    if (!ivHex || !authTagHex || !encrypted) return null;
+
+    const iv = Buffer.from(ivHex, "hex");
+    const authTag = Buffer.from(authTagHex, "hex");
+
+    const decipher = crypto.createDecipheriv(
+      "aes-256-gcm",
+      Buffer.from(secretKey, "base64"),
+      iv
+    );
+    decipher.setAuthTag(authTag);
+
+    let decrypted = decipher.update(encrypted, "hex", "utf-8");
+    decrypted += decipher.final("utf-8");
+    return decrypted;
+  } catch (err) {
+    console.error("Decryption failed:", err);
+    return null;
+  }
+}
+

@@ -46,7 +46,7 @@ export default function ContactList({
         ))
       ) : contacts.length === 0 ? (
         <Card className="p-8 text-center">
-          <p className="text-gray-500">No contacts yet. Add your first contact!</p>
+          <p>No contacts yet. Add your first contact!</p>
         </Card>
       ) : (
         contacts.map((contact) => (
@@ -56,14 +56,14 @@ export default function ContactList({
           >
             <div className="grid grid-cols-12 gap-4 items-center">
               <div className="col-span-12 md:col-span-5">
-                <div className="font-medium text-gray-900">{contact.name}</div>
+                <div className="font-medium">{contact.name}</div>
                 {contact.email && (
-                  <div className="text-sm text-gray-500 truncate">
+                  <div className="text-sm truncate">
                     {contact.email}
                   </div>
                 )}
               </div>
-              <div className="col-span-12 md:col-span-4 text-gray-700">
+              <div className="col-span-12 md:col-span-4">
                 {contact.phone.join(", ")}
               </div>
               <div className="col-span-12 md:col-span-3">
