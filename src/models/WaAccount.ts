@@ -1,5 +1,5 @@
 import { Schema } from "mongoose";
-import { encrypt, decrypt, safeDecrypt} from "@/lib/crypto";
+import { encrypt, safeDecrypt} from "@/lib/crypto";
 
 export interface IWaAccount {
   phone_number_id: string;
@@ -9,6 +9,7 @@ export interface IWaAccount {
   verified_name?: string;
   display_phone_number?: string;
   quality_rating?: string;
+  business_verification_status?: boolean;
 }
 
 // WA Account subdocument schema
@@ -31,6 +32,7 @@ export const WaAccountSchema = new Schema<IWaAccount>(
     verified_name: { type: String },
     display_phone_number: { type: String },
     quality_rating: { type: String },
+    business_verification_status: { type: Boolean },
   },
   { 
     _id: false, // Prevent Mongoose from creating a separate _id for subdocuments

@@ -28,7 +28,7 @@ interface SetupStep {
 
 export default function WhatsAppSetupPage() {
   const { launchWhatsAppSignup, facebookConnected, isSaving, isLoading: savingStatus } = useWhatsAppSignup();
-  const { status, refresh, error } = useBusinessVerification();
+  const { status, refresh, error, isLoading: isVerifying} = useBusinessVerification();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -133,25 +133,25 @@ export default function WhatsAppSetupPage() {
   const progressValue = (currentStep / steps.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">WhatsApp Business API Setup</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-50">WhatsApp Business API Setup</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
             Follow these steps to connect your WhatsApp Business account and start messaging
           </p>
         </div>
 
         {/* Progress Bar */}
         <div className="mb-10">
-          <Progress value={progressValue} className="h-2 [&>div]:bg-blue-500" />
+          <Progress value={progressValue} className="h-2 [&>div]:bg-blue-500 bg-gray-200 dark:bg-gray-700" />
           <div className="flex justify-between mt-4">
             {steps.map(step => (
               <div
                 key={step.id}
-                className={`flex flex-col items-center ${currentStep >= step.id ? "text-blue-600" : "text-gray-400"}`}
+                className={`flex flex-col items-center ${currentStep >= step.id ? "text-blue-600" : "text-gray-700 dark:text-gray-300"}`}
               >
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${currentStep >= step.id ? "bg-blue-100" : "bg-gray-100"}`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${currentStep >= step.id ? "bg-blue-100 dark:bg-blue-700/20" : "bg-gray-200 dark:bg-gray-900"}`}>
                   {step.icon}
                 </div>
                 <span className="text-xs mt-1 font-medium">Step {step.id}</span>
@@ -163,14 +163,14 @@ export default function WhatsAppSetupPage() {
         <Card className="p-6">
           {/* Step Header */}
           <div className="flex items-start mb-6">
-            <div className={`h-10 w-10 rounded-full flex items-center justify-center ${currentStep >= steps[currentStep - 1].id ? "bg-blue-100" : "bg-gray-100"}`}>
+            <div className={`h-10 w-10 rounded-full flex items-center justify-center ${currentStep >= steps[currentStep - 1].id ? "bg-blue-100 dark:bg-blue-700/20" : "bg-gray-200 dark:bg-gray-900"}`}>
               {steps[currentStep - 1].icon}
             </div>
             <div className="ml-4">
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                 {steps[currentStep - 1].title}
               </h2>
-              <p className="text-gray-600 mt-1">
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
                 {steps[currentStep - 1].description}
               </p>
             </div>
@@ -180,16 +180,16 @@ export default function WhatsAppSetupPage() {
           <div className="mb-6">
             {currentStep === 1 && (
               <div className="space-y-4">
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-400">
                   To use WhatsApp Business API, you need to connect your Facebook Business Manager account. 
                   This allows us to manage your WhatsApp Business account and send messages on your behalf.
                 </p>
-                <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
+                <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-md border border-blue-200 dark:border-blue-700">
                   <div className="flex">
-                    <AlertCircle className="h-5 w-5 text-blue-400 mt-0.5 mr-3" />
+                    <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5 mr-3" />
                     <div>
-                      <h3 className="text-sm font-medium text-blue-800">Requirements</h3>
-                      <ul className="text-sm text-blue-700 mt-1 list-disc list-inside">
+                      <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200 ">Requirements</h3>
+                      <ul className="text-sm text-blue-700 dark:text-blue-300 mt-1 list-disc list-inside">
                         <li>Facebook Business Manager account</li>
                         <li>Admin access to the business</li>
                         <li>Verified business domain (recommended)</li>
@@ -198,15 +198,15 @@ export default function WhatsAppSetupPage() {
                   </div>
                 </div>
                 {facebookConnected ? (
-                  <div className="bg-green-50 p-4 rounded-md border border-green-200 flex items-center">
+                  <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-md border border-green-200 dark:border-green-700 flex items-center">
                     <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                    <span className="text-green-700">Facebook account connected successfully</span>
+                    <span className="text-green-700 dark:text-green-300">Facebook account connected successfully</span>
                   </div>
                 ) : (
                   <Button
                     onClick={launchWhatsAppSignup}
                     disabled={isSaving || savingStatus || facebookConnected}
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     {isSaving  
                         ? (
@@ -235,18 +235,18 @@ export default function WhatsAppSetupPage() {
 
             {currentStep === 2 && (
               <div className="space-y-4">
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-400">
                   Business verification is required by Meta to ensure the authenticity of your business 
                   and to access advanced WhatsApp Business features.
                 </p>
 
                 {/* Info Box */}
-                <div className="bg-yellow-50 p-4 rounded-md border border-yellow-200">
+                <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-md border border-yellow-200 dark:border-yellow-800">
                   <div className="flex">
-                    <AlertCircle className="h-5 w-5 text-yellow-400 mt-0.5 mr-3" />
+                    <AlertCircle className="h-5 w-5 text-yellow-400 dark:text-yellow-600 mt-0.5 mr-3" />
                     <div>
-                      <h3 className="text-sm font-medium text-yellow-800">Verification Process</h3>
-                      <ul className="text-sm text-yellow-700 mt-1 list-disc list-inside">
+                      <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Verification Process</h3>
+                      <ul className="text-sm text-yellow-700 dark:text-yellow-300 mt-1 list-disc list-inside">
                         <li>Submit business documentation</li>
                         <li>Wait for Meta approval (typically 3-5 business days)</li>
                         <li>Receive verification status via email</li>
@@ -256,27 +256,24 @@ export default function WhatsAppSetupPage() {
                 </div>
 
                 {/* ✅ Live Business Verification Status */}
-                <div className="p-4 rounded-md border bg-gray-50">
-                  {isLoading && (
-                    <div className="flex items-center text-gray-600">
+                <div className="p-4 rounded-md border bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+                  {isVerifying && (
+                    <div className="flex items-center text-gray-600 dark:text-gray-400">
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       Checking business verification status...
                     </div>
                   )}
-                  {!isLoading && error && (
-                    <div className="text-red-600">Error: {error}</div>
-                  )}
-                  {!isLoading && (
+                  {!isVerifying && (
                     <div className="flex items-center">
                       {status === "verified" ? (
                         <>
                           <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                          <span className="text-green-700">Business verification completed ✅</span>
+                          <span className="text-green-700 dark:text-green-400">Business verification completed ✅</span>
                         </>
                       ) : (
                         <>
                           <AlertCircle className="h-5 w-5 text-yellow-500 mr-2" />
-                          <span className="text-yellow-700 capitalize">
+                          <span className="text-yellow-700 dark:text-yellow-400 capitalize">
                             Current status: {status || "Pending"}
                           </span>
                           <Button
@@ -291,6 +288,9 @@ export default function WhatsAppSetupPage() {
                       )}
                     </div>
                   )}
+                  {!isVerifying && error && (
+                    <div className="text-red-600">Error: {error}</div>
+                  )}
                 </div>
 
                 {/* If not verified → show form */}
@@ -298,26 +298,26 @@ export default function WhatsAppSetupPage() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Business Name
                         </label>
                         <Input placeholder="Your official business name" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Business ID
                         </label>
                         <Input placeholder="Tax ID or registration number" />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Business Address
                       </label>
                       <Input placeholder="Registered business address" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Website URL
                       </label>
                       <Input placeholder="https://yourbusiness.com" />
@@ -325,7 +325,7 @@ export default function WhatsAppSetupPage() {
                     <Button
                       onClick={handleVerifyBusiness}
                       disabled={isSaving}
-                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       {isSaving ? (
                         <>
@@ -344,16 +344,16 @@ export default function WhatsAppSetupPage() {
 
             {currentStep === 3 && (
               <div className="space-y-4">
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-400">
                   Register the phone number you want to use for WhatsApp Business. This number will be 
                   associated with your business account and used for all messaging.
                 </p>
-                <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
+                <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-md border border-blue-200 dark:border-blue-700">
                   <div className="flex">
-                    <AlertCircle className="h-5 w-5 text-blue-400 mt-0.5 mr-3" />
+                    <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5 mr-3" />
                     <div>
-                      <h3 className="text-sm font-medium text-blue-800">Number Requirements</h3>
-                      <ul className="text-sm text-blue-700 mt-1 list-disc list-inside">
+                      <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">Number Requirements</h3>
+                      <ul className="text-sm text-blue-700 dark:text-blue-300 mt-1 list-disc list-inside">
                         <li>Must be a valid phone number with country code</li>
                         <li>Should not be currently used with WhatsApp</li>
                         <li>Will receive a verification code</li>
@@ -362,7 +362,7 @@ export default function WhatsAppSetupPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Phone Number
                   </label>
                   <Input
@@ -380,14 +380,14 @@ export default function WhatsAppSetupPage() {
                     checked={formData.termsAgreed}
                     onCheckedChange={(checked) => handleInputChange("termsAgreed", checked)}
                   />
-                  <label htmlFor="terms" className="text-sm text-gray-600 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  <label htmlFor="terms" className="text-sm text-gray-600 dark:text-gray-400 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     I confirm that I own this phone number and have permission to use it for business messaging
                   </label>
                 </div>
                 <Button
                   onClick={handleRegisterNumber}
                   disabled={isLoading || !formData.phoneNumber || !formData.termsAgreed}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   {isLoading ? (
                     <>
@@ -403,11 +403,11 @@ export default function WhatsAppSetupPage() {
 
             {currentStep === 4 && (
               <div className="space-y-4">
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-400">
                   Send a test message to verify that your WhatsApp Business API setup is working correctly.
                 </p>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Test Message
                   </label>
                   <Input
@@ -415,10 +415,10 @@ export default function WhatsAppSetupPage() {
                     onChange={(e) => handleInputChange("message", e.target.value)}
                   />
                 </div>
-                <div className="bg-gray-100 p-4 rounded-md">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Preview</h3>
-                  <div className="bg-white p-3 rounded border">
-                    <p className="text-gray-800">{formData.message}</p>
+                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview</h3>
+                  <div className="bg-white dark:bg-gray-900 p-3 rounded border">
+                    <p className="text-gray-800 dark:text-gray-200">{formData.message}</p>
                     <div className="flex justify-between items-center mt-3 text-xs text-gray-500">
                       <span>To: {formData.phoneNumber}</span>
                       <span>Now</span>
@@ -428,7 +428,7 @@ export default function WhatsAppSetupPage() {
                 <Button
                   onClick={handleSendTestMessage}
                   disabled={isLoading}
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
                 >
                   {isLoading ? (
                     <>
@@ -469,7 +469,7 @@ export default function WhatsAppSetupPage() {
             ) : (
               <Button
                 onClick={() => alert("Setup completed! Redirecting to dashboard...")}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 text-white"
               >
                 Complete Setup
               </Button>
@@ -479,8 +479,8 @@ export default function WhatsAppSetupPage() {
 
         {/* Setup Tips */}
         <Card className="p-6 mt-6">
-          <h3 className="font-medium text-gray-900 mb-3">Setup Tips</h3>
-          <ul className="space-y-2 text-sm text-gray-600">
+          <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3">Setup Tips</h3>
+          <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
             <li className="flex items-start">
               <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
               <span>Use a dedicated business phone number for WhatsApp</span>

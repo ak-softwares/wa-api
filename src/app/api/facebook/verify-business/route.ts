@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/mongoose";
 import { User } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { authOptions } from "../../auth/[...nextauth]/authOptions";
+import { encrypt, safeDecrypt } from "@/lib/crypto"
 
 // POST - Submit business for verification
 export async function POST(req: NextRequest) {
@@ -147,7 +148,7 @@ export async function GET(req: NextRequest) {
     if (!user.waAccounts?.permanent_token || !user.waAccounts?.business_id) {
       const response: ApiResponse = {
         success: false,
-        message: "No verification request found",
+        message: "No phone number is connected",
       };
       return NextResponse.json(response, { status: 404 });
     }
@@ -158,33 +159,16 @@ export async function GET(req: NextRequest) {
       user.waAccounts.business_id
     );
 
-    // ✅ Update stored status if changed
-    if (!user.businessVerification) {
-      user.businessVerification = {
-        status: verificationStatus,
-        updatedAt: new Date(),
-      };
-    } else if (verificationStatus !== user.businessVerification.status) {
-      user.businessVerification.status = verificationStatus;
-      user.businessVerification.updatedAt = new Date();
-    }
-
-    await user.save();
-
     const response: ApiResponse = {
       success: true,
       message: "Verification status retrieved",
       data: {
         status: verificationStatus,
-        details: user.businessVerification,
       },
     };
-
     return NextResponse.json(response, { status: 200 });
 
   } catch (err: any) {
-    console.error("Verification status check error:", err);
-    
     const response: ApiResponse = {
       success: false,
       message: err.message || "Failed to check verification status",
@@ -283,14 +267,20 @@ async function checkVerificationStatus(
       }
     );
 
+    const data = await response.json(); // parse the JSON body
+
+
     if (!response.ok) {
-      throw new Error(`Facebook API error: ${response.statusText}`);
+      // Facebook usually returns { error: { message, type, code, ... } }
+      const message = data?.error?.message || response.statusText;
+      throw new Error(message);
     }
 
-    const data = await response.json();
     return data.verification_status || "unknown";
 
-  } catch (error) {
-    return "error";
+  } catch (err: unknown) {
+    let message = "Unknown error";
+    if (err instanceof Error) message = err.message;
+    throw new Error(message);
   }
 }
