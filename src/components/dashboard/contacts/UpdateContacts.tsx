@@ -25,7 +25,7 @@ interface UpdateContactDialogProps {
   contact: {
     id: string;
     name: string;
-    phone: string;
+    phones: string;
     email?: string | null;
   };
   onContactUpdated?: () => void;
@@ -48,7 +48,7 @@ export default function UpdateContactDialog({
     resolver: zodResolver(addPhoneSchema),
     defaultValues: {
       name: contact.name,
-      phone: contact.phone,
+      phone: contact.phones,
       email: contact.email || "",
     },
   });
@@ -61,7 +61,7 @@ export default function UpdateContactDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.name,
-          phone: [data.phone],
+          phones: [data.phone],
           email: data.email || null,
         }),
       });

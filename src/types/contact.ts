@@ -1,10 +1,12 @@
-export interface IContact {
+export type IContact = {
   _id: string;
   userId: string;
-  name: string;
-  phone: string[];
+  name?: string;
+  phones: string[];   // multiple phone numbers
   email?: string;
   tags?: string[];
-  createdAt?: string;
-  updatedAt?: string;
-}
+  lastMessage?: string;
+  lastMessageAt?: string; // ISO date string
+  createdAt: string;      // ISO date string
+  updatedAt: string;      // ISO date string
+};

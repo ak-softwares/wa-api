@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input, ShadcnPhoneInput } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { useWhatsAppSignup } from "@/hooks/useWhatsAppAPISignup";
-import { useBusinessVerification } from "@/hooks/useBusinessManagerVerification";
+import { useWhatsAppSignup } from "@/hooks/SetupPageHooks/useWhatsAppAPISignup";
+import { useBusinessVerification } from "@/hooks/SetupPageHooks/useBusinessManagerVerification";
+import { Label } from "@radix-ui/react-label";
 import { 
+  ExternalLink,
   Facebook, 
   CheckCircle, 
   Phone, 
@@ -16,8 +17,20 @@ import {
   ArrowRight, 
   ArrowLeft,
   AlertCircle,
-  Loader2
+  Loader2,
+  CreditCard,
+  Check
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useRegisterPhoneNumber } from "@/hooks/SetupPageHooks/useRegisterPhoneNumber";
+import { useSendWhatsappMessage } from "@/hooks/whatsapp/useSendWhatsappMessage";
+import { sampleMessageSchema } from "@/schemas/sampleMessageSchema";
+import z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { Controller } from "react-hook-form";
 
 interface SetupStep {
   id: number;
@@ -26,24 +39,91 @@ interface SetupStep {
   icon: React.ReactNode;
 }
 
+type SendMessageForm = z.infer<typeof sampleMessageSchema>;
+
 export default function WhatsAppSetupPage() {
+  const router = useRouter();
   const { launchWhatsAppSignup, facebookConnected, isSaving, isLoading: savingStatus } = useWhatsAppSignup();
-  const { status, refresh, error, isLoading: isVerifying} = useBusinessVerification();
+  const { status, refresh, error, isLoading: isVerifying, manualVerification} = useBusinessVerification();
+  const { isLoading: isLoading_register, phoneNumberIsRegistered, registerPhoneNumber } = useRegisterPhoneNumber();
+  const { isLoading: isLoading_sendMessage, sendMessage } = useSendWhatsappMessage();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    businessVerified: false,
-    phoneNumber: "",
+  const [businessVerified, setBusinessVerified] = useState(false);
+  const [addPaymentMethod, setPaymentMethod] = useState(false);
+  const [testMessageSent, setTestMessageSent] = useState(false);
+  const [setupComplete, setSetupComplete] = useState(false);
+  const [preview, setPreview] = useState<SendMessageForm>({
+    to: "",
     message: "Hello! This is a test message from your WhatsApp Business API.",
-    termsAgreed: false
   });
 
-  useEffect(() => {
-    if (facebookConnected) {
-        handleNext();
-    }
-  }, [facebookConnected]);
+  const form = useForm<SendMessageForm>({
+    resolver: zodResolver(sampleMessageSchema),
+    defaultValues: preview,
+  });
 
+  const { handleSubmit, control, formState: { errors, isSubmitting }, watch } = form;
+
+  // Update preview on field change
+  const watchedFields = watch();
+  // Update preview on field change
+  watch((value) =>
+    setPreview({
+      to: value.to ?? "",        // default to empty string if undefined
+      message: value.message ?? "" // default to empty string if undefined
+    })
+  );
+
+  const onSubmit = async (data: SendMessageForm) => {
+      await sendMessage(data.to, data.message);
+      setTestMessageSent(true);
+  };
+
+  useEffect(() => {
+    if (facebookConnected || phoneNumberIsRegistered || addPaymentMethod) {
+      handleNext();
+    }
+  }, [facebookConnected, phoneNumberIsRegistered, addPaymentMethod]);
+
+  const handleNext = () => {
+    if (currentStep < steps.length) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleVerifyBusiness = () => {
+    setIsLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setBusinessVerified(true);
+      setIsLoading(false);
+    }, 500);
+  };
+
+  const handleAddPaymentMethod = () => {
+    setIsLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setPaymentMethod(true);
+      setIsLoading(false);
+    }, 500);
+  };
+
+  const handleCompleteSetup = () => {
+    setSetupComplete(true);
+    handleNext();
+    // Redirect to dashboard after 3 seconds
+    setTimeout(() => {
+      router.push("/dashboard");
+    }, 3000);
+  };
 
   const steps: SetupStep[] = [
     {
@@ -60,75 +140,29 @@ export default function WhatsAppSetupPage() {
     },
     {
       id: 3,
+      title: "Add Payment Method",
+      description: "Add a valid payment method in Meta Business Manager to continue sending WhatsApp Business messages.",
+      icon: <CreditCard className="h-6 w-6 text-green-600" />
+    },
+    {
+      id: 4,
       title: "Register Phone Number",
       description: "Add the phone number you want to use for WhatsApp Business messaging.",
       icon: <Phone className="h-6 w-6 text-blue-500" />
     },
     {
-      id: 4,
+      id: 5,
       title: "Send Test Message",
       description: "Verify your setup by sending a test message to ensure everything is working correctly.",
       icon: <MessageSquare className="h-6 w-6 text-purple-600" />
+    },
+    {
+      id: 6,
+      title: "Setup Complete",
+      description: "Your WhatsApp Business API setup is now complete!",
+      icon: <Check className="h-6 w-6 text-green-600" />
     }
   ];
-
-
-  const handleNext = () => {
-    if (currentStep < steps.length) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleConnectFacebook = () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      handleInputChange("facebookConnected", true);
-      setIsLoading(false);
-    }, 2000);
-  };
-
-  const handleVerifyBusiness = () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      handleInputChange("businessVerified", true);
-      setIsLoading(false);
-    }, 2000);
-  };
-
-  const handleRegisterNumber = () => {
-    if (!formData.phoneNumber) {
-      alert("Please enter a valid phone number");
-      return;
-    }
-    
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      handleNext();
-    }, 2000);
-  };
-
-  const handleSendTestMessage = () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      alert("Test message sent successfully! Your WhatsApp Business API is now ready to use.");
-    }, 2000);
-  };
 
   const progressValue = (currentStep / steps.length) * 100;
 
@@ -149,7 +183,7 @@ export default function WhatsAppSetupPage() {
             {steps.map(step => (
               <div
                 key={step.id}
-                className={`flex flex-col items-center ${currentStep >= step.id ? "text-blue-600" : "text-gray-700 dark:text-gray-300"}`}
+                className={`flex flex-col items-center ${currentStep >= step.id ? "text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-300"}`}
               >
                 <div className={`h-10 w-10 rounded-full flex items-center justify-center ${currentStep >= step.id ? "bg-blue-100 dark:bg-blue-700/20" : "bg-gray-200 dark:bg-gray-900"}`}>
                   {step.icon}
@@ -184,7 +218,7 @@ export default function WhatsAppSetupPage() {
                   To use WhatsApp Business API, you need to connect your Facebook Business Manager account. 
                   This allows us to manage your WhatsApp Business account and send messages on your behalf.
                 </p>
-                <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-md border border-blue-200 dark:border-blue-700">
+                <div className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 p-4 rounded-md border ">
                   <div className="flex">
                     <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5 mr-3" />
                     <div>
@@ -241,12 +275,12 @@ export default function WhatsAppSetupPage() {
                 </p>
 
                 {/* Info Box */}
-                <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-md border border-yellow-200 dark:border-yellow-800">
+                <div className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 p-4 rounded-md border">
                   <div className="flex">
-                    <AlertCircle className="h-5 w-5 text-yellow-400 dark:text-yellow-600 mt-0.5 mr-3" />
+                    <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5 mr-3" />
                     <div>
-                      <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Verification Process</h3>
-                      <ul className="text-sm text-yellow-700 dark:text-yellow-300 mt-1 list-disc list-inside">
+                      <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">Verification Process</h3>
+                      <ul className="text-sm text-blue-700 dark:text-blue-300 mt-1 list-disc list-inside">
                         <li>Submit business documentation</li>
                         <li>Wait for Meta approval (typically 3-5 business days)</li>
                         <li>Receive verification status via email</li>
@@ -254,95 +288,159 @@ export default function WhatsAppSetupPage() {
                     </div>
                   </div>
                 </div>
-
-                {/* ✅ Live Business Verification Status */}
-                <div className="p-4 rounded-md border bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
-                  {isVerifying && (
-                    <div className="flex items-center text-gray-600 dark:text-gray-400">
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Checking business verification status...
-                    </div>
-                  )}
-                  {!isVerifying && (
-                    <div className="flex items-center">
-                      {status === "verified" ? (
-                        <>
-                          <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                          <span className="text-green-700 dark:text-green-400">Business verification completed ✅</span>
-                        </>
-                      ) : (
-                        <>
-                          <AlertCircle className="h-5 w-5 text-yellow-500 mr-2" />
-                          <span className="text-yellow-700 dark:text-yellow-400 capitalize">
-                            Current status: {status || "Pending"}
-                          </span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="ml-3"
-                            onClick={refresh}
-                          >
-                            Refresh
-                          </Button>
-                        </>
+                {!manualVerification && (
+                  <>
+                    {/* ✅ Live Business Verification Status */}
+                    <div className="p-4 rounded-md border bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+                      {isVerifying && (
+                        <div className="flex items-center text-gray-600 dark:text-gray-400">
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Checking business verification status...
+                        </div>
+                      )}
+                      {!isVerifying && (
+                        <div className="flex items-center">
+                          {status === "verified" ? (
+                            <>
+                              <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                              <span className="text-green-700 dark:text-green-400">
+                                Business verification completed ✅
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle className="h-5 w-5 text-yellow-500 mr-2" />
+                              <span className="text-yellow-700 dark:text-yellow-400 capitalize">
+                                Current status: {status || "Pending"}
+                              </span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="ml-3"
+                                onClick={refresh}
+                              >
+                                Refresh
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                      {!isVerifying && error && (
+                        <div className="text-red-600">Error: {error}</div>
                       )}
                     </div>
-                  )}
-                  {!isVerifying && error && (
-                    <div className="text-red-600">Error: {error}</div>
-                  )}
-                </div>
 
-                {/* If not verified → show form */}
-                {status !== "verified" && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Business Name
-                        </label>
-                        <Input placeholder="Your official business name" />
+                    {/* If not verified → show form */}
+                    {status !== "verified" && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Business Name
+                            </label>
+                            <Input placeholder="Your official business name" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                              Business ID
+                            </label>
+                            <Input placeholder="Tax ID or registration number" />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Business Address
+                          </label>
+                          <Input placeholder="Registered business address" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Website URL
+                          </label>
+                          <Input placeholder="https://yourbusiness.com" />
+                        </div>
+                        <Button
+                          onClick={handleVerifyBusiness}
+                          disabled={isSaving}
+                          className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
+                        >
+                          {isSaving ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Submitting for verification...
+                            </>
+                          ) : (
+                            "Submit for Verification"
+                          )}
+                        </Button>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Business ID
-                        </label>
-                        <Input placeholder="Tax ID or registration number" />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Business Address
-                      </label>
-                      <Input placeholder="Registered business address" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Website URL
-                      </label>
-                      <Input placeholder="https://yourbusiness.com" />
-                    </div>
-                    <Button
-                      onClick={handleVerifyBusiness}
-                      disabled={isSaving}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      {isSaving ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Submitting for verification...
-                        </>
-                      ) : (
-                        "Submit for Verification"
-                      )}
-                    </Button>
-                  </div>
+                    )}
+                  </>
                 )}
+                <Button
+                  onClick={handleVerifyBusiness}
+                  asChild
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
+                >
+                  <Link
+                    href="https://business.facebook.com/settings/info"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Verify Facebook Business Manually
+                  </Link>
+                </Button>
               </div>
             )}
 
-
             {currentStep === 3 && (
+              <div className="space-y-4">
+                <p className="text-gray-600 dark:text-gray-400">
+                  Adding a valid payment method is required in Meta Business Manager 
+                  to continue sending WhatsApp Business messages.
+                </p>
+
+                {/* Info Box */}
+                <div className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 p-4 rounded-md border">
+                  <div className="flex">
+                    <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5 mr-3" />
+                    <div>
+                      <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                        Payment Setup
+                      </h3>
+                      <ul className="text-sm text-blue-700 dark:text-blue-300 mt-1 list-disc list-inside">
+                        <li>Open Meta Business Manager</li>
+                        <li>Add a valid credit card or payment method</li>
+                        <li>Save and confirm setup</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Manual Method → Add Payment Method */}
+                <Button
+                  asChild
+                  disabled={isLoading}
+                  onClick={handleAddPaymentMethod}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
+                >
+                  <Link
+                    href="https://business.facebook.com/billing_hub/accounts/details/?account_type=whatsapp-business-account"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    {isLoading 
+                     ? ("Loading...")
+                     : ("Add Payment Method in Meta Business Manager")
+                    }
+                  </Link>
+                </Button>
+              </div>
+            )}
+
+            {currentStep === 4 && (
               <div className="space-y-4">
                 <p className="text-gray-600 dark:text-gray-400">
                   Register the phone number you want to use for WhatsApp Business. This number will be 
@@ -361,144 +459,189 @@ export default function WhatsAppSetupPage() {
                     </div>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Phone Number
-                  </label>
-                  <Input
-                    placeholder="+1234567890"
-                    value={formData.phoneNumber}
-                    onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Include country code (e.g., +1 for US, +44 for UK)
-                  </p>
-                </div>
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="terms"
-                    checked={formData.termsAgreed}
-                    onCheckedChange={(checked) => handleInputChange("termsAgreed", checked)}
-                  />
-                  <label htmlFor="terms" className="text-sm text-gray-600 dark:text-gray-400 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    I confirm that I own this phone number and have permission to use it for business messaging
-                  </label>
-                </div>
-                <Button
-                  onClick={handleRegisterNumber}
-                  disabled={isLoading || !formData.phoneNumber || !formData.termsAgreed}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Registering Number...
-                    </>
-                  ) : (
-                    "Register Phone Number"
-                  )}
-                </Button>
+                { phoneNumberIsRegistered 
+                  ? (
+                      <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-md border border-green-200 dark:border-green-700 flex items-center">
+                        <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+                        <span className="text-green-700 dark:text-green-300">Phone Number is registered successfully</span>
+                      </div>
+                    ) 
+                  : (
+                      <Button
+                        onClick={() => registerPhoneNumber()}
+                        disabled={ isLoading_register }
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        {isLoading_register ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Registering Number...
+                          </>
+                        ) : (
+                          "Register Phone Number"
+                        )}
+                      </Button>
+                    )
+                }
               </div>
             )}
 
-            {currentStep === 4 && (
+            {currentStep === 5 && (
               <div className="space-y-4">
-                <p className="text-gray-600 dark:text-gray-400">
-                  Send a test message to verify that your WhatsApp Business API setup is working correctly.
-                </p>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Test Message
-                  </label>
-                  <Input
-                    value={formData.message}
-                    onChange={(e) => handleInputChange("message", e.target.value)}
-                  />
-                </div>
-                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
-                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview</h3>
-                  <div className="bg-white dark:bg-gray-900 p-3 rounded border">
-                    <p className="text-gray-800 dark:text-gray-200">{formData.message}</p>
-                    <div className="flex justify-between items-center mt-3 text-xs text-gray-500">
-                      <span>To: {formData.phoneNumber}</span>
-                      <span>Now</span>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Send a test message to verify that your WhatsApp Business API setup is working correctly.
+                  </p>
+
+                  <div className="grid gap-3">
+                    <Label htmlFor="to">Phone</Label>
+                    <Controller
+                      name="to"
+                      control={control}
+                      render={({ field }) => (
+                        <ShadcnPhoneInput
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+                      )}
+                    />
+                    {errors.to && <p className="text-sm text-red-500">{errors.to.message}</p>}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="message">Test Message</Label>
+                    <Controller
+                      name="message"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+                      )}
+                    />
+                    {errors.message && <p className="text-sm text-red-500">{errors.message.message}</p>}
+                  </div>
+
+                  {/* Preview */}
+                  <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview</h3>
+                    <div className="bg-white dark:bg-gray-900 p-3 rounded border">
+                      <p className="text-gray-800 dark:text-gray-200">{preview.message}</p>
+                      <div className="flex justify-between items-center mt-3 text-xs text-gray-500">
+                        <span>To: {preview.to}</span>
+                        <span>Now</span>
+                      </div>
                     </div>
                   </div>
+
+                  <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white" disabled={isSubmitting || isLoading}>
+                    {isSubmitting || isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending Test Message...
+                      </>
+                    ) : (
+                      "Send Test Message"
+                    )}
+                  </Button>
+                </form>
+              </div>
+            )}
+
+            {currentStep === 6 && (
+              <div className="space-y-6 text-center py-4">
+                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30">
+                  <Check className="h-10 w-10 text-green-600 dark:text-green-400" />
                 </div>
-                <Button
-                  onClick={handleSendTestMessage}
-                  disabled={isLoading}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                
+                <h3 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                  Setup Complete!
+                </h3>
+                
+                <p className="text-gray-600 dark:text-gray-400">
+                  Your WhatsApp Business API has been successfully configured. You can now start using WhatsApp for your business communications.
+                </p>
+                
+                <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-md border border-green-200 dark:border-green-700">
+                  <p className="text-green-700 dark:text-green-300">
+                    Redirecting to dashboard in 3 seconds...
+                  </p>
+                </div>
+                
+                <Button 
+                  onClick={() => router.push("/dashboard")} 
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending Test Message...
-                    </>
-                  ) : (
-                    "Send Test Message"
-                  )}
+                  Go to Dashboard Now
                 </Button>
               </div>
             )}
           </div>
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between pt-4 border-t">
-            <Button
-              onClick={handleBack}
-              disabled={currentStep === 1 || isLoading}
-              variant="outline"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-            
-            {currentStep < steps.length ? (
+          {currentStep !== 6 && (
+            <div className="flex justify-between pt-4 border-t">
               <Button
-                onClick={handleNext}
-                disabled={
-                  (currentStep === 1 && !facebookConnected) ||
-                  (currentStep === 2 && !formData.businessVerified) ||
-                  isLoading
-                }
+                onClick={handleBack}
+                disabled={currentStep === 1 || isLoading}
+                variant="outline"
               >
-                Next
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
               </Button>
-            ) : (
-              <Button
-                onClick={() => alert("Setup completed! Redirecting to dashboard...")}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                Complete Setup
-              </Button>
-            )}
-          </div>
+              
+              {currentStep < steps.length - 1 ? (
+                <Button
+                  onClick={handleNext}
+                  disabled={
+                    (currentStep === 1 && !facebookConnected) ||
+                    (currentStep === 2 && !businessVerified)  ||
+                    (currentStep === 3 && !addPaymentMethod)  ||
+                    (currentStep === 4 && !phoneNumberIsRegistered) ||
+                    (currentStep === 5 && !testMessageSent) ||
+                    isLoading
+                  }
+                >
+                  Next
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleCompleteSetup}
+                  disabled={!testMessageSent}
+                >
+                  Complete Setup
+                </Button>
+              )}
+            </div>
+          )}
         </Card>
 
-        {/* Setup Tips */}
-        <Card className="p-6 mt-6">
-          <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3">Setup Tips</h3>
-          <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-            <li className="flex items-start">
-              <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-              <span>Use a dedicated business phone number for WhatsApp</span>
-            </li>
-            <li className="flex items-start">
-              <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-              <span>Ensure your Facebook Business Manager is fully set up before starting</span>
-            </li>
-            <li className="flex items-start">
-              <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-              <span>Have your business verification documents ready</span>
-            </li>
-            <li className="flex items-start">
-              <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-              <span>The entire process may take several days due to Meta's verification</span>
-            </li>
-          </ul>
-        </Card>
+        {/* Setup Tips - Only show if not on completion screen */}
+        {currentStep !== 6 && (
+          <Card className="p-6 mt-6">
+            <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3">Setup Tips</h3>
+            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+              <li className="flex items-start">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                <span>Use a dedicated business phone number for WhatsApp</span>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                <span>Ensure your Facebook Business Manager is fully set up before starting</span>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                <span>Have your business verification documents ready</span>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                <span>The entire process may take several days due to Meta's verification</span>
+              </li>
+            </ul>
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -52,7 +52,7 @@ export default function ContactList({
         contacts.map((contact) => (
           <Card
             key={contact._id}
-            className="p-4 hover:bg-gray-50 transition-colors"
+            className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             <div className="grid grid-cols-12 gap-4 items-center">
               <div className="col-span-12 md:col-span-5">
@@ -64,7 +64,7 @@ export default function ContactList({
                 )}
               </div>
               <div className="col-span-12 md:col-span-4">
-                {contact.phone.join(", ")}
+                {contact.phones.join(", ")}
               </div>
               <div className="col-span-12 md:col-span-3">
                 <div className="flex justify-start md:justify-center gap-2">
@@ -81,15 +81,15 @@ export default function ContactList({
                   <UpdateContactDialog
                     contact={{
                       id: contact._id,
-                      name: contact.name,
-                      phone: contact.phone[0],
+                      name: contact.name ?? '',
+                      phones: contact.phones[0],
                       email: contact.email,
                     }}
                     onContactUpdated={handleEdit}
                   />
                   <DeleteContactDialog
                     contactId={contact._id}
-                    contactName={contact.name}
+                    contactName={contact.name ?? ''}
                     onContactDeleted={handleDelete}
                   />
                 </div>

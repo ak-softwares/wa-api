@@ -11,16 +11,11 @@ export async function POST(req: Request) {
     const email = session?.user?.email
 
     if (!email) {
-      return NextResponse.json({ success: false, message: "User email not found in session" }, { status: 401 })
-    }
-    // const { email } = await req.json();
-
-    if (!email) {
       const response: ApiResponse = {
         success: false,
-        message: "Email is required",
+        message: "User email not found in session",
       };
-      return NextResponse.json(response, { status: 400 });
+      return NextResponse.json(response, { status: 401 });
     }
 
     await connectDB();

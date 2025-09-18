@@ -6,7 +6,7 @@ import Contact from "@/models/Contact";
 import { ApiResponse } from "@/types/apiResponse";
 import { authOptions } from "../auth/[...nextauth]/authOptions";
 
-// GET contacts (paginated with page & per_page)
+// GET contacts (paginated, with optional hasChat filter)
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -28,22 +28,33 @@ export async function GET(req: Request) {
       return NextResponse.json(response, { status: 404 });
     }
 
-    // Pagination params
+    // Pagination + filters
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
     const perPage = parseInt(searchParams.get("per_page") || "10", 10);
     const skip = (page - 1) * perPage;
+    const hasChat = searchParams.get("hasChat") === "true";
 
-    const contacts = await Contact.find({ userId: user._id })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(perPage);
+    let query: any = { userId: user._id };
 
-    const total = await Contact.countDocuments({ userId: user._id });
+    if (hasChat) {
+      // ✅ Only contacts that already have a lastMessage
+      query.lastMessage = { $exists: true, $ne: null };
+    }
+
+    const [contacts, total] = await Promise.all([
+      Contact.find(query)
+        .sort(hasChat ? { lastMessageAt: -1 } : { createdAt: -1 })
+        .skip(skip)
+        .limit(perPage),
+      Contact.countDocuments(query),
+    ]);
 
     const response: ApiResponse = {
       success: true,
-      message: "Contacts fetched successfully",
+      message: hasChat
+        ? "Contacts with chats fetched successfully"
+        : "Contacts fetched successfully",
       data: contacts,
       pagination: {
         total,
@@ -75,8 +86,8 @@ export async function POST(req: Request) {
       return NextResponse.json(response, { status: 401 });
     }
 
-    const { name, phone, email, tags } = await req.json();
-    if (!name || !phone?.length) {
+    const { name, phones, email, tags } = await req.json();
+    if (!name || !phones?.length) {
       const response: ApiResponse = {
         success: false,
         message: "Name and at least one phone number are required",
@@ -97,7 +108,7 @@ export async function POST(req: Request) {
     const newContact = await Contact.create({
       userId: user._id,
       name,
-      phone,
+      phones,
       email,
       tags: tags || [],
     });

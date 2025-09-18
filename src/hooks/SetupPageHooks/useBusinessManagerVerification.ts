@@ -20,6 +20,7 @@ export function useBusinessVerification(autoCheck: boolean = true) {
   const [status, setStatus] = useState<string>("unknown");
   const [details, setDetails] = useState<VerificationDetails | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [manualVerification, setManualVerification] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const checkVerification = useCallback(async () => {
@@ -55,5 +56,6 @@ export function useBusinessVerification(autoCheck: boolean = true) {
     isLoading,
     error,
     refresh: checkVerification,
+    manualVerification,
   };
 }

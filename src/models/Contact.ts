@@ -2,10 +2,12 @@ import mongoose, { Schema, Document, models } from "mongoose";
 
 export interface IContact extends Document {
   userId: mongoose.Types.ObjectId;
-  name: string;
-  phone: string[]; // multiple phone numbers
+  name?: string;
+  phones: string[]; // multiple phone numbers
   email?: string; // optional
-  tags: string[];
+  tags?: string[];
+  lastMessage?: string;
+  lastMessageAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -13,8 +15,8 @@ export interface IContact extends Document {
 const ContactSchema = new Schema<IContact>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    name: { type: String, required: true, trim: true },
-    phone: [
+    name: { type: String, trim: true },
+    phones: [
       {
         type: String,
         required: true,
@@ -23,6 +25,8 @@ const ContactSchema = new Schema<IContact>(
     ],
     email: { type: String, trim: true, lowercase: true },
     tags: [{ type: String, trim: true }],
+    lastMessage: { type: String },
+    lastMessageAt: { type: Date },
   },
   { timestamps: true }
 );

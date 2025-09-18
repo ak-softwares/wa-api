@@ -48,7 +48,7 @@ export default function AddContactDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.name,
-          phone: [data.phone], // API expects array
+          phones: [data.phone], // API expects array
           email: data.email || null,
         }),
       });
