@@ -4,4 +4,5 @@ export enum MessageStatus {
   Delivered = "delivered",
   Read = "read",
   Failed = "failed",
+  Received = "received",
 }

@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageCircle } from "lucide-react";
 import { IContact } from "@/types/contact";
-import UpdateContactDialog from "./UpdateContacts";
-import DeleteContactDialog from "./DeleteConstacts";
+import UpdateContactDialog from "./UpdateContact";
+import DeleteContactDialog from "./DeleteConstact";
+import ChatTab from "./ChatWithContact";
 
 
 interface Props {
@@ -18,7 +19,6 @@ interface Props {
 export default function ContactList({
   contacts,
   isLoading,
-  handleMessage,
   handleEdit,
   handleDelete,
 }: Props) {
@@ -68,21 +68,17 @@ export default function ContactList({
               </div>
               <div className="col-span-12 md:col-span-3">
                 <div className="flex justify-start md:justify-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleMessage(contact)}
-                    title="Message"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                  </Button>
+                  <ChatTab contact={{
+                      name: contact.name ?? '',
+                      phones: contact.phones,
+                  }}/>
                   
                   {/* Edit button opens update dialog */}
                   <UpdateContactDialog
                     contact={{
                       id: contact._id,
                       name: contact.name ?? '',
-                      phones: contact.phones[0],
+                      phones: contact.phones,
                       email: contact.email,
                     }}
                     onContactUpdated={handleEdit}

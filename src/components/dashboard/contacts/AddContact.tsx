@@ -10,16 +10,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
+import { Plus, X, Phone } from "lucide-react";
 import { ApiResponse } from "@/types/apiResponse";
 import { toast } from "sonner";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { addPhoneSchema } from "@/schemas/addPhoneSchema";
+import { contactSchema } from "@/schemas/contactSchema";
 import { ShadcnPhoneInput } from "@/components/ui/input";
 
-type NewContact = z.infer<typeof addPhoneSchema>;
+type NewContact = z.infer<typeof contactSchema>;
 
 export default function AddContactDialog({
   onContactAdded,
@@ -36,8 +36,17 @@ export default function AddContactDialog({
     reset,
     formState: { errors },
   } = useForm<NewContact>({
-    resolver: zodResolver(addPhoneSchema),
-    defaultValues: { name: "", phone: "", email: "" },
+    resolver: zodResolver(contactSchema),
+    defaultValues: { 
+      name: "", 
+      phones: [{ number: "" }], 
+      email: "" 
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "phones",
   });
 
   const onSubmit = async (data: NewContact) => {
@@ -48,7 +57,7 @@ export default function AddContactDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.name,
-          phones: [data.phone], // API expects array
+          phones: data.phones.map(phone => phone.number),
           email: data.email || null,
         }),
       });
@@ -77,7 +86,7 @@ export default function AddContactDialog({
           Add Contact
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Add New Contact</DialogTitle>
         </DialogHeader>
@@ -91,22 +100,61 @@ export default function AddContactDialog({
             )}
           </div>
 
-          {/* Phone */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Phone</label>
-              <Controller
-                name="phone"
-                control={control}
-                render={({ field }) => (
-                  <ShadcnPhoneInput
-                    value={field.value}
-                    onChange={field.onChange}
+          {/* Phone Numbers */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Phone Numbers</label>
+            {fields.map((field, index) => (
+              <div key={field.id} className="flex items-center gap-2">
+                <div className="flex-1">
+                  <Controller
+                    name={`phones.${index}.number`}
+                    control={control}
+                    render={({ field }) => (
+                      <div className="relative">
+                        <ShadcnPhoneInput
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+                        {field.value && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                            <Phone className="h-4 w-4 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                    )}
                   />
+                  {errors.phones?.[index]?.number && (
+                    <p className="text-xs text-red-500">
+                      {errors.phones[index]?.number?.message}
+                    </p>
+                  )}
+                </div>
+                {index > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => remove(index)}
+                    className="h-10 w-10 shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 )}
-              />
-            {errors.phone && (
-              <p className="text-xs text-red-500">{errors.phone.message}</p>
+              </div>
+            ))}
+            {errors.phones?.message && (
+              <p className="text-xs text-red-500">{errors.phones.message}</p>
             )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => append({ number: "" })}
+              className="mt-2"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Another Phone
+            </Button>
           </div>
 
           {/* Email */}

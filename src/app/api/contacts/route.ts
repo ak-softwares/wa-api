@@ -33,18 +33,12 @@ export async function GET(req: Request) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const perPage = parseInt(searchParams.get("per_page") || "10", 10);
     const skip = (page - 1) * perPage;
-    const hasChat = searchParams.get("hasChat") === "true";
 
     let query: any = { userId: user._id };
 
-    if (hasChat) {
-      // ✅ Only contacts that already have a lastMessage
-      query.lastMessage = { $exists: true, $ne: null };
-    }
-
     const [contacts, total] = await Promise.all([
       Contact.find(query)
-        .sort(hasChat ? { lastMessageAt: -1 } : { createdAt: -1 })
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(perPage),
       Contact.countDocuments(query),
@@ -52,9 +46,7 @@ export async function GET(req: Request) {
 
     const response: ApiResponse = {
       success: true,
-      message: hasChat
-        ? "Contacts with chats fetched successfully"
-        : "Contacts fetched successfully",
+      message: "Contacts fetched successfully",
       data: contacts,
       pagination: {
         total,

@@ -2,7 +2,8 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 import PhoneInput from 'react-phone-input-2'
-import 'react-phone-input-2/lib/style.css' 
+import 'react-phone-input-2/lib/style.css'
+import { Phone } from "lucide-react" 
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -22,7 +23,7 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
 
 function ShadcnPhoneInput({ value, onChange }: { value: string; onChange: (phone: string) => void }) {
   return (
-    <div className="w-full">
+    <div className="w-full relative">
       <PhoneInput
         country={"us"}
         value={value}
@@ -43,6 +44,11 @@ function ShadcnPhoneInput({ value, onChange }: { value: string; onChange: (phone
         containerClass="!w-full"
         dropdownClass="!bg-background !text-foreground !border !rounded-md !shadow-md"
       />
+      {value && (
+        <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+          <Phone className="h-4 w-4 text-gray-400" />
+        </div>
+      )}
     </div>
   )
 }

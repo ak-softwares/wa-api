@@ -4,7 +4,7 @@ import { MessageType } from "./messageType";
 export type IMessage = {
   _id: string;
   userId: string;        // the service user
-  contactId: string;     // the recipient
+  chatId: string;     // the recipient
   to: string;            // recipient phone number
   from: string;          // sender phone number (user’s WhatsApp)
   message: string;

@@ -10,22 +10,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Edit } from "lucide-react";
+import { Edit, Plus, X } from "lucide-react";
 import { ApiResponse } from "@/types/apiResponse";
 import { toast } from "sonner";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { addPhoneSchema } from "@/schemas/addPhoneSchema"; // reuse same schema
 import { ShadcnPhoneInput } from "@/components/ui/input";
+import { contactSchema } from "@/schemas/contactSchema";
 
-type ContactForm = z.infer<typeof addPhoneSchema>;
+type ContactForm = z.infer<typeof contactSchema>;
 
 interface UpdateContactDialogProps {
   contact: {
     id: string;
     name: string;
-    phones: string;
+    phones: string[];
     email?: string | null;
   };
   onContactUpdated?: () => void;
@@ -45,12 +45,17 @@ export default function UpdateContactDialog({
     reset,
     formState: { errors },
   } = useForm<ContactForm>({
-    resolver: zodResolver(addPhoneSchema),
+    resolver: zodResolver(contactSchema),
     defaultValues: {
       name: contact.name,
-      phone: contact.phones,
+      phones: contact.phones.map(phone => ({ number: phone })),
       email: contact.email || "",
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "phones",
   });
 
   const onSubmit = async (data: ContactForm) => {
@@ -61,7 +66,7 @@ export default function UpdateContactDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.name,
-          phones: [data.phone],
+          phones: data.phones.map(phone => phone.number),
           email: data.email || null,
         }),
       });
@@ -92,7 +97,7 @@ export default function UpdateContactDialog({
           <Edit className="w-4 h-4" /> Edit
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Update Contact</DialogTitle>
         </DialogHeader>
@@ -106,22 +111,54 @@ export default function UpdateContactDialog({
             )}
           </div>
 
-          {/* Phone */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Phone</label>
-            <Controller
-              name="phone"
-              control={control}
-              render={({ field }) => (
-                <ShadcnPhoneInput
-                  value={field.value}
-                  onChange={field.onChange}
-                />
-              )}
-            />
-            {errors.phone && (
-              <p className="text-xs text-red-500">{errors.phone.message}</p>
+          {/* Phone Numbers */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Phone Numbers</label>
+            {fields.map((field, index) => (
+              <div key={field.id} className="flex items-center gap-2">
+                <div className="flex-1">
+                  <Controller
+                    name={`phones.${index}.number`}
+                    control={control}
+                    render={({ field }) => (
+                      <ShadcnPhoneInput
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    )}
+                  />
+                  {errors.phones?.[index]?.number && (
+                    <p className="text-xs text-red-500">
+                      {errors.phones[index]?.number?.message}
+                    </p>
+                  )}
+                </div>
+                {index > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => remove(index)}
+                    className="h-10 w-10 shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            {errors.phones?.message && (
+              <p className="text-xs text-red-500">{errors.phones.message}</p>
             )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => append({ number: "" })}
+              className="mt-2"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Another Phone
+            </Button>
           </div>
 
           {/* Email */}

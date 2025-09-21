@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const addPhoneSchema = z.object({
+export const contactSchema = z.object({
   name: z
     .string()
     .min(2, "Name must be at least 2 characters")
@@ -12,11 +12,12 @@ export const addPhoneSchema = z.object({
     .or(z.literal("")) // allow empty string
     .optional(),
 
-  phone: z
-    .string()
-    .min(8, "Phone number must be at least 8 digits")
-    .max(15, "Phone number must be at most 15 digits")
-    .regex(/^\d+$/, "Phone number must contain only digits"),
-    // .transform((val) => Number(val)), // 🔑 converts string → number
+  phones: z.array(z.object({
+    number: z
+      .string()
+      .min(8, "Phone number must be at least 8 digits")
+      .max(15, "Phone number must be at most 15 digits")
+      .regex(/^\d+$/, "Phone number must contain only digits")
+  })).min(1, "At least one phone number is required")
 
 });

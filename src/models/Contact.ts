@@ -6,8 +6,6 @@ export interface IContact extends Document {
   phones: string[]; // multiple phone numbers
   email?: string; // optional
   tags?: string[];
-  lastMessage?: string;
-  lastMessageAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,8 +23,6 @@ const ContactSchema = new Schema<IContact>(
     ],
     email: { type: String, trim: true, lowercase: true },
     tags: [{ type: String, trim: true }],
-    lastMessage: { type: String },
-    lastMessageAt: { type: Date },
   },
   { timestamps: true }
 );

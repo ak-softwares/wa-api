@@ -5,9 +5,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/authOptions";
 import { User } from "@/models/User";
 import { Message } from "@/models/Message";
+import { Chat } from "@/models/Chat";
 import { MessageStatus } from "@/types/messageStatus";
 import { MessageType } from "@/types/messageType";
-import Contact from "@/models/Contact";
 import { ApiResponse } from "@/types/apiResponse";
 
 export async function GET(req: NextRequest) {
@@ -27,19 +27,22 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(response, { status: 404 });
     }
 
-    // Extract query params (?contactId=... or ?limit=...)
+    // Extract query params (?chatId=... or ?limit=...)
     const { searchParams } = new URL(req.url);
-    const contactId = searchParams.get("contactId");
-    const limit = parseInt(searchParams.get("limit") || "20"); // default 20 latest messages
+    const chatId = searchParams.get("chatId");
+    const limit = parseInt(searchParams.get("limit") || "20");
 
-    let query: any = { userId: user._id };
-    if (contactId) query.contactId = contactId;
+    if (!chatId) {
+      return NextResponse.json(
+        { success: false, message: "Missing chatId" },
+        { status: 400 }
+      );
+    }
 
-    // Populate contact info
-    const messages = await Message.find(query)
-      .sort({ createdAt: -1 }) // latest first
-      .limit(limit)
-      .populate("contactId", "phones lastMessage lastMessageAt");
+    // Fetch messages for this chat
+    const messages = await Message.find({ userId: user._id, chatId })
+      .sort({ createdAt: -1 })
+      .limit(limit);
 
     const response: ApiResponse = {
       success: true,
@@ -89,7 +92,7 @@ export async function POST(req: NextRequest) {
     const { to, message } = await req.json();
     if (!to || !message)
       return NextResponse.json(
-        { success: false, message: "Missing required fields: phone, message" },
+        { success: false, message: "Missing required fields: to, message" },
         { status: 400 }
       );
 
@@ -106,59 +109,54 @@ export async function POST(req: NextRequest) {
       "Content-Type": "application/json",
     };
 
-    // Call API
+    // Call WA API
     const fbResponse = await axios.post(url, payload, { headers });
 
-    // Find or create contact
-    let contact = await Contact.findOne({ userId: user._id, phone: { $in: [to] } });
-    if (!contact) contact = await Contact.create({ userId: user._id, phone: [to] });
+    // ✅ Find or create chat
+    let chat = await Chat.findOne({
+      userId: user._id,
+      participants: { $in: [to] },
+    });
 
-    // Message handling
-    if (fbResponse.data?.messages?.[0]?.id) {
-      const newMessage = {
+    if (!chat) {
+      // Try to link with contact (optional)
+      chat = await Chat.create({
         userId: user._id,
-        contactId: contact._id,
-        to,
-        from: phone_number_id,
-        message,
-        waMessageId: fbResponse.data.messages[0].id,
-        status: MessageStatus.Sent,
-        type: MessageType.Text,
-      };
-      await Message.create(newMessage);
-
-      contact.lastMessage = message;
-      contact.lastMessageAt = new Date();
-      await contact.save();
-
-      return NextResponse.json(
-        { success: true, message: "Message sent successfully" },
-        { status: 200 }
-      );
-    } else {
-      const newMessage = {
-        userId: user._id,
-        contactId: contact._id,
-        to,
-        from: phone_number_id,
-        message,
-        status: MessageStatus.Failed,
-        type: MessageType.Text,
-      };
-      await Message.create(newMessage);
-
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Failed to send message" +
-            (fbResponse.data?.error?.message
-              ? `: ${fbResponse.data.error.message}`
-              : ""),
-        },
-        { status: 400 }
-      );
+        participants: [to],
+        lastMessage: message,
+        lastMessageAt: new Date(),
+      });
     }
+
+    // ✅ Save message
+    const newMessage = await Message.create({
+      userId: user._id,
+      chatId: chat._id,
+      to,
+      from: phone_number_id,
+      message,
+      waMessageId: fbResponse.data?.messages?.[0]?.id,
+      status: fbResponse.data?.messages?.[0]?.id
+        ? MessageStatus.Sent
+        : MessageStatus.Failed,
+      type: MessageType.Text,
+    });
+
+    // ✅ Update chat
+    chat.lastMessage = message;
+    chat.lastMessageAt = new Date();
+    await chat.save();
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: fbResponse.data?.messages?.[0]?.id
+          ? "Message sent successfully"
+          : "Message failed to send",
+        data: newMessage,
+      },
+      { status: fbResponse.data?.messages?.[0]?.id ? 200 : 400 }
+    );
   } catch (error: any) {
     return NextResponse.json(
       {

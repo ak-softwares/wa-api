@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { ApiResponse } from "@/types/apiResponse";
-import { toast } from "sonner";
 
 export function useSendWhatsappMessage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,11 +10,12 @@ export function useSendWhatsappMessage() {
   const sendMessage = async (
     to: string,
     message: string,
-    onSuccess?: () => void
-  ) => {
+    onSuccess?: () => void,
+    onError?: (errorMsg: string) => void
+  ): Promise<ApiResponse> => {
     try {
       setIsLoading(true);
-      const res = await fetch("/api/facebook/messages", {
+      const res = await fetch("/api/whatsapp/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ to, message }),
@@ -24,13 +24,16 @@ export function useSendWhatsappMessage() {
       const data: ApiResponse = await res.json();
 
       if (data.success) {
-        toast.success(data.message);
         if (onSuccess) onSuccess();
       } else {
-        toast.error(data.message);
+        if (onError) onError(data.message);
       }
-    } catch (error) {
-      toast.error("Something went wrong while sending the message");
+
+      return data;
+    } catch (error: any) {
+      const errorMsg = "Something went wrong while sending the message";
+      if (onError) onError(errorMsg);
+      return { success: false, message: errorMsg };
     } finally {
       setIsLoading(false);
     }

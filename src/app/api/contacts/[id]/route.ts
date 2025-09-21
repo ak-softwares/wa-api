@@ -23,9 +23,9 @@ export async function PUT(
 
     // ⬅️ Await params because it’s a Promise
     const { id } = await params
-    const { name, phone, email, tags } = await req.json()
+    const { name, phones, email, tags } = await req.json()
 
-    if (!name || !phone?.length) {
+    if (!name || !phones?.length) {
       const response: ApiResponse = {
         success: false,
         message: "Name and at least one phone number are required",
@@ -45,7 +45,7 @@ export async function PUT(
 
     const contact = await Contact.findOneAndUpdate(
       { _id: id, userId: user._id },
-      { name, phone, email, tags: tags || [] },
+      { name, phones, email, tags: tags || [] },
       { new: true }
     );
 

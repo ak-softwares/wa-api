@@ -76,8 +76,17 @@ export default function WhatsAppSetupPage() {
   );
 
   const onSubmit = async (data: SendMessageForm) => {
-      await sendMessage(data.to, data.message);
-      setTestMessageSent(true);
+    await sendMessage(
+      data.to,
+      data.message,
+      () => {
+        toast.success("Message sent successfully 🚀");
+        setTestMessageSent(true);
+      },
+      (errorMsg) => {
+        toast.error(errorMsg || "Failed to send message ❌");
+      }
+    );
   };
 
   useEffect(() => {

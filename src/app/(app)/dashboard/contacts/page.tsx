@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { useContacts } from "@/hooks/useContacts"; // 👈 your custom hook
 import ContactList from "@/components/dashboard/contacts/ContactList"; // 👈 your UI component
 import { IContact } from "@/types/contact";
-import { Phone, Plus, User, Search } from "lucide-react";
-import AddContactDialog from "@/components/dashboard/contacts/AddContacts";
+import { Phone, User, Search } from "lucide-react";
+import AddContactDialog from "@/components/dashboard/contacts/AddContact";
 
 
 export default function ContactsPage() {

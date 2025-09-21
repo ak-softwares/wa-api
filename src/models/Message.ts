@@ -4,7 +4,7 @@ import { MessageType } from "@/types/messageType";
 
 export interface IMessage extends Document {
   userId: mongoose.Types.ObjectId;   // the service user
-  contactId: mongoose.Types.ObjectId; // the recipient
+  chatId: mongoose.Types.ObjectId; // the recipient
   to: string;                        // recipient phone number
   from: string;                      // sender phone number (user’s WhatsApp)
   message: string;
@@ -17,7 +17,7 @@ export interface IMessage extends Document {
 
 const MessageSchema = new Schema<IMessage>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  contactId: { type: Schema.Types.ObjectId, ref: "Contact", required: true },
+  chatId: { type: Schema.Types.ObjectId, ref: "Chat", required: true },
   to: { type: String, required: true },
   from: { type: String, required: true },
   message: { type: String, required: true },
