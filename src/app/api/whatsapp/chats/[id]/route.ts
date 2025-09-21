@@ -9,7 +9,7 @@ import { ApiResponse } from "@/types/apiResponse";
 import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 
 // DELETE /api/whatsapp/chats/[id]
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     const email = session?.user?.email;
@@ -24,7 +24,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
     }
 
-    const chatId = params.id;
+    const { id: chatId } = await params
+
     if (!chatId) {
       return NextResponse.json({ success: false, message: "chatId is required" }, { status: 400 });
     }
