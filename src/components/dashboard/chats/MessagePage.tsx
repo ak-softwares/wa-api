@@ -25,7 +25,6 @@ import { toast } from "sonner";
 export default function MessagesPage() {
   const searchParams = useSearchParams();
   const phoneQuery = searchParams.get("phone"); // 📌 Get phone from URL
-  const nameQuery = searchParams.get("name"); // 📌 Get phone from URL
 
   const [activeChat, setActiveChat] = useState<IChat | null>(null);
   const [messageInput, setMessageInput] = useState("");

@@ -5,31 +5,57 @@ import { ThemeToggle } from "@/components/global/header/themeToggle";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { RefreshButton } from "@/components/global/header/Refresh";
 
 export default function Topbar() {
   const pathname = usePathname();
 
-  // Simple mapping
-  const routeTitles: Record<string, string> = {
-    "/dashboard": "Dashboard",
-    "/dashboard/messages": "Messages",
-    "/dashboard/profile": "Profile",
-    "/dashboard/settings": "Settings",
+  // Map each route with title + tagline
+  const routeInfo: Record<
+    string,
+    { title: string; tagline: string }
+  > = {
+    "/dashboard": {
+      title: "Dashboard",
+      tagline: "Overview of your WhatsApp API integration",
+    },
+    "/dashboard/messages": {
+      title: "Messages",
+      tagline: "Manage and track all your conversations",
+    },
+    "/dashboard/contacts": {
+      title: "Contacts",
+      tagline: "Organize and engage with your audience",
+    },
+    "/dashboard/settings": {
+      title: "Settings",
+      tagline: "Configure your WhatsApp API preferences",
+    },
   };
 
-  const title = routeTitles[pathname] || "Dashboard";
+  const { title, tagline } =
+    routeInfo[pathname] || {
+      title: "Dashboard",
+      tagline: "Manage your WhatsApp API integration",
+    };
 
   const handleSignOut = () => {
-      signOut({ callbackUrl: "/auth/login" });
+    signOut({ callbackUrl: "/auth/login" });
   };
-  
+
   return (
     <header className="bg-white dark:bg-gray-900 shadow-sm p-4 flex justify-between items-center">
       <Link href="/dashboard">
-        <h2 className="text-xl font-semibold">{title}</h2>
+        <div>
+          <h2 className="text-xl font-semibold">{title}</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{tagline}</p>
+        </div>
       </Link>
       <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={handleSignOut}>Logout</Button>
+        <Button variant="outline" onClick={handleSignOut}>
+          Logout
+        </Button>
+        <RefreshButton />
         <ThemeToggle />
       </div>
     </header>

@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     }
 
     // Call Facebook Graph API
-    const url = `https://graph.facebook.com/v21.0/${waba_id}?fields=phone_numbers`;
+    const url = `https://graph.facebook.com/v23.0/${waba_id}?fields=phone_numbers`;
     const fbRes = await fetch(url, {
       headers: {
         Authorization: `Bearer ${permanent_token}`,

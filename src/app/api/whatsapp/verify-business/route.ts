@@ -4,7 +4,6 @@ import { connectDB } from "@/lib/mongoose";
 import { User } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { authOptions } from "../../auth/[...nextauth]/authOptions";
-import { encrypt, safeDecrypt } from "@/lib/crypto"
 
 // POST - Submit business for verification
 export async function POST(req: NextRequest) {

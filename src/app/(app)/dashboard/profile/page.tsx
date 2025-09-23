@@ -14,6 +14,7 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { profileSchema } from "@/schemas/profileSchema"
 import PhoneNumberCard from "@/components/dashboard/rightbar/widgets/phoneNumberCard"
+import SetupProgressCard from "@/components/dashboard/setup/SetupProgressCard"
 
 
 
@@ -77,7 +78,7 @@ export default function ProfilePage() {
     <main className="flex-1 p-6 space-y-6 overflow-y-auto">
       <div className="grid grid-cols-10 gap-4">
         {/* Account Settings - 70% */}
-        <div className="col-span-7">
+        <div className="col-span-7 space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>My Profile</CardTitle>
@@ -138,6 +139,7 @@ export default function ProfilePage() {
               </form>
             </CardContent>
           </Card>
+          <SetupProgressCard />
         </div>
         
         {/* Account Settings */}

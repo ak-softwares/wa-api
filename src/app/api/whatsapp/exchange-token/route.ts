@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     });
 
     // Correct POST request with x-www-form-urlencoded body
-    const fbRes = await fetch('https://graph.facebook.com/v22.0/oauth/access_token', {
+    const fbRes = await fetch('https://graph.facebook.com/v23.0/oauth/access_token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),

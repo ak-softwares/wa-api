@@ -29,7 +29,7 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
     const checkFacebookConnection = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch("/api/facebook/check-facebook-status");
+        const res = await fetch("/api/whatsapp/check-facebook-status");
         const data = await res.json();
         if (data.success) {
           setFacebookConnected(true);
@@ -54,7 +54,7 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
           appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
           autoLogAppEvents: true,
           xfbml: true,
-          version: "v21.0",
+          version: "v23.0",
         });
       } else {
         setTimeout(checkFB, 500);
@@ -171,7 +171,7 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
     access_token: string;
   }) => {
     try {
-      const res = await fetch("/api/facebook/exchange-token", {
+      const res = await fetch("/api/whatsapp/exchange-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

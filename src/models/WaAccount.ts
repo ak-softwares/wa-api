@@ -11,6 +11,7 @@ export interface IWaAccount {
   quality_rating?: string;
   business_verification_status?: boolean;
   is_phone_number_registered?: boolean;
+  is_app_subscribed?: boolean;
 }
 
 // WA Account subdocument schema
@@ -35,6 +36,7 @@ export const WaAccountSchema = new Schema<IWaAccount>(
     quality_rating: { type: String },
     business_verification_status: { type: Boolean },
     is_phone_number_registered: { type: Boolean },
+    is_app_subscribed: { type: Boolean },
   },
   { 
     _id: false, // Prevent Mongoose from creating a separate _id for subdocuments
