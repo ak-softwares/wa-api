@@ -145,14 +145,14 @@ export default function DashboardPage() {
                 <Progress value={0} className="h-1" />
               </div>
               
-              <div className="flex gap-2">
+              {/* <div className="flex gap-2">
                 <Button asChild variant="outline" size="sm">
                   <Link href="/docs">Docs</Link>
                 </Button>
                 <Button asChild size="sm">
                   <Link href="/api-docs">API</Link>
                 </Button>
-              </div>
+              </div> */}
             </div>
           </CardContent>
         </Card>

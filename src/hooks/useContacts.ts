@@ -3,58 +3,73 @@
 import { useEffect, useState, useCallback } from "react";
 import { ApiResponse } from "@/types/apiResponse";
 import { IContact } from "@/types/contact";
+import { toast } from "@/components/ui/sonner";
 
 export function useContacts() {
   const [contacts, setContacts] = useState<IContact[]>([]);
   const [page, setPage] = useState(1);
   const [perPage] = useState(10);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);       // 🔹 initial load / refresh
+  const [loadingMore, setLoadingMore] = useState(false); // 🔹 infinite scroll load
   const [hasMore, setHasMore] = useState(true);
   const [refreshFlag, setRefreshFlag] = useState(0); // 👈 force re-run
 
-  const fetchContacts = useCallback(async () => {
-    if (loading) return;
-    setLoading(true);
+const fetchContacts = useCallback(
+  async (pageToFetch: number) => {
+    if (pageToFetch === 1) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
 
     try {
-      const res = await fetch(`/api/contacts?page=${page}&per_page=${perPage}`);
+      const res = await fetch(`/api/contacts?page=${pageToFetch}&per_page=${perPage}`);
       const json: ApiResponse = await res.json();
 
       if (json.success && json.data) {
         setContacts((prev) =>
-          page === 1 ? json.data : [...prev, ...json.data] // reset if page=1
+          pageToFetch === 1 ? json.data : [...prev, ...json.data]
         );
-        setHasMore(page < (json.pagination?.pages || 1));
+        setHasMore(pageToFetch < (json.pagination?.totalPages || 1));
       }
     } catch (err) {
-      console.error("Error fetching contacts:", err);
+      toast.error("Failed to load contacts.");
     } finally {
-      setLoading(false);
+      if (pageToFetch === 1) {
+        setLoading(false);
+      } else {
+        setLoadingMore(false);
+      }
     }
-  }, [page, perPage, loading]);
+  },
+  [perPage] // 🔹 only real dependency
+);
+
 
   // ✅ Run fetch when page changes OR when refreshFlag changes
   useEffect(() => {
-    fetchContacts();
-  }, [page, refreshFlag]);
+    fetchContacts(page);
+  }, [page, refreshFlag, fetchContacts]);
 
+  // ✅ Infinite scroll listener on <main>
   useEffect(() => {
+    const container = document.querySelector("main");
+
+    if (!container) return;
+
     const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop + 50 >=
-        document.documentElement.scrollHeight
-      ) {
-        if (!loading && hasMore) {
+      if (container.scrollTop + container.clientHeight + 50 >= container.scrollHeight) {
+        if (!loading && !loadingMore && hasMore) {
           setPage((prev) => prev + 1);
         }
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [loading, hasMore]);
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [loading, loadingMore, hasMore]);
 
-  // ✅ Always forces reload even if page=1
+  // ✅ Force reload (reset to page 1)
   const refreshContacts = () => {
     setContacts([]);
     setHasMore(true);
@@ -62,5 +77,5 @@ export function useContacts() {
     setRefreshFlag((f) => f + 1);
   };
 
-  return { contacts, loading, hasMore, refreshContacts };
+  return { contacts, loading, loadingMore, hasMore, refreshContacts };
 }

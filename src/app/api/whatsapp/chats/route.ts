@@ -23,15 +23,15 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 100);
-    const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
     const phone = searchParams.get("phone");
+    const per_page = Math.min(parseInt(searchParams.get("per_page") || "10"), 100);
+    const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
 
     // Fetch chats with pagination
     let chats = await Chat.find({ userId: user._id })
       .sort({ lastMessageAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
+      .skip((page - 1) * per_page)
+      .limit(per_page)
       .lean();
 
     const totalChats = await Chat.countDocuments({ userId: user._id });
@@ -86,14 +86,12 @@ export async function GET(req: NextRequest) {
     const response: ApiResponse = {
       success: true,
       message: "Chats fetched successfully",
-      data: {
-        chats,
-        pagination: {
-          total: totalChats,
-          page,
-          limit,
-          totalPages: Math.ceil(totalChats / limit),
-        },
+      data: chats,
+      pagination: {
+        total: totalChats,
+        page,
+        perPage: per_page,
+        totalPages: Math.ceil(totalChats / per_page),
       },
     };
 

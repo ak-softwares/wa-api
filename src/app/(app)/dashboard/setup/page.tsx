@@ -47,8 +47,6 @@ export default function WhatsAppSetupPage() {
   const router = useRouter();
   const { launchWhatsAppSignup, facebookConnected, isSaving, isLoading: savingStatus } = useWhatsAppSignup();
   const { status, refresh, error, isLoading: isVerifying, manualVerification} = useBusinessVerification();
-  const { isLoading: isLoading_register, phoneNumberIsRegistered, registerPhoneNumber } = useRegisterPhoneNumber();
-  const { isLoading: isLoading_subscribe, isAppSubscribed, subscribeAppToWABA } = useSubscribeApp();
   const { isLoading: isLoading_sendMessage, sendMessage } = useSendWhatsappMessage();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -93,10 +91,10 @@ export default function WhatsAppSetupPage() {
   };
 
   useEffect(() => {
-    if (facebookConnected || phoneNumberIsRegistered || addPaymentMethod) {
+    if (facebookConnected || addPaymentMethod) {
       handleNext();
     }
-  }, [facebookConnected, phoneNumberIsRegistered, addPaymentMethod]);
+  }, [facebookConnected, addPaymentMethod]);
 
   const handleNext = () => {
     if (currentStep < steps.length) {
@@ -158,24 +156,12 @@ export default function WhatsAppSetupPage() {
     },
     {
       id: 4,
-      title: "Register Phone Number",
-      description: "Add the phone number you want to use for WhatsApp Business messaging.",
-      icon: <Phone className="h-6 w-6 text-blue-500" />
-    },
-    {
-      id: 5,
-      title: "Subscribe App to WhatsApp Business Account",
-      description: "Subscribe your app to the WABA so it can receive webhook notifications for messages and status updates.",
-      icon: <Bell className="h-6 w-6 text-blue-500" />
-    },
-    {
-      id: 6,
       title: "Send Test Message",
       description: "Verify your setup by sending a test message to ensure everything is working correctly.",
       icon: <MessageSquare className="h-6 w-6 text-purple-600" />
     },
     {
-      id: 7,
+      id: 5,
       title: "Setup Complete",
       description: "Your WhatsApp Business API setup is now complete!",
       icon: <Check className="h-6 w-6 text-green-600" />
@@ -460,97 +446,6 @@ export default function WhatsAppSetupPage() {
 
             {currentStep === 4 && (
               <div className="space-y-4">
-                <p className="text-gray-600 dark:text-gray-400">
-                  Register the phone number you want to use for WhatsApp Business. This number will be 
-                  associated with your business account and used for all messaging.
-                </p>
-                <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-md border border-blue-200 dark:border-blue-700">
-                  <div className="flex">
-                    <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5 mr-3" />
-                    <div>
-                      <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">Number Requirements</h3>
-                      <ul className="text-sm text-blue-700 dark:text-blue-300 mt-1 list-disc list-inside">
-                        <li>Must be a valid phone number with country code</li>
-                        <li>Should not be currently used with WhatsApp</li>
-                        <li>Will receive a verification code</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                { phoneNumberIsRegistered 
-                  ? (
-                      <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-md border border-green-200 dark:border-green-700 flex items-center">
-                        <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                        <span className="text-green-700 dark:text-green-300">Phone Number is registered successfully</span>
-                      </div>
-                    ) 
-                  : (
-                      <Button
-                        onClick={() => registerPhoneNumber()}
-                        disabled={ isLoading_register }
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        {isLoading_register ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Registering Number...
-                          </>
-                        ) : (
-                          "Register Phone Number"
-                        )}
-                      </Button>
-                    )
-                }
-              </div>
-            )}
-
-            {currentStep === 5 && (
-              <div className="space-y-4">
-                <p className="text-gray-600 dark:text-gray-400">
-                  Subscribe your app to the WhatsApp Business Account. This allows your app 
-                  to receive webhook notifications for incoming messages and status updates.
-                </p>
-                <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-md border border-blue-200 dark:border-blue-700">
-                  <div className="flex">
-                    <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5 mr-3" />
-                    <div>
-                      <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">Subscription Notes</h3>
-                      <ul className="text-sm text-blue-700 dark:text-blue-300 mt-1 list-disc list-inside">
-                        <li>Once subscribed, WhatsApp will deliver message and status webhooks here.</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                { isAppSubscribed 
-                  ? (
-                      <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-md border border-green-200 dark:border-green-700 flex items-center">
-                        <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                        <span className="text-green-700 dark:text-green-300">App is successfully subscribed to WABA</span>
-                      </div>
-                    ) 
-                  : (
-                      <Button
-                        onClick={() => subscribeAppToWABA()}
-                        disabled={ isLoading_subscribe }
-                        className="w-full bg-green-600 hover:bg-green-700 text-white"
-                      >
-                        {isLoading_subscribe ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Subscribing App...
-                          </>
-                        ) : (
-                          "Subscribe App to WABA"
-                        )}
-                      </Button>
-                    )
-                }
-              </div>
-            )}
-
-
-            {currentStep === 6 && (
-              <div className="space-y-4">
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                   <p className="text-gray-600 dark:text-gray-400">
                     Send a test message to verify that your WhatsApp Business API setup is working correctly.
@@ -612,7 +507,7 @@ export default function WhatsAppSetupPage() {
               </div>
             )}
 
-            {currentStep === 7 && (
+            {currentStep === 5 && (
               <div className="space-y-6 text-center py-4">
                 <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30">
                   <Check className="h-10 w-10 text-green-600 dark:text-green-400" />
@@ -643,7 +538,7 @@ export default function WhatsAppSetupPage() {
           </div>
 
           {/* Navigation Buttons */}
-          {currentStep !== 7 && (
+          {currentStep !== 5 && (
             <div className="flex justify-between pt-4 border-t">
               <Button
                 onClick={handleBack}
@@ -661,8 +556,6 @@ export default function WhatsAppSetupPage() {
                     (currentStep === 1 && !facebookConnected) ||
                     (currentStep === 2 && !businessVerified)  ||
                     (currentStep === 3 && !addPaymentMethod)  ||
-                    (currentStep === 4 && !phoneNumberIsRegistered) ||
-                    (currentStep === 5 && !isAppSubscribed) ||
                     (currentStep === 6 && !testMessageSent) ||
                     isLoading
                   }
@@ -683,7 +576,7 @@ export default function WhatsAppSetupPage() {
         </Card>
 
         {/* Setup Tips - Only show if not on completion screen */}
-        {currentStep !== 7 && (
+        {currentStep !== 5 && (
           <Card className="p-6 mt-6">
             <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3">Setup Tips</h3>
             <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">

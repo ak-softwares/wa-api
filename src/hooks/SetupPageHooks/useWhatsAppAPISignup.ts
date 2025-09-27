@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { useSession } from "next-auth/react";
 
 interface UseWhatsAppSignupReturn {
   launchWhatsAppSignup: () => void;
@@ -20,9 +19,6 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
   const [facebookConnected, setFacebookConnected] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // for initial check
-
-
-  const { data: session } = useSession();
 
     // ✅ Check existing Facebook connection on mount
   useEffect(() => {
@@ -96,24 +92,15 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
         sessionInfo &&
         sdkResponse &&
         sessionInfo?.event === "FINISH" &&
-        !facebookConnected &&
-        session
+        !facebookConnected
       ) {
         setIsSaving(true);
-
-        const userEmail = session.user?.email;
-        if (!userEmail) {
-          toast.error("User email not found in session");
-          setIsSaving(false);
-          return;
-        }
 
         const access_token = sdkResponse?.authResponse?.code;
         const { phone_number_id, waba_id, business_id } = sessionInfo?.data;
 
         try {
           const tokenData = await getPermanentTokenAndSaveWaAccount({
-            userEmail,
             phone_number_id,
             waba_id,
             business_id,
@@ -137,7 +124,7 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
     };
 
     saveAccount();
-  }, [sessionInfo, sdkResponse, session, facebookConnected]);
+  }, [sessionInfo, sdkResponse, facebookConnected]);
 
   // ✅ FB login callback
   const fbLoginCallback = (response: any) => setSdkResponse(response);
@@ -158,13 +145,11 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
 
   // ✅ Exchange token + save WA account
   const getPermanentTokenAndSaveWaAccount = async ({
-    userEmail,
     phone_number_id,
     waba_id,
     business_id,
     access_token,
   }: {
-    userEmail: string;
     phone_number_id: string;
     waba_id: string;
     business_id: string;
@@ -175,7 +160,6 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userEmail,
           phone_number_id,
           waba_id,
           business_id,

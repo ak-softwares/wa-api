@@ -40,7 +40,7 @@ export default function WhatsAppSetupCard() {
         const result: ApiResponse = await res.json()
 
         if (!result.success) {
-          toast.error(result.message || "Failed to load setup status")
+          // toast.error(result.message || "Failed to load setup status")
           return
         }
         setStatus(result.data)

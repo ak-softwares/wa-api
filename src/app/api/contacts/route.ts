@@ -52,7 +52,7 @@ export async function GET(req: Request) {
         total,
         page,
         perPage,
-        pages: Math.ceil(total / perPage),
+        totalPages: Math.ceil(total / perPage),
       },
     };
 

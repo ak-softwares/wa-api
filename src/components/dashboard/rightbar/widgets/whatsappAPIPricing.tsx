@@ -44,7 +44,7 @@ export function WhatsappAPIPricingCard() {
       <CardFooter className="pt-2">
         <Button asChild variant="outline" size="sm" className="w-full">
           <Link
-            href="https://developers.facebook.com/docs/whatsapp/pricing"
+            href="https://business.whatsapp.com/products/platform-pricing"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center"

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils"
 import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/style.css'
 import { Phone } from "lucide-react" 
+import { useEffect, useState } from "react"
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -22,10 +23,25 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
 }
 
 function ShadcnPhoneInput({ value, onChange }: { value: string; onChange: (phone: string) => void }) {
+
+  const [countryCode, setCountryCode] = useState("us"); // fallback
+
+  useEffect(() => {
+    // Fetch country by IP
+    fetch("https://ipapi.co/json/")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.country_code) {
+          setCountryCode(data.country_code.toLowerCase());
+        }
+      })
+      .catch(() => setCountryCode("in")); // fallback on error
+  }, []);
+
   return (
     <div className="w-full relative">
       <PhoneInput
-        country={"us"}
+        country={countryCode}
         value={value}
         onChange={onChange}
         inputClass={cn(

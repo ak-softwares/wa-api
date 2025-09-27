@@ -6,7 +6,7 @@ import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { RefreshButton } from "@/components/global/header/Refresh";
-
+import { toast } from "@/components/ui/sonner";
 export default function Topbar() {
   const pathname = usePathname();
 

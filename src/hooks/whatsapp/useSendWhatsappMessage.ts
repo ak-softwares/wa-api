@@ -28,8 +28,7 @@ export function useSendWhatsappMessage() {
       } else {
         if (onError) onError(data.message);
       }
-
-      return data;
+      return { success: true, message: "Success", data };
     } catch (error: any) {
       const errorMsg = "Something went wrong while sending the message";
       if (onError) onError(errorMsg);

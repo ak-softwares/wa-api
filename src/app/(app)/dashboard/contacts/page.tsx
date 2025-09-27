@@ -3,22 +3,14 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useContacts } from "@/hooks/useContacts"; // 👈 your custom hook
 import ContactList from "@/components/dashboard/contacts/ContactList"; // 👈 your UI component
-import { IContact } from "@/types/contact";
 import { Phone, User, Search } from "lucide-react";
 import AddContactDialog from "@/components/dashboard/contacts/AddContact";
 
 
 export default function ContactsPage() {
 
-  const { contacts, loading, hasMore, refreshContacts } = useContacts();
   const [searchTerm, setSearchTerm] = useState("");
-
-  const handleMessage = (contact: IContact) => {
-    console.log("Message contact:", contact);
-    // you can open chat UI here
-  };
 
   return (
     <div className="min-h-screen p-6">
@@ -30,7 +22,7 @@ export default function ContactsPage() {
             <p>Manage your contact list</p>
           </div>
           
-          <AddContactDialog onContactAdded={refreshContacts} />
+          <AddContactDialog />
         </div>
 
         {/* Search Bar */}
@@ -62,13 +54,7 @@ export default function ContactsPage() {
         </Card>
 
         {/* Contacts List */}
-        <ContactList
-          contacts={contacts}
-          isLoading={loading}
-          handleMessage={handleMessage}
-          handleEdit={refreshContacts}
-          handleDelete={refreshContacts}
-        />
+        <ContactList />
       </div>
     </div>
   );

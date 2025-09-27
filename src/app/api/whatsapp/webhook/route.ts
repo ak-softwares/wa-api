@@ -51,7 +51,6 @@ export async function POST(req: NextRequest) {
           const from = msg.from; // sender
           const messageText = msg.text?.body || "";
           const waMessageId = msg.id;
-
           // Find user by phone_number_id
           const user = await User.findOne({ "waAccounts.phone_number_id": phone_number_id });
           if (!user) {
@@ -90,6 +89,11 @@ export async function POST(req: NextRequest) {
           await pusher.trigger(`chat-${chat._id}`, "new-message", {
             message: newMessage,
           });
+
+          // await pusher.trigger("global-notifications", "new-message", {
+          //   message: newMessage,
+          // });
+
 
           // Update chat last message
           chat.lastMessage = messageText;

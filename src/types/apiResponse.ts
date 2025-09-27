@@ -6,6 +6,6 @@ export interface ApiResponse {
         total: number;
         page: number;
         perPage: number;
-        pages: number;
+        totalPages: number;
     };
 }

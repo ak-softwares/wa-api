@@ -27,10 +27,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(response, { status: 404 });
     }
 
-    // Extract query params (?chatId=... or ?limit=...)
+    // Extract query params (?chatId=...&per_page=...&page=...)
     const { searchParams } = new URL(req.url);
     const chatId = searchParams.get("chatId");
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const per_page = Math.min(parseInt(searchParams.get("per_page") || "10"), 100);
+    const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
 
     if (!chatId) {
       return NextResponse.json(
@@ -39,15 +40,26 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Fetch messages for this chat
+    // Total messages for pagination
+    const totalMessages = await Message.countDocuments({ userId: user._id, chatId });
+
+    // Fetch paginated messages
     const messages = await Message.find({ userId: user._id, chatId })
       .sort({ createdAt: -1 })
-      .limit(limit);
+      .skip((page - 1) * per_page)
+      .limit(per_page)
+      .lean();
 
     const response: ApiResponse = {
       success: true,
       message: "Messages fetched successfully",
       data: messages,
+      pagination: {
+        total: totalMessages,
+        page,
+        perPage: per_page,
+        totalPages: Math.ceil(totalMessages / per_page),
+      },
     };
     return NextResponse.json(response, { status: 200 });
   } catch (error: any) {
