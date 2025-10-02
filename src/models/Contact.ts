@@ -6,6 +6,7 @@ export interface IContact extends Document {
   phones: string[]; // multiple phone numbers
   email?: string; // optional
   tags?: string[];
+  imageUrl?: string; // profile/contact photo
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +24,7 @@ const ContactSchema = new Schema<IContact>(
     ],
     email: { type: String, trim: true, lowercase: true },
     tags: [{ type: String, trim: true }],
+    imageUrl: { type: String, trim: true },
   },
   { timestamps: true }
 );

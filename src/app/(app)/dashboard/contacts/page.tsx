@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import ContactList from "@/components/dashboard/contacts/ContactList"; // 👈 your UI component
 import { Phone, User, Search } from "lucide-react";
 import AddContactDialog from "@/components/dashboard/contacts/AddContact";
+import GoogleContactsImporter from "@/components/dashboard/contacts/GoogleContactsImporter";
 
 
 export default function ContactsPage() {
@@ -21,8 +22,10 @@ export default function ContactsPage() {
             <h1 className="text-3xl font-bold">Contacts</h1>
             <p>Manage your contact list</p>
           </div>
-          
-          <AddContactDialog />
+          <div className="flex flex-wrap gap-4 mt-2 sm:mt-0">
+            <GoogleContactsImporter />
+            <AddContactDialog />
+          </div>
         </div>
 
         {/* Search Bar */}

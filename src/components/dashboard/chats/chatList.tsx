@@ -7,6 +7,8 @@ import { Menu as MenuIcon, Search } from "lucide-react";
 import { useChatsContext } from "@/hooks/chat/ChatsContext";
 import { formatTime } from "@/utiles/formatTime/formatTime";
 import ChatMenu from "./ChatMenu";
+import { User2 } from "lucide-react";
+import ContactAvatar from "../contacts/ContactAvatar";
 
 export default function ChatList() {
 
@@ -63,21 +65,19 @@ export default function ChatList() {
                   onClick={() => handleChatClick(chat)}
                   className={`group flex items-center p-4 border-b cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${isActive ? "bg-gray-100 dark:bg-gray-800" : ""}`}
                 >
-                  <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold mr-3">
-                    {partner?.name?.charAt(0) || "?"}
-                  </div>
+                  {/* Reusable avatar */}
+                  <ContactAvatar
+                    imageUrl={chat.participants[0]?.imageUrl}
+                    title={chat.participants[0]?.name || "Unknown"}
+                    subtitle={chat.lastMessage || "No messages yet"}
+                    size="lg"
+                  />
 
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold truncate">{partner?.name || "Unknown"}</h3>
-                    <p className="text-sm text-gray-500 truncate">
-                      {chat.lastMessage || "No messages yet"}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col items-end ml-4 mt-2">
+                  {/* Right-side info - flex-1 to push to the right */}
+                  <div className="flex-1 flex flex-col items-end">
                     <span className="text-xs text-gray-500">{formatTime(chat.lastMessageAt)}</span>
                     <div className="flex items-center gap-2 mt-1">
-                      {/* Unread badge */}
+                      {/* Unread badge (if needed) */}
                       <span className="w-5 h-5">
                         {/* <span className="bg-green-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
                           {chat.unreadCount || 0}

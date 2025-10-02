@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input, ShadcnPhoneInput } from "@/components/ui/input";
+import { ShadcnPhoneInput } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -25,6 +25,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import FooterTerms from "../footer/footerTerms";
+import { Mail } from "lucide-react";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -131,7 +132,7 @@ export default function LoginForm() {
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Logging in..." : "Login"}
+                  {isSubmitting ? "Connecting..." : "Login with WhatsApp"}
                 </Button>
 
                 <div className="relative text-center text-sm after:border-t after:border-border after:inset-0 after:top-1/2 after:absolute after:z-0">
@@ -157,7 +158,7 @@ export default function LoginForm() {
 
                     Login with Email and Password
                   </Button>
-                  <Button variant="outline" className="w-full" type="button"  onClick={() => onGoogleSignIn()}>
+                  <Button variant="outline" className="w-full" type="button" disabled={loading} onClick={() => onGoogleSignIn()}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"

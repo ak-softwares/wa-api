@@ -1,14 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { CheckCircle2, MessageSquare , Phone, Bell, CheckCircle } from "lucide-react"
+import { MessageSquare , Phone, Bell, CheckCircle } from "lucide-react"
 import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ApiResponse } from "@/types/apiResponse"
 import { useRouter } from "next/navigation"
+import { useRegisterPhoneNumber } from "@/hooks/SetupPageHooks/useRegisterPhoneNumber"
+import { useSubscribeApp } from "@/hooks/SetupPageHooks/useSubscribeApp"
 
 
 interface SetupStatus {
@@ -24,32 +26,35 @@ const steps = [
 ]
 
 export default function SetupProgressCard() {
+    // ✅ use custom hooks
+  const { isLoading: subLoading, isAppSubscribed, subscribeAppToWABA } = useSubscribeApp()
+  const { isLoading: phoneLoading, phoneNumberIsRegistered, registerPhoneNumber } = useRegisterPhoneNumber()
+
   const router = useRouter()
 
   const [status, setStatus] = useState<SetupStatus | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const res = await fetch("/api/whatsapp/setup-status")
-        const result: ApiResponse = await res.json()
+  // ✅ put fetchStatus in useCallback so we can call it later
+  const fetchStatus = useCallback(async () => {
+    try {
+      setLoading(true)
+      const res = await fetch("/api/whatsapp/setup-status")
+      const result: ApiResponse = await res.json()
 
-        if (!result.success) {
-          toast.error(result.message || "Failed to load setup status")
-          return
-        }
-
+      if (result.success) {
         setStatus(result.data)
-      } catch (err: any) {
-        toast.error("Error loading setup status: " + err.message)
-      } finally {
-        setLoading(false)
       }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
     }
-
-    fetchStatus()
   }, [])
+
+  useEffect(() => {
+    fetchStatus()
+  }, [fetchStatus])
 
   if (loading) {
     return (
@@ -124,13 +129,49 @@ export default function SetupProgressCard() {
         <div className="pt-4 text-center">
           {allDone ? (
             <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-md border border-green-200 dark:border-green-700 flex items-center text-center justify-center">
-                <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                <span className="text-green-700 dark:text-green-300">Setup Completed Successfully!</span>
+              <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+              <span className="text-green-700 dark:text-green-300">
+                Setup Completed Successfully!
+              </span>
             </div>
           ) : (
-            <Button className="w-full" variant={"outline"} onClick={() => router.push("/dashboard/setup")}>Launch Setup</Button>
+            <>
+              {!status?.phone && (
+                <Button
+                  className="w-full mb-2"
+                  variant="outline"
+                  disabled={phoneLoading}
+                  onClick={() => registerPhoneNumber(fetchStatus)}
+                >
+                  {phoneLoading ? "Registering..." : "Register Phone Number"}
+                </Button>
+              )}
+
+              {!status?.subscription && (
+                <Button
+                  className="w-full mb-2"
+                  variant="outline"
+                  disabled={subLoading}
+                  onClick={() => subscribeAppToWABA(fetchStatus)}
+                >
+                 {subLoading ? "Subscribing..." : "Subscribe App"}
+                </Button>
+              )}
+
+              {/* fallback button if needed */}
+              {status?.phone && status?.subscription === undefined && (
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => router.push("/dashboard/setup")}
+                >
+                  Launch Setup
+                </Button>
+              )}
+            </>
           )}
         </div>
+
       </CardContent>
     </Card>
   )

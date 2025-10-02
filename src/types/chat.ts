@@ -12,4 +12,5 @@ export type IChat = {
 export type ChatParticipant = {
   id: string;
   name: string;
+  imageUrl?: string;
 };

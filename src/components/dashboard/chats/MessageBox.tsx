@@ -9,6 +9,7 @@ import { useMessages } from "@/hooks/chat/useMessages";
 import { useChatsContext } from "@/hooks/chat/ChatsContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams, useRouter } from "next/navigation";
+import ContactAvatar from "../contacts/ContactAvatar";
 
 export default function MessageBox() {
   const { activeChat, setActiveChat } = useChatsContext();
@@ -60,14 +61,12 @@ export default function MessageBox() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold mr-3">
-            {activeChat.participants[0].name.charAt(0)}
-          </div>
-          <div>
-            <h2 className="font-semibold">
-              {activeChat.participants[0].name}
-            </h2>
-          </div>
+          {/* Reusable avatar */}
+          <ContactAvatar
+            imageUrl={activeChat.participants[0]?.imageUrl}
+            title={activeChat.participants[0]?.name || "Unknown"}
+            size="md"
+          />
         </div>
         <div className="flex items-center gap-2">
           <Phone className="h-5 w-5" />

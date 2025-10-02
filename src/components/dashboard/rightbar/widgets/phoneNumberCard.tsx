@@ -165,12 +165,12 @@ export default function PhoneNumberCard({ showRemoveButton = false }: PhoneNumbe
                         ) : (
                           <Trash2 className="h-4 w-4" />
                         )}
-                        <span>{deletingPhone ? "Removing..." : "Remove Phone Number"}</span>
+                        <span>{deletingPhone ? "Disconnecting..." : "Disconnect"}</span>
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Remove Phone Number</AlertDialogTitle>
+                          <AlertDialogTitle>Disconnect Phone Number</AlertDialogTitle>
                           <AlertDialogDescription>
                             This action cannot be undone. Are you sure you want to remove this phone number?
                           </AlertDialogDescription>
@@ -178,7 +178,7 @@ export default function PhoneNumberCard({ showRemoveButton = false }: PhoneNumbe
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
                           <AlertDialogAction onClick={handleDelete} className="bg-red-600 text-white hover:bg-red-700">
-                            Delete
+                            Disconnect
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>

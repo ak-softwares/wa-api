@@ -32,16 +32,21 @@ export default function SignUpForm() {
   
   const { data: session, status } = useSession();
 
-  // Redirect to login if not authenticated
+  // ✅ redirect safely after render
+  useEffect(() => {
+    if (session) {
+      router.push("/dashboard");
+    }
+  }, [session, router]);
+
   if (status === "loading") {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        Loading...
+      </div>
+    );
   }
-
-  if (session) {
-    router.push("/dashboard");
-    return null;
-  }
-
+  
   useEffect(() => { 
     if (searchParams.get("newUser") === "1") {
       const timer = setTimeout(() => {
@@ -72,20 +77,30 @@ export default function SignUpForm() {
 
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     try {
-      await axios.post<ApiResponse>("/api/auth/signup", data);
+      // ✅ Call signup API
+      const res = await axios.post<ApiResponse>("/api/auth/signup", data);
 
+      if (!res.data.success) {
+        toast.error("Sign up failed", {
+          description: res.data.message,
+        });
+        return;
+      }
+
+       // ✅ Auto login using NextAuth credentials
       const result = await signIn("credentials", {
         redirect: false,
         email: data.email,
         password: data.password,
       });
-
       if (result?.error) {
         toast.error("Failed to sign in", { description: result.error });
-      } else {
-        toast.success("Account created successfully");
-        router.push("/dashboard");
+        return;
       }
+
+      // ✅ Success
+      toast.success("Account created successfully");
+
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
       toast.error("Sign up failed", {

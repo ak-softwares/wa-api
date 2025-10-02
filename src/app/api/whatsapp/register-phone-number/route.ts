@@ -123,3 +123,77 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(response, { status: 500 });
   }
 }
+
+// 📌 Deregister phone number
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    const email = session?.user?.email;
+
+    if (!email) {
+      const response: ApiResponse = { success: false, message: "Unauthorized" };
+      return NextResponse.json(response, { status: 401 });
+    }
+
+    await connectDB();
+
+    const user = await User.findOne({ email });
+    if (!user || !user.waAccounts) {
+      const response: ApiResponse = {
+        success: false,
+        message: "No WA account found for this user",
+      };
+      return NextResponse.json(response, { status: 404 });
+    }
+
+    const { phone_number_id, permanent_token } = user.waAccounts;
+    if (!phone_number_id || !permanent_token) {
+      const response: ApiResponse = {
+        success: false,
+        message: "User WA account not configured properly",
+      };
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    // Call WhatsApp Cloud API deregister endpoint
+    const url = `https://graph.facebook.com/v23.0/${phone_number_id}/deregister`;
+    const headers = {
+      Authorization: `Bearer ${permanent_token}`,
+      "Content-Type": "application/json",
+    };
+
+    const fbResponse = await axios.post(url, {}, { headers });
+
+    if (fbResponse.data?.success === true) {
+      // ✅ Update DB status
+      user.waAccounts.is_phone_number_registered = false;
+      await user.save();
+
+      const response: ApiResponse = {
+        success: true,
+        message: "Phone number deregistered successfully",
+      };
+      return NextResponse.json(response, { status: 200 });
+    } else {
+      const response: ApiResponse = {
+        success: false,
+        message:
+          "Deregistration failed" +
+          (fbResponse.data?.error?.message
+            ? `: ${fbResponse.data.error.message}`
+            : ""),
+      };
+      return NextResponse.json(response, { status: 400 });
+    }
+  } catch (error: any) {
+    const response: ApiResponse = {
+      success: false,
+      message: `Error: ${
+        error?.response?.data
+          ? JSON.stringify(error.response.data)
+          : error.message
+      }`,
+    };
+    return NextResponse.json(response, { status: 500 });
+  }
+}
