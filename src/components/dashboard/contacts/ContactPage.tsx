@@ -3,7 +3,6 @@
 import ContactList from "@/components/dashboard/contacts/ContactList"; // 👈 your UI component
 import AddContactDialog from "@/components/dashboard/contacts/AddContact";
 import GoogleContactsImporter from "@/components/dashboard/contacts/GoogleContactsImporter";
-import ContactSearchBar from "./SearchContacts";
 
 
 export default function ContactsPage() {
