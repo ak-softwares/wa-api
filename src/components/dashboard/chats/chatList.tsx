@@ -7,18 +7,30 @@ import { Menu as MenuIcon, Search } from "lucide-react";
 import { useChatsContext } from "@/hooks/chat/ChatsContext";
 import { formatTime } from "@/utiles/formatTime/formatTime";
 import ChatMenu from "./ChatMenu";
-import { User2 } from "lucide-react";
 import ContactAvatar from "../contacts/ContactAvatar";
+import { useState, useEffect, useCallback } from "react";
+import { useDebounce } from "@/hooks/common/useDebounce";
 
 export default function ChatList() {
+  const {
+    chats,
+    setChats,
+    loading,
+    loadingMore,
+    hasMore,
+    activeChat,
+    setActiveChat,
+    sidebarRef,
+    refreshChats,
+    searchChats,
+  } = useChatsContext();
 
-  const { chats, setChats, loading, loadingMore, hasMore, activeChat, setActiveChat, sidebarRef } = useChatsContext();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const handleChatClick = (chat: any) => {
     setActiveChat(chat);
-    // const params = new URLSearchParams(searchParams.toString());
-    // params.set('phone', chat.participants[0]?.id || "");
-    // router.push(`?${params.toString()}`, { scroll: false });
   };
 
   const handleDeleteChat = (chatId: string) => {
@@ -26,8 +38,31 @@ export default function ChatList() {
     setActiveChat(chats.length > 0 ? chats[0] : null);
   };
 
+  const handleSearch = useCallback(
+    async (term: string) => {
+      if (term.trim()) {
+        setIsSearching(true);
+        await searchChats(term); // <-- hook should implement this like `searchContacts`
+        setIsSearching(false);
+      } else {
+        refreshChats();
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    handleSearch(debouncedSearchTerm);
+  }, [debouncedSearchTerm, handleSearch]);
+
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    refreshChats();
+  };
+
   return (
     <div className="w-1/3 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+      {/* Header */}
       <div className="p-4 border-b flex items-center justify-between">
         <h1 className="text-xl font-semibold">Chats</h1>
         <Button variant="ghost" size="icon">
@@ -35,64 +70,49 @@ export default function ChatList() {
         </Button>
       </div>
 
+      {/* Search Bar */}
       <div className="p-4 border-b">
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
-          <Input placeholder="Search chats..." className="pl-10" />
+          <Input
+            placeholder="Search chats..."
+            className="pl-10"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              onClick={handleClearSearch}
+              className="absolute right-0 top-0 text-gray-500 hover:text-gray-700 hover:bg-transparent"
+            >
+              ✕
+            </Button>
+          )}
         </div>
       </div>
 
+      {/* Search Status */}
+      {searchTerm && (
+        <div className="px-4 py-2 border-b text-sm flex justify-between items-center">
+          <span className="text-gray-600">
+            {isSearching
+              ? "Searching..."
+              : `Search results for "${searchTerm}"`}
+          </span>
+          <button
+            onClick={handleClearSearch}
+            className="text-blue-600 hover:text-blue-800 text-sm"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
+      {/* Chat List */}
       <div ref={sidebarRef} className="flex-1 overflow-y-auto">
-        {loading
-          ? Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center p-4 border-b">
-                <Skeleton className="w-12 h-12 rounded-full mr-3" />
-                <div className="flex-1 min-w-0 space-y-2">
-                  <Skeleton className="h-5 w-32 rounded" />
-                  <Skeleton className="h-4 w-48 rounded" />
-                </div>
-                <Skeleton className="h-4 w-10 ml-2 rounded" />
-              </div>
-            ))
-          : chats.length === 0
-          ? <div className="p-8 text-center">No chats yet.</div>
-          : chats.map(chat => {
-              const partner = chat.participants[0];
-              const isActive = partner?.id === activeChat?.participants[0]?.id;
-              return (
-                <div
-                  key={chat._id}
-                  onClick={() => handleChatClick(chat)}
-                  className={`group flex items-center p-4 border-b cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${isActive ? "bg-gray-100 dark:bg-gray-800" : ""}`}
-                >
-                  {/* Reusable avatar */}
-                  <ContactAvatar
-                    imageUrl={chat.participants[0]?.imageUrl}
-                    title={chat.participants[0]?.name || "Unknown"}
-                    subtitle={chat.lastMessage || "No messages yet"}
-                    size="lg"
-                  />
-
-                  {/* Right-side info - flex-1 to push to the right */}
-                  <div className="flex-1 flex flex-col items-end">
-                    <span className="text-xs text-gray-500">{formatTime(chat.lastMessageAt)}</span>
-                    <div className="flex items-center gap-2 mt-1">
-                      {/* Unread badge (if needed) */}
-                      <span className="w-5 h-5">
-                        {/* <span className="bg-green-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                          {chat.unreadCount || 0}
-                        </span> */}
-                      </span>
-                      <ChatMenu chatId={chat._id} onDelete={handleDeleteChat} />
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-        }
-
-        {hasMore && loadingMore &&
-          Array.from({ length: 2 }).map((_, i) => (
+        {loading ? (
+          Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex items-center p-4 border-b">
               <Skeleton className="w-12 h-12 rounded-full mr-3" />
               <div className="flex-1 min-w-0 space-y-2">
@@ -102,7 +122,56 @@ export default function ChatList() {
               <Skeleton className="h-4 w-10 ml-2 rounded" />
             </div>
           ))
-        }
+        ) : chats.length === 0 ? (
+          <div className="p-8 text-center">No chats found.</div>
+        ) : (
+          chats.map((chat) => {
+            const partner = chat.participants[0];
+            const isActive =
+              partner?.id === activeChat?.participants[0]?.id;
+            return (
+              <div
+                key={chat._id}
+                onClick={() => handleChatClick(chat)}
+                className={`group flex items-center p-4 border-b cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                  isActive ? "bg-gray-100 dark:bg-gray-800" : ""
+                }`}
+              >
+                {/* Avatar */}
+                <ContactAvatar
+                  imageUrl={partner?.imageUrl}
+                  title={partner?.name || "Unknown"}
+                  subtitle={chat.lastMessage || "No messages yet"}
+                  size="lg"
+                />
+
+                {/* Right Side */}
+                <div className="flex-1 flex flex-col items-end">
+                  <span className="text-xs text-gray-500">
+                    {formatTime(chat.lastMessageAt)}
+                  </span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="w-5 h-5" />
+                    <ChatMenu chatId={chat._id} onDelete={handleDeleteChat} />
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+
+        {hasMore &&
+          loadingMore &&
+          Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="flex items-center p-4 border-b">
+              <Skeleton className="w-12 h-12 rounded-full mr-3" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <Skeleton className="h-5 w-32 rounded" />
+                <Skeleton className="h-4 w-48 rounded" />
+              </div>
+              <Skeleton className="h-4 w-10 ml-2 rounded" />
+            </div>
+          ))}
       </div>
     </div>
   );

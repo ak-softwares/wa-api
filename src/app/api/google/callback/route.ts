@@ -10,7 +10,6 @@ import { User } from "@/models/User";
 
 export async function GET(req: Request) {
   try {
-    // Get user session
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -21,11 +20,8 @@ export async function GET(req: Request) {
     await connectDB();
     const user = await User.findOne({ email: session.user.email }).select("_id");
     if (!user) {
-        const response: ApiResponse = {
-            success: false,
-            message: "User not found",
-        };
-        return NextResponse.json(response, { status: 404 });
+      const response: ApiResponse = { success: false, message: "User not found" };
+      return NextResponse.json(response, { status: 404 });
     }
 
     const url = new URL(req.url);
@@ -35,7 +31,7 @@ export async function GET(req: Request) {
       return NextResponse.json(response, { status: 400 });
     }
 
-    // Google OAuth
+    // Google OAuth setup
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
@@ -45,32 +41,68 @@ export async function GET(req: Request) {
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
 
-    // Fetch contacts
     const people = google.people({ version: "v1", auth: oauth2Client });
-    const res = await people.people.connections.list({
-      resourceName: "people/me",
-      personFields: "names,emailAddresses,photos,phoneNumbers",
-      pageSize: 2,
-    });
 
-    const connections = res.data.connections || [];
+    // Fetch all contacts (with pagination)
+    let allConnections: any[] = [];
+    let nextPageToken: string | undefined = undefined;
 
-    const contactsToInsert: Partial<IContact>[] = connections.map((c) => ({
+    do {
+      const res: any = await people.people.connections.list({
+        resourceName: "people/me",
+        personFields: "names,emailAddresses,photos,phoneNumbers",
+        pageSize: 1000,
+        pageToken: nextPageToken,
+      });
+
+      if (res.data.connections) {
+        allConnections = allConnections.concat(res.data.connections);
+      }
+
+      nextPageToken = res.data.nextPageToken ?? undefined;
+    } while (nextPageToken);
+
+    // Map to contact structure
+    let contactsToInsert: Partial<IContact>[] = allConnections.map((c) => ({
       userId: new mongoose.Types.ObjectId(user._id),
       name: c.names?.[0]?.displayName ?? undefined,
       email: c.emailAddresses?.[0]?.value ?? undefined,
-      phones: c.phoneNumbers
-        ?.map((p) => p.canonicalForm?.replace(/^\+/, "") || p.value)
-        .filter((n): n is string => !!n) || [],
+      phones:
+        c.phoneNumbers
+          ?.map((p: any) => p.canonicalForm?.replace(/^\+/, "") || p.value)
+          .filter((n: any): n is string => !!n) || [],
       imageUrl: c.photos?.[0]?.url ?? undefined,
     }));
 
-    await Contact.insertMany(contactsToInsert);
+    // Filter contacts without phone numbers
+    contactsToInsert = contactsToInsert.filter((c) => c.phones && c.phones.length > 0);
 
-    // Redirect after successful import
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/contacts?imported=true`);
+    // Check for duplicates by phone
+    const allPhones = contactsToInsert.flatMap((c) => c.phones || []);
+    const existingContacts = await Contact.find({
+      userId: user._id,
+      phones: { $in: allPhones },
+    }).select("phones");
+
+    const existingPhones = new Set(existingContacts.flatMap((c) => c.phones || []));
+    contactsToInsert = contactsToInsert.filter(
+      (c) => !c.phones?.some((p) => existingPhones.has(p))
+    );
+
+    if (contactsToInsert.length > 0) {
+      await Contact.insertMany(contactsToInsert, { ordered: false });
+    }
+
+    const importedCount = contactsToInsert.length;
+
+    return NextResponse.redirect(
+      `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/contacts?imported=true&count=${importedCount}`
+    );
   } catch (err: any) {
-    const response: ApiResponse = { success: false, message: "Failed to import contacts" };
+    const response: ApiResponse = {
+      success: false,
+      message: "Failed to import contacts",
+    };
     return NextResponse.json(response, { status: 500 });
   }
 }

@@ -18,7 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { contactSchema } from "@/schemas/contactSchema";
 import { ShadcnPhoneInput } from "@/components/ui/input";
-import { useContacts } from "@/hooks/constact/useContacts"; // 👈 your custom hook
+import { useContacts } from "@/hooks/contact/useContacts"; // 👈 your custom hook
 
 type NewContact = z.infer<typeof contactSchema>;
 

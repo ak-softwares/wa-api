@@ -13,8 +13,9 @@ export default function GoogleContactsImporter() {
 
   useEffect(() => {
     const imported = searchParams.get('imported');
+    const count = searchParams.get('count');
     if (imported === 'true') {
-      toast.success('Contacts imported successfully!');
+      toast.success(`${count} contacts imported successfully!`);
     }
   }, [searchParams]);
 

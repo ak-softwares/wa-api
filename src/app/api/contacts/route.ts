@@ -6,7 +6,7 @@ import Contact from "@/models/Contact";
 import { ApiResponse } from "@/types/apiResponse";
 import { authOptions } from "../auth/[...nextauth]/authOptions";
 
-// GET contacts (paginated, with optional hasChat filter)
+// GET contacts (paginated, with optional search functionality)
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -28,25 +28,72 @@ export async function GET(req: Request) {
       return NextResponse.json(response, { status: 404 });
     }
 
-    // Pagination + filters
+    // Pagination + filters + search
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
     const perPage = parseInt(searchParams.get("per_page") || "10", 10);
+    const searchQuery = searchParams.get("q") || "";
     const skip = (page - 1) * perPage;
 
-    let query: any = { userId: user._id };
+    let contacts: any[] = [];
+    let total = 0;
 
-    const [contacts, total] = await Promise.all([
-      Contact.find(query)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(perPage),
-      Contact.countDocuments(query),
-    ]);
+    // If search query exists, use MongoDB Atlas Search
+    if (searchQuery) {
+      const searchPipeline: any[] = [
+        {
+          $search: {
+            index: "default", // Using the default index
+            text: {
+              query: searchQuery,
+              path: {
+                wildcard: "*" // Search across all fields
+              }
+            }
+          }
+        },
+        {
+          $match: {
+            userId: user._id // Filter by user after search
+          }
+        },
+        {
+          $sort: {
+            createdAt: -1
+          }
+        },
+        {
+          $facet: {
+            metadata: [{ $count: "total" }],
+            data: [
+              { $skip: skip },
+              { $limit: perPage },
+            ],
+          },
+        },
+      ];
+
+      const [searchResult] = await Contact.aggregate(searchPipeline);
+      contacts = searchResult?.data || [];
+      total = searchResult?.metadata?.[0]?.total || 0;
+    } else {
+      // Regular paginated query without search
+      const query = { userId: user._id };
+
+      [contacts, total] = await Promise.all([
+        Contact.find(query)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(perPage),
+        Contact.countDocuments(query),
+      ]);
+    }
 
     const response: ApiResponse = {
       success: true,
-      message: "Contacts fetched successfully",
+      message: searchQuery 
+        ? "Contacts searched successfully" 
+        : "Contacts fetched successfully",
       data: contacts,
       pagination: {
         total,

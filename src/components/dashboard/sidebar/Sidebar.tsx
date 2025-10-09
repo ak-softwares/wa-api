@@ -15,7 +15,7 @@ export default function Sidebar() {
     { href: "/dashboard", label: "Home", icon: Home },
     { href: "/dashboard/messages", label: "Messages", icon: MessageSquare },
     { href: "/dashboard/contacts", label: "Contacts", icon: ContactIcon },
-    // { href: "/dashboard/templates", label: "Templates", icon: BookTemplate },
+    { href: "/dashboard/templates", label: "Templates", icon: BookTemplate },
     // { href: "/dashboard/settings", label: "Settings", icon: Settings },
     { href: "/dashboard/profile", label: "Profile", icon: User, bottom: true },
   ]
