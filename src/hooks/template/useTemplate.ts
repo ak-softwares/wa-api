@@ -31,6 +31,7 @@ export function useTemplates() {
 
         if (json.success && json.data) {
           // Update template list
+          console.log(json.data);
           setTemplates((prev) => pageToFetch === 1 ? json.data : [...prev, ...json.data]
           );
           // Pagination logic

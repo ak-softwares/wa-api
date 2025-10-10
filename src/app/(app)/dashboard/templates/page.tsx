@@ -177,7 +177,7 @@ export default function TemplateManagementPage() {
                   </div>
                   <div>
                     {template.components.find((c) => c.type === "BODY")
-                      ? "BODY"
+                      ? "Text"
                       : template.components[0]?.type || "N/A"}
                   </div>
                   <div>{template.health || "Good"}</div>

@@ -7,6 +7,7 @@ import { ApiResponse } from "@/types/apiResponse";
 import { MessageStatus } from "@/types/messageStatus";
 import { MessageType } from "@/types/messageType";
 import { pusher } from "@/lib/pusher";
+import { getAIReply, sendMessage } from "@/lib/ai/aiService";
 
 const WA_VERIFY_TOKEN = process.env.WA_VERIFY_TOKEN; // secret token
 
@@ -70,7 +71,6 @@ export async function POST(req: NextRequest) {
               lastMessage: messageText,
               lastMessageAt: new Date(),
             });
-          } else {
           }
 
           // Save incoming message
@@ -89,6 +89,14 @@ export async function POST(req: NextRequest) {
           await pusher.trigger(`chat-${chat._id}`, "new-message", {
             message: newMessage,
           });
+
+          // --- AUTO-REPLY LOGIC ---
+          if (user.aiConfig?.isActive) {
+            const aiReply = await getAIReply(user, chat, phone_number_id);
+            if (aiReply) {
+              await sendMessage(user, chat, from, aiReply);
+            }
+          }
 
           // await pusher.trigger("global-notifications", "new-message", {
           //   message: newMessage,

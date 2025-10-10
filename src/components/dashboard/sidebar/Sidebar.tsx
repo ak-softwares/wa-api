@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { MessageSquare, ContactIcon, BarChart2, Settings, Menu, User, Home, BookTemplate } from "lucide-react"
+import { MessageSquare, ContactIcon, BarChart2, Settings, Menu, User, Home, BookTemplate, Bot } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -16,7 +16,7 @@ export default function Sidebar() {
     { href: "/dashboard/messages", label: "Messages", icon: MessageSquare },
     { href: "/dashboard/contacts", label: "Contacts", icon: ContactIcon },
     { href: "/dashboard/templates", label: "Templates", icon: BookTemplate },
-    // { href: "/dashboard/settings", label: "Settings", icon: Settings },
+    { href: "/dashboard/ai-chat", label: "Ai-chat", icon: Bot },
     { href: "/dashboard/profile", label: "Profile", icon: User, bottom: true },
   ]
 
