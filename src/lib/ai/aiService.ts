@@ -24,20 +24,30 @@ export async function getAIReply(user: any, chat: any, phone_number_id: string) 
     .lean();
 
   // Convert messages to OpenAI format
+  // Convert messages to OpenAI format
   const messageInput = recentMessages
-    .map(msg => ({ role: "user", content: msg.text }))
-    .reverse(); // reverse so oldest messages come first
+    .map(msg => ({
+      role: "user",
+      content: [{ type: "input_text", text: msg.text || "" }] // content must be array
+    }))
+    .reverse();
 
+  // System prompt as first input
   const input: any = [
-    { role: "system", content: aiPrompt },
-    ...messageInput,
+    {
+      role: "system",
+      content: [{ type: "input_text", text: "You are a helpful assistant for aramarket.in." }]
+    },
+    ...messageInput
   ];
 
+  
   try {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
     const response = await openai.responses.create({
       model: "gpt-4o",
       instructions: aiPrompt,
+      // input: 'you are a aramarket.in assistant.',
       input,
     });
 
