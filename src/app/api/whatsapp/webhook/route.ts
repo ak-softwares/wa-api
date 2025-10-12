@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
 
           // --- AUTO-REPLY LOGIC ---
           if (user.aiConfig?.isActive) {
-            const aiReply = await getAIReply(user, chat, phone_number_id);
+            const aiReply = await getAIReply(user.aiConfig.prompt, chat, phone_number_id);
             if (aiReply) {
               await sendMessage(user, chat, from, aiReply);
             }
@@ -114,7 +114,6 @@ export async function POST(req: NextRequest) {
     const response: ApiResponse = { success: true, message: "Messages processed" };
     return NextResponse.json(response, { status: 200 });
   } catch (error: any) {
-    console.error("❌ Error processing messages:", error);
     const response: ApiResponse = {
       success: false,
       message: `Error: ${error?.response?.data ? JSON.stringify(error.response.data) : error.message}`,

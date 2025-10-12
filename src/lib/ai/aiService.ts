@@ -4,58 +4,54 @@ import { Message } from "@/models/Message";
 import { MessageStatus } from "@/types/messageStatus";
 import { MessageType } from "@/types/messageType";
 import { pusher } from "@/lib/pusher";
+import { connectDB } from "../mongoose";
 
 /**
  * Get AI reply from OpenAI for a specific chat
  */
-export async function getAIReply(user: any, chat: any, phone_number_id: string) {
-  if (!user.aiConfig?.isActive) return null;
+export async function getAIReply(prompt: string, chat: any, phone_number_id: string) {
 
-  const aiPrompt = user.aiConfig.prompt || "You are a helpful AI assistant.";
+  const aiPrompt = prompt || "You are a helpful AI assistant.";
 
+  await connectDB();
   // Fetch last 20 user messages (exclude AI itself)
   const recentMessages = await Message.find({
-    userId: user._id,
     chatId: chat._id,
-    from: { $ne: phone_number_id },
   })
     .sort({ createdAt: -1 })
     .limit(20)
     .lean();
 
-  // Convert messages to OpenAI format
-  // Convert messages to OpenAI format
-  const messageInput = recentMessages
-    .map(msg => ({
-      role: "user",
-      content: [{ type: "input_text", text: msg.text || "" }] // content must be array
+  // Convert messages into proper chat format
+  const historyMessages = recentMessages
+    .map((msg) => ({
+      role: msg.from === phone_number_id ? "assistant" : "user",
+      content: msg.message || "",
     }))
-    .reverse();
+    .reverse(); // oldest → newest
 
-  // System prompt as first input
-  const input: any = [
+  // Final messages array
+  const messages: any[] = [
     {
       role: "system",
-      content: [{ type: "input_text", text: "You are a helpful assistant for aramarket.in." }]
+      content: aiPrompt,
     },
-    ...messageInput
+    ...historyMessages,
   ];
 
-  
   try {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-    const response = await openai.responses.create({
+    const response = await openai.chat.completions.create({
       model: "gpt-4o",
-      instructions: aiPrompt,
-      // input: 'you are a aramarket.in assistant.',
-      input,
+      messages,
+      temperature: 0.7,
+      max_tokens: 500,
     });
 
     // response.output_text gives concatenated text output
-    const reply = response.output_text;
+    const reply = response.choices[0]?.message?.content || null;
     return reply || null;
   } catch (err) {
-    console.error("AI reply error:", err);
     return null;
   }
 }
