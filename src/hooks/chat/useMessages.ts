@@ -140,19 +140,19 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
         _id: tempId,
         userId: "local-user" as any,
         chatId: activeChat._id as any,
-        to: partner.id,
+        to: partner.number,
         from: "me",
         message: text,
         status: MessageStatus.Sent,
         type: "text" as any,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
     };
 
     setMessages((prev) => [tempMessage, ...prev]);
 
     await sendMessage(
-        partner.id,
+        partner.number,
         text.trim(),
         () => {
             setMessages((prev) =>
@@ -171,7 +171,78 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
             );
         }
     );
+  };
+
+  const onBroadcastSend = async (message: string) => {
+    if (!message.trim() || !activeChat) return;
+
+    // Proceed only if it's a broadcast chat
+    if (activeChat.type !== "broadcast") return;
+
+    const tempId = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+
+    // Temporary message for instant UI update
+    const tempMessage: IMessage = {
+      _id: tempId,
+      userId: "local-user" as any,
+      chatId: activeChat._id as any,
+      to: "broadcast",
+      from: "me",
+      message,
+      status: MessageStatus.Sent, // ✅ use Sending before actual result
+      type: "text" as any,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
+
+    // Instantly add message to UI
+    setMessages((prev) => [tempMessage, ...prev]);
+
+    try {
+      const res = await fetch("/api/whatsapp/messages/broadcast", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chatId: activeChat._id,
+          participants: activeChat.participants,
+          message,
+        }),
+      });
+
+      const data: ApiResponse = await res.json();
+
+      if (data.success) {
+        // ✅ Update message status to "Sent"
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === tempId
+              ? { ...msg, status: MessageStatus.Sent }
+              : msg
+          )
+        );
+      } else {
+        // ❌ Update message status to "Failed"
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg._id === tempId
+              ? { ...msg, status: MessageStatus.Failed }
+              : msg
+          )
+        );
+        // console.error("Broadcast failed:", data.message);
+      }
+    } catch (error: any) {
+      // ❌ Network or unexpected error
+      // console.error("Error sending broadcast:", error);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === tempId
+            ? { ...msg, status: MessageStatus.Failed }
+            : msg
+        )
+      );
+    }
+  };
 
 
   const refreshMessages = () => {
@@ -184,6 +255,7 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
   return {
     messages,
     onSend,
+    onBroadcastSend,
     loading,
     loadingMore,
     hasMore,

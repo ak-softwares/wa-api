@@ -20,7 +20,7 @@ export interface TemplateHeaderComponent {
   format: "TEXT" | "IMAGE" | "VIDEO" | "DOCUMENT";
   text?: string;
   example?: {
-    header_text?: string[];
+    header_handle?: string[];
   };
 }
 

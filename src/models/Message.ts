@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, models } from "mongoose";
 import { MessageStatus } from "@/types/messageStatus";
 import { MessageType } from "@/types/messageType"; 
+import { ChatParticipant, ChatParticipantSchema } from "./Chat";
 
 export interface IMessage extends Document {
   userId: mongoose.Types.ObjectId;   // the service user
@@ -11,6 +12,8 @@ export interface IMessage extends Document {
   waMessageId?: string;
   status: MessageStatus;
   type: MessageType; // optional
+  tag: string;
+  participants: ChatParticipant[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,6 +27,8 @@ const MessageSchema = new Schema<IMessage>({
   waMessageId: { type: String },
   status: { type: String, enum: Object.values(MessageStatus), default: MessageStatus.Sent },
   type: { type: String, enum: Object.values(MessageType), default: MessageType.Text },
+  tag: { type: String, }, // true if AI generated this message
+  participants: { type: [ChatParticipantSchema], required: true },
 }, { timestamps: true });
 
 export const Message = models.Message || mongoose.model<IMessage>("Message", MessageSchema);

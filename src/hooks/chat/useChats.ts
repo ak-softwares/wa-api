@@ -47,12 +47,13 @@ export function useChats({ sidebarRef, phone }: UseChatsProps) {
           setChats(prev => (pageToFetch === 1 ? json.data : [...prev, ...json.data]));
           setHasMore(pageToFetch < (json.pagination?.totalPages || 1));
 
-          if (pageToFetch === 1 && activeChat == null && json.data.length > 0) {
+          if (phone && activeChat == null) {
             setActiveChat(json.data[0]);
           }
         } else {
           setChats(prev => (pageToFetch === 1 ? [] : prev));
           setHasMore(false);
+          toast.error("Error: " + json.message);
         }
       } catch {
         toast.error("Failed to load chats.");
@@ -60,7 +61,7 @@ export function useChats({ sidebarRef, phone }: UseChatsProps) {
         pageToFetch === 1 ? setLoading(false) : setLoadingMore(false);
       }
     },
-    [perPage, query, phone, activeChat]
+    [perPage, query, phone]
   );
 
   useEffect(() => {
@@ -82,6 +83,34 @@ export function useChats({ sidebarRef, phone }: UseChatsProps) {
     container.addEventListener("scroll", handleScroll);
     return () => container.removeEventListener("scroll", handleScroll);
   }, [sidebarRef, loading, loadingMore, hasMore]);
+
+  useEffect(() => {
+    const chatId = activeChat?._id;
+    if (!chatId) return;
+
+    // Instantly update UI
+    setChats(prev =>
+      prev.map(c =>
+        c._id === chatId ? { ...c, unreadCount: 0 } : c
+      )
+    );
+
+    // Update database if unread messages exist
+    if ((activeChat?.unreadCount ?? 0) > 0) {
+      (async () => {
+        try {
+          await fetch(`/api/whatsapp/chats/${chatId}/mark-read`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ unreadCount: 0 }),
+          });
+        } catch (err) {
+          console.error("Failed to mark chat as read:", err);
+        }
+      })();
+    }
+  }, [activeChat]);
+
 
   const refreshChats = () => {
     setQuery("");

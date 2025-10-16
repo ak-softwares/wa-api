@@ -1,17 +1,19 @@
-import { User2 } from "lucide-react";
+import { User2, Users2 } from "lucide-react";
 
 interface ContactAvatarProps {
   imageUrl?: string;
   title?: string;
   subtitle?: string;
+  isGroup?: boolean
   size?: "sm" | "md" | "lg" | "xl";
 }
 
 export default function ContactAvatar({ 
   imageUrl, 
   title, 
-  subtitle, 
-  size = "md" 
+  subtitle,
+  isGroup = false, 
+  size = "md",
 }: ContactAvatarProps) {
   const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     e.currentTarget.style.display = "none"; // hide broken image
@@ -62,7 +64,9 @@ export default function ContactAvatar({
             onError={handleError}
           />
         ) : (
-          <User2 className={`${config.icon} dark:text-gray-400 text-gray-600`} />
+          isGroup 
+            ? <Users2 className={`${config.icon} dark:text-gray-400 text-gray-600`} />
+            : <User2 className={`${config.icon} dark:text-gray-400 text-gray-600`} />
         )}
       </div>
       <div className="min-w-0 flex-1">

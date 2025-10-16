@@ -41,7 +41,7 @@ export default function NewTemplateMessage() {
         components.push({
           type: "HEADER",
           format: headerFormat,
-          text: headerFormat === "TEXT" ? headerText : undefined,
+          text: headerFormat,
         });
       }
 

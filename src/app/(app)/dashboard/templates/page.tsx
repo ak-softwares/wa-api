@@ -120,12 +120,11 @@ export default function TemplateManagementPage() {
 
         {/* Header Row */}
         <Card className="min-w-[900px]">
-          <div className="grid grid-cols-7 gap-4 pl-6 font-semibold text-sm text-gray-700 dark:text-gray-300">
+          <div className="grid grid-cols-6 gap-4 pl-6 font-semibold text-sm text-gray-700 dark:text-gray-300">
             <div>Name</div>
             <div>Category</div>
             <div>Status</div>
             <div>Type</div>
-            <div>Health</div>
             <div>Created At</div>
             <div>Action</div>
           </div>
@@ -136,13 +135,12 @@ export default function TemplateManagementPage() {
           {loading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <Card key={i} className="p-4">
-                <div className="grid grid-cols-7 gap-4 items-center">
+                <div className="grid grid-cols-6 gap-4 items-center">
                   <Skeleton className="h-4 w-32" />
                   <Skeleton className="h-4 w-20" />
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="h-4 w-16" />
                   <Skeleton className="h-4 w-12" />
-                  <Skeleton className="h-4 w-24" />
                   <Skeleton className="h-8 w-16" />
                 </div>
               </Card>
@@ -154,7 +152,7 @@ export default function TemplateManagementPage() {
           ) : (
             templates.map((template) => (
               <Card key={template.id} className="min-w-[900px] transition hover:shadow-md">
-                <div className="grid grid-cols-7 gap-4 items-center pl-4 pr-4 text-sm">
+                <div className="grid grid-cols-6 gap-4 items-center pl-4 pr-4 text-sm">
                   <div className="flex items-center font-medium">
                     {getCategoryIcon(template.category)}
                     <span className="ml-2">{template.name}</span>
@@ -176,11 +174,12 @@ export default function TemplateManagementPage() {
                     </Badge>
                   </div>
                   <div>
-                    {template.components.find((c) => c.type === "BODY")
-                      ? "Text"
-                      : template.components[0]?.type || "N/A"}
+                    {(() => {
+                      const headerComponent = template.components.find((c) => c.type === "HEADER");
+                      return headerComponent?.format || "TEXT";
+                    })()}
                   </div>
-                  <div>{template.health || "Good"}</div>
+
                   <div>{template.createdAt ? new Date(template.createdAt).toLocaleDateString() : "—"}</div>
                   <div>
                     <DeleteTemplateDialog templateName={template.name} onTemplateDeleted={refreshTemplates} />

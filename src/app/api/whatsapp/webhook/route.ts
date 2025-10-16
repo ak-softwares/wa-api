@@ -61,15 +61,17 @@ export async function POST(req: NextRequest) {
           // Find or create chat
           let chat = await Chat.findOne({
             userId: user._id,
-            participants: { $in: [from] },
+            participants: {
+              $elemMatch: { number: from } // looks inside the participants array
+            },
+            type: { $ne: "broadcast" } // NOT a broadcast chat
           });
 
           if (!chat) {
             chat = await Chat.create({
               userId: user._id,
-              participants: [from],
-              lastMessage: messageText,
-              lastMessageAt: new Date(),
+              participants: [{ number: from }], // must be object, not string
+              type: "single"
             });
           }
 
@@ -106,6 +108,7 @@ export async function POST(req: NextRequest) {
           // Update chat last message
           chat.lastMessage = messageText;
           chat.lastMessageAt = new Date();
+          chat.unreadCount = (chat.unreadCount || 0) + 1;
           await chat.save();
         }
       }

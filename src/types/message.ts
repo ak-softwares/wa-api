@@ -11,6 +11,7 @@ export type IMessage = {
   waMessageId?: string;
   status: MessageStatus;
   type: MessageType;
-  createdAt: string;     // ISO date string
-  updatedAt: string;     // ISO date string
+  tag?: string;
+  createdAt: Date;     // ISO date string
+  updatedAt: Date;     // ISO date string
 };

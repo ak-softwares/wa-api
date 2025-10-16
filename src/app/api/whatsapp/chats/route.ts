@@ -34,6 +34,26 @@ export async function GET(req: NextRequest) {
 
     const contacts = await Contact.find({ userId: user._id }).lean();
 
+    // 🔹 If phone is provided → ensure chat exists / prepend temp chat
+    if (phone) {
+      // Find or create chat
+      let chat = await Chat.findOne({
+        userId: user._id,
+        participants: {
+          $elemMatch: { number: phone } // looks inside the participants array
+        },
+        type: { $ne: "broadcast" } // NOT a broadcast chat
+      });
+
+      if (!chat) {
+        await Chat.create({
+          userId: user._id,
+          participants: [{ number: phone }], // must be object, not string
+          type: "single"
+        });
+      }
+    }
+
     if (searchQuery) {
       // 🔹 Use Atlas Search
       const searchPipeline: any[] = [
@@ -72,57 +92,36 @@ export async function GET(req: NextRequest) {
     } else {
       // 🔹 Regular paginated query
       [chats, totalChats] = await Promise.all([
-        Chat.find({ userId: user._id })
-          .sort({ lastMessageAt: -1 })
-          .skip(skip)
-          .limit(perPage)
-          .lean(),
+        Chat.aggregate([
+          { $match: { userId: user._id } },
+          {
+            $addFields: {
+              sortDate: { $ifNull: ["$lastMessageAt", "$createdAt"] }, // 👈 fallback
+            },
+          },
+          { $sort: { sortDate: -1 } },
+          { $skip: skip },
+          { $limit: perPage },
+        ]),
         Chat.countDocuments({ userId: user._id }),
       ]);
     }
 
-    // 🔹 If phone is provided → ensure chat exists / prepend temp chat
-    if (phone) {
-      let chatIndex = chats.findIndex((c) => c.participants.includes(phone));
-      let chatWithPhone;
+    // Map all chats' participants to include name and image
+    chats = chats.map((chat: any) => {
+      return {
+        ...chat,
+        participants: chat.participants.map((p: any) => {
+          const number = typeof p === "string" ? p : p.number;
+          const contact = contacts.find((c) => c.phones.includes(number));
 
-      if (chatIndex !== -1) {
-        chatWithPhone = chats.splice(chatIndex, 1)[0];
-      } else {
-        chatWithPhone = await Chat.findOne({
-          userId: user._id,
-          participants: { $in: [phone] },
-        }).lean();
-      }
-
-      if (!chatWithPhone) {
-        chatWithPhone = {
-          _id: `temp-${phone}`,
-          userId: user._id,
-          participants: [phone],
-          lastMessage: null,
-          lastMessageAt: null,
-          isTemp: true,
-        };
-      }
-
-      const contact = contacts.find((c) => c.phones.includes(phone));
-      (chatWithPhone as any).participants = (chatWithPhone as any).participants.map((p: string) => ({
-        id: p,
-        name: p === phone && contact ? contact.name : p,
-      }));
-
-      chats = [chatWithPhone as any, ...chats];
-    }
-
-    // 🔹 Attach names from contacts
-    chats = chats.map((chat) => {
-      if (chat.participants[0]?.name) return chat;
-      const participants = chat.participants.map((p: string) => {
-        const contact = contacts.find((c) => c.phones.includes(p));
-        return { id: p, name: contact?.name || p };
-      });
-      return { ...chat, participants };
+          return {
+            number,
+            name: contact?.name,
+            imageUrl: contact?.imageUrl || (typeof p === "object" ? p.imageUrl : undefined),
+          };
+        }),
+      };
     });
 
     const response: ApiResponse = {

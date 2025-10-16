@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
 import { connectDB } from "@/lib/mongoose";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/authOptions";
 import { User } from "@/models/User";
 import { Message } from "@/models/Message";
 import { Chat } from "@/models/Chat";
-import { MessageStatus } from "@/types/messageStatus";
-import { MessageType } from "@/types/messageType";
 import { ApiResponse } from "@/types/apiResponse";
+import { sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
 
 export async function GET(req: NextRequest) {
   try {
@@ -108,52 +106,33 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
 
-    // WhatsApp Cloud API endpoint
-    const url = `https://graph.facebook.com/v23.0/${phone_number_id}/messages`;
-    const payload = {
-      messaging_product: "whatsapp",
-      to,
-      type: "text",
-      text: { body: message },
-    };
-    const headers = {
-      Authorization: `Bearer ${permanent_token}`,
-      "Content-Type": "application/json",
-    };
-
-    // Call WA API
-    const fbResponse = await axios.post(url, payload, { headers });
-
     // ✅ Find or create chat
     let chat = await Chat.findOne({
       userId: user._id,
-      participants: { $in: [to] },
+      participants: {
+        $elemMatch: { number: to } // looks inside the participants array
+      },
+      type: { $ne: "broadcast" } // NOT a broadcast chat
     });
 
     if (!chat) {
       // Try to link with contact (optional)
       chat = await Chat.create({
         userId: user._id,
-        participants: [to],
-        lastMessage: message,
-        lastMessageAt: new Date(),
+        participants: [{ number: to }], // must be object, not string
+        type: "single",
       });
     }
 
-    // ✅ Save message
-    const newMessage = await Message.create({
-      userId: user._id,
+    const { newMessage, waMessageId } = await sendWhatsAppMessage({
+      userId: user._id.toString(),
       chatId: chat._id,
+      phone_number_id,
+      permanent_token,
       to,
-      from: phone_number_id,
       message,
-      waMessageId: fbResponse.data?.messages?.[0]?.id,
-      status: fbResponse.data?.messages?.[0]?.id
-        ? MessageStatus.Sent
-        : MessageStatus.Failed,
-      type: MessageType.Text,
     });
-
+   
     // ✅ Update chat
     chat.lastMessage = message;
     chat.lastMessageAt = new Date();
@@ -162,12 +141,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: fbResponse.data?.messages?.[0]?.id
+        message: waMessageId
           ? "Message sent successfully"
           : "Message failed to send",
         data: newMessage,
       },
-      { status: fbResponse.data?.messages?.[0]?.id ? 200 : 400 }
+      { status: waMessageId ? 200 : 400 }
     );
   } catch (error: any) {
     return NextResponse.json(

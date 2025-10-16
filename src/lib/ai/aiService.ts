@@ -5,11 +5,14 @@ import { MessageStatus } from "@/types/messageStatus";
 import { MessageType } from "@/types/messageType";
 import { pusher } from "@/lib/pusher";
 import { connectDB } from "../mongoose";
+import { IChat } from "@/types/chat";
+import { Chat } from "@/models/Chat";
+import { sendWhatsAppMessage } from "../messages/sendWhatsAppMessage";
 
 /**
  * Get AI reply from OpenAI for a specific chat
  */
-export async function getAIReply(prompt: string, chat: any, phone_number_id: string) {
+export async function getAIReply(prompt: string, chat: IChat, phone_number_id: string) {
 
   const aiPrompt = prompt || "You are a helpful AI assistant.";
 
@@ -60,48 +63,35 @@ export async function getAIReply(prompt: string, chat: any, phone_number_id: str
 /**
  * Send WhatsApp message via Cloud API and save to DB
  */
-export async function sendMessage(user: any, chat: any, to: string, message: string) {
+export async function sendMessage(user: any, chat: IChat, to: string, message: string) {
   try {
     const phone_number_id = user.waAccounts.phone_number_id;
     const permanent_token = user.waAccounts.permanent_token;
 
     if (!phone_number_id || !permanent_token) return null;
 
-    const url = `https://graph.facebook.com/v23.0/${phone_number_id}/messages`;
-    const headers = {
-      Authorization: `Bearer ${permanent_token}`,
-      "Content-Type": "application/json",
-    };
-    const payload = {
-      messaging_product: "whatsapp",
-      to,
-      type: "text",
-      text: { body: message },
-    };
-
-    const fbResponse = await axios.post(url, payload, { headers });
-
-    // Save to DB
-    const savedMsg = await Message.create({
-      userId: user._id,
+    const { newMessage, waMessageId } = await sendWhatsAppMessage({
+      userId: user._id.toString(),
       chatId: chat._id,
+      phone_number_id,
+      permanent_token,
       to,
-      from: phone_number_id,
       message,
-      waMessageId: fbResponse.data?.messages?.[0]?.id,
-      status: fbResponse.data?.messages?.[0]?.id ? MessageStatus.Sent : MessageStatus.Failed,
-      type: MessageType.Text,
+      tag: "Reply by ai"
     });
 
-    // Update chat last message
-    chat.lastMessage = message;
-    chat.lastMessageAt = new Date();
-    await chat.save();
+    // Update chat
+    const chatDoc = await Chat.findById(chat._id);
+    if (chatDoc) {
+      chatDoc.lastMessage = message;
+      chatDoc.lastMessageAt = new Date();
+      await chatDoc.save();
+    }
 
     // Push to frontend
-    await pusher.trigger(`chat-${chat._id}`, "new-message", { message: savedMsg });
+    await pusher.trigger(`chat-${chat._id}`, "new-message", { message: newMessage });
 
-    return savedMsg;
+    return newMessage;
   } catch (err) {
     return null;
   }

@@ -1,16 +1,23 @@
 export type IChat = {
   _id: string;
-  userId: string;             // owner of the chat
-  participants: ChatParticipant[];     // phone numbers or waIds
+  userId: string; // Owner of the chat (your system user)
+  participants: ChatParticipant[]; // list of recipients (customers)
+
+  type: "single" | "broadcast"; // chat type
+
+  chatName?: string;   // only used for broadcast chats
+  chatImage?: string;  // optional image for broadcast chats
+
   lastMessage?: string;
-  lastMessageAt?: string;     // ISO date string
+  lastMessageAt?: Date;
   unreadCount?: number;
-  createdAt: string;          // ISO date string
-  updatedAt: string;          // ISO date string
+
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type ChatParticipant = {
-  id: string;
-  name: string;
+  number: string;
+  name?: string;
   imageUrl?: string;
 };

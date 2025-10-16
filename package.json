@@ -1,6 +1,6 @@
 {
   "name": "wa-api",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -31,6 +31,7 @@
     "clsx": "^2.1.1",
     "googleapis": "^160.0.0",
     "js": "^0.1.0",
+    "libphonenumber-js": "^1.12.24",
     "lucide-react": "^0.541.0",
     "mongoose": "^8.18.0",
     "motion": "^12.23.12",

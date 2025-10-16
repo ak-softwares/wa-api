@@ -7,6 +7,7 @@ import { toast } from "@/components/ui/sonner";
 
 export function useContacts() {
   const [contacts, setContacts] = useState<IContact[]>([]);
+  const [totalContacts, setTotalContacts] = useState(0);
   const [page, setPage] = useState(1);
   const [perPage] = useState(10);
   const [loading, setLoading] = useState(false);
@@ -31,6 +32,7 @@ export function useContacts() {
         if (json.success && json.data) {
           setContacts((prev) => pageToFetch === 1 ? json.data : [...prev, ...json.data]);
           setHasMore(pageToFetch < (json.pagination?.totalPages || 1));
+          setTotalContacts(json.pagination?.total || 0);
         } else {
           setContacts([]);
           setHasMore(false);
@@ -79,5 +81,5 @@ export function useContacts() {
     setHasMore(true);
   };
 
-  return { contacts, loading, loadingMore, hasMore, refreshContacts, searchContacts };
+  return { contacts, loading, loadingMore, hasMore, refreshContacts, searchContacts, totalContacts };
 }

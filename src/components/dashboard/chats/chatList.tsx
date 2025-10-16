@@ -10,6 +10,7 @@ import ChatMenu from "./ChatMenu";
 import ContactAvatar from "../contacts/ContactAvatar";
 import { useState, useEffect, useCallback } from "react";
 import { useDebounce } from "@/hooks/common/useDebounce";
+import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 
 export default function ChatList() {
   const {
@@ -29,13 +30,20 @@ export default function ChatList() {
   const [isSearching, setIsSearching] = useState(false);
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  const handleChatClick = (chat: any) => {
+  const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
+    const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
+    return phoneNumber ? phoneNumber.formatInternational() : number;
+  }
+
+  const handleOpenChat = async (chat: any) => {
     setActiveChat(chat);
   };
 
   const handleDeleteChat = (chatId: string) => {
     setChats((prev) => prev.filter((chat) => chat._id !== chatId));
-    setActiveChat(chats.length > 0 ? chats[0] : null);
+    if(activeChat?._id == chatId) {
+      setActiveChat(null);
+    }
   };
 
   const handleSearch = useCallback(
@@ -61,7 +69,7 @@ export default function ChatList() {
   };
 
   return (
-    <div className="w-1/3 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+    <div className="bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Header */}
       <div className="p-4 border-b flex items-center justify-between">
         <h1 className="text-xl font-semibold">Chats</h1>
@@ -126,32 +134,52 @@ export default function ChatList() {
           <div className="p-8 text-center">No chats found.</div>
         ) : (
           chats.map((chat) => {
+            const isBroadcast = chat.type === "broadcast";
             const partner = chat.participants[0];
-            const isActive =
-              partner?.id === activeChat?.participants[0]?.id;
+            const isActive = chat._id === activeChat?._id
+            const displayName = isBroadcast
+              ? chat.chatName || "Broadcast"
+              : partner?.name || formatPhone(String(partner?.number)) || "Unknown";
+
+            const displayImage = isBroadcast
+              ? chat?.chatImage
+              : partner?.imageUrl;
             return (
               <div
                 key={chat._id}
-                onClick={() => handleChatClick(chat)}
+                onClick={() => handleOpenChat(chat)}
                 className={`group flex items-center p-4 border-b cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
                   isActive ? "bg-gray-100 dark:bg-gray-800" : ""
                 }`}
               >
                 {/* Avatar */}
                 <ContactAvatar
-                  imageUrl={partner?.imageUrl}
-                  title={partner?.name || "Unknown"}
+                  imageUrl={displayImage}
+                  title={displayName}
                   subtitle={chat.lastMessage || "No messages yet"}
                   size="lg"
+                  isGroup={isBroadcast}
                 />
 
                 {/* Right Side */}
                 <div className="flex-1 flex flex-col items-end">
-                  <span className="text-xs text-gray-500">
+                  <span
+                      className={`text-xs ${
+                        (chat?.unreadCount ?? 0) > 0 ? "text-green-500 font-medium" : "text-gray-500"
+                      }`}
+                    >
                     {formatTime(chat.lastMessageAt)}
                   </span>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="w-5 h-5" />
+                    {/* <span className="w-5 h-5" /> */}
+                    {/* Simple circle with unread count */}
+                    {(chat?.unreadCount ?? 0) > 0 && (
+                      <div
+                        className={`flex items-center justify-center min-w-[20px] px-1.5 h-5 bg-green-500 dark:bg-green-700 text-white text-xs font-medium rounded-full`}
+                      >
+                        {(chat?.unreadCount ?? 0) > 99 ? "99+" : chat.unreadCount}
+                      </div>
+                    )}
                     <ChatMenu chatId={chat._id} onDelete={handleDeleteChat} />
                   </div>
                 </div>
