@@ -2,6 +2,7 @@ import mongoose, { Schema, Document, models, model } from "mongoose";
 import bcrypt from "bcryptjs";
 import { IWaAccount, WaAccountSchema } from "./WaAccount";
 import { IAIConfig, AIConfigSchema} from "./AIConfig";
+import { IAIAgent, AIAgentSchema } from "./AIAgent";
 
 // User interface
 
@@ -12,8 +13,10 @@ export interface IUser extends Document {
   phone: number;
   company?: string;
   password: string;
+  apiToken?: string;
   waAccounts?: IWaAccount; // Embedded WA accounts
   aiConfig?: IAIConfig;
+  aiAgent?: IAIAgent;
   createdAt?: Date;
   updatedAt?: Date;
   resetPasswordToken?: string;
@@ -27,10 +30,11 @@ const UserSchema = new Schema<IUser>(
     password: { type: String, required: true },
     phone: { type: Number, required: true },
     company: { type: String, required: false},
-    // force a single object, not an array
     waAccounts: { type: WaAccountSchema, required: false },
     aiConfig: { type: AIConfigSchema, required: false },
+    aiAgent: { type: AIAgentSchema, required: false },
     resetPasswordToken: String,
+    apiToken: {type: String, unique: true, sparse: true},
     resetPasswordExpires: Date,
   },
   { timestamps: true }

@@ -15,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { profileSchema } from "@/schemas/profileSchema"
 import PhoneNumberCard from "@/components/dashboard/rightbar/widgets/phoneNumberCard"
 import SetupProgressCard from "@/components/dashboard/setup/SetupProgressCard"
-
+import APIToken from "@/components/dashboard/setup/APIToken"
 
 
 export default function ProfilePage() {
@@ -140,6 +140,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
           <SetupProgressCard />
+          <APIToken />
         </div>
         
         {/* Account Settings */}

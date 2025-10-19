@@ -8,6 +8,7 @@ import { MessageStatus } from "@/types/messageStatus";
 import { MessageType } from "@/types/messageType";
 import { pusher } from "@/lib/pusher";
 import { getAIReply, sendMessage } from "@/lib/ai/aiService";
+import { sendToAIAgent } from "@/lib/ai/webhookService";
 
 const WA_VERIFY_TOKEN = process.env.WA_VERIFY_TOKEN; // secret token
 
@@ -93,7 +94,17 @@ export async function POST(req: NextRequest) {
           });
 
           // --- AUTO-REPLY LOGIC ---
-          if (user.aiConfig?.isActive) {
+          if(user.aiAgent?.isActive && user.aiAgent?.webhookUrl){
+            const result = await sendToAIAgent(
+              {webhookUrl: user.aiAgent?.webhookUrl, payload:entry, chatHistory: ""});
+        
+            // const response: ApiResponse = {
+            //   success: result.success,
+            //   message: result.message,
+            //   data: result.data,
+            // };
+          }
+          else if (user.aiConfig?.isActive) {
             const aiReply = await getAIReply(user.aiConfig.prompt, chat, phone_number_id);
             if (aiReply) {
               await sendMessage(user, chat, from, aiReply);
