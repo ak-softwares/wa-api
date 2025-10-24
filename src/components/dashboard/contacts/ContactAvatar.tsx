@@ -11,7 +11,7 @@ interface ContactAvatarProps {
 export default function ContactAvatar({ 
   imageUrl, 
   title, 
-  subtitle,
+  subtitle, // "click here for contact info",
   isGroup = false, 
   size = "md",
 }: ContactAvatarProps) {
@@ -31,7 +31,7 @@ export default function ContactAvatar({
     md: {
       avatar: "h-10 w-10",
       icon: "h-4 w-4",
-      text: "text-sm",
+      text: "text-md",
       gap: "gap-3",
       subtitle: "text-sm"
     },
@@ -54,8 +54,12 @@ export default function ContactAvatar({
   const config = sizeConfig[size];
 
   return (
-    <div className={`col-span-12 md:col-span-5 flex items-center ${config.gap}`}>
-      <div className={`${config.avatar} rounded-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 overflow-hidden`}>
+    <div className={`col-span-12 sm:col-span-5 flex items-center -mt-1 -mb-1 ${config.gap}`}>
+      <div className={`${config.avatar} rounded-full flex items-center justify-center bg-gray-200 dark:bg-[#242626] overflow-hidden
+        ${
+          imageUrl ?  "" : "border soldid white"
+        }
+      `}>
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -65,14 +69,14 @@ export default function ContactAvatar({
           />
         ) : (
           isGroup 
-            ? <Users2 className={`${config.icon} dark:text-gray-400 text-gray-600`} />
-            : <User2 className={`${config.icon} dark:text-gray-400 text-gray-600`} />
+            ? <img src={"/assets/icons/users.svg"} className="w-12 h-12 dark:invert opacity-40" alt={"users"} />
+            : <img src={"/assets/icons/user.svg"} className="w-12 h-12 dark:invert opacity-40" alt={"user"} />
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <div className={`font-medium ${config.text} truncate`}>{title || "Unknown"}</div>
+        <div className={`font-medium ${config.text} truncate text-left`}>{title || "Unknown"}</div>
         {subtitle && (
-          <div className={`truncate ${config.subtitle} text-gray-500`}>
+          <div className={`truncate ${config.subtitle} text-gray-400`}>
             {subtitle.length > 30 ? subtitle.slice(0, 30) + "..." : subtitle}
           </div>
         )}

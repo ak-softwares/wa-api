@@ -35,43 +35,47 @@ export default function ContactDetails({ isOpen, onClose }: ContactDetailsProps)
   const phoneNumber = isBroadcast ? "" : partner?.number;
 
   return (
-    <div className="w-80 bg-white dark:bg-gray-900 border-l flex flex-col h-full">
+    <div className="w-100 bg-white dark:bg-[#161717] border-l flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Contact Info</h2>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <X className="h-5 w-5" />
-        </Button>
+      <div className="p-4 flex items-center">
+        <button
+          onClick={onClose}
+          className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white dark:hover:bg-[#252727] hover:bg-gray-200"
+        >
+          <img src="/assets/icons/close.svg" className="w-6 h-6 dark:invert" alt="send" />
+        </button>
+        <h2 className="text-base font-semibold pl-2">Contact Info</h2>
+
       </div>
 
       {/* Contact Info */}
       <div className="flex-1 overflow-y-auto">
         {/* Avatar and Name */}
         <div className="p-6 flex flex-col items-center text-center">
-          <ContactAvatar
-            imageUrl={displayImage}
-            title={displayName}
-            size="xl"
-            isGroup={isBroadcast}
-          />
+          <div className={`rounded-full flex items-center justify-center bg-gray-200 dark:bg-[#242626] overflow-hidden
+            ${
+              displayImage ?  "" : "border soldid white"
+            }
+          `}>
+            {displayImage ? (
+              <img
+                src={displayImage}
+                alt={activeChat.chatImage || "Unknown"}
+                className={`h-25 w-25 rounded-full object-cover`}
+              />
+            ) : (
+              isBroadcast 
+                ? <img src={"/assets/icons/users.svg"} className="w-25 h-25 dark:invert opacity-40" alt={"users"} />
+                : <img src={"/assets/icons/user.svg"} className="w-25 h-25 dark:invert opacity-40" alt={"user"} />
+            )}
+          </div>
+
           <h3 className="text-xl font-semibold mt-4">{displayName}</h3>
           {phoneNumber && (
             <p className="text-gray-500 text-sm mt-1">
               {formatPhone(phoneNumber)}
             </p>
           )}
-        </div>
-
-        {/* Quick Actions */}
-        <div className="px-4 space-y-2">
-          <Button variant="outline" className="w-full justify-start">
-            <Phone className="h-4 w-4 mr-3" />
-            Voice Call
-          </Button>
-          <Button variant="outline" className="w-full justify-start">
-            <Video className="h-4 w-4 mr-3" />
-            Video Call
-          </Button>
         </div>
 
         {/* About Section */}
@@ -89,7 +93,7 @@ export default function ContactDetails({ isOpen, onClose }: ContactDetailsProps)
             Media, links and docs
           </h4>
           <div className="grid grid-cols-3 gap-1">
-            {[1, 2, 3, 4, 5, 6].map((item) => (
+            {[1, 2, 3].map((item) => (
               <div
                 key={item}
                 className="aspect-square bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center"
@@ -117,18 +121,6 @@ export default function ContactDetails({ isOpen, onClose }: ContactDetailsProps)
             <Trash2 className="h-4 w-4 mr-3" />
             Delete Chat
           </Button>
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t text-center">
-          <p className="text-xs text-gray-500">
-            ENG<br />
-            IN
-          </p>
-          <p className="text-xs text-gray-400 mt-2">
-            {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}<br />
-            {new Date().toLocaleDateString()}
-          </p>
         </div>
       </div>
     </div>

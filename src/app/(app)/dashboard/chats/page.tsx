@@ -1,12 +1,12 @@
 "use client";
 
 import { Suspense } from "react";
-import MessagesPage from "@/components/dashboard/chats/MessagePage";
+import ChatPage from "@/components/dashboard/chats/ChatPage";
 
 export default function Page() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <MessagesPage />
+      <ChatPage />
     </Suspense>
   );
 }

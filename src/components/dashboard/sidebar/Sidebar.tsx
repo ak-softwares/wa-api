@@ -1,80 +1,114 @@
 "use client"
 
-import { useState } from "react"
 import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { MessageSquare, ContactIcon, BarChart2, Settings, Menu, User, Home, BookTemplate, Bot, Brain } from "lucide-react"
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { 
+  BookTemplate, BookOpen,        
+  Brain, Cpu,                
+  Megaphone, Volume2,    
+} from "lucide-react"
+import { ThemeToggle } from "@/components/global/header/themeToggle"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function Sidebar() {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
   const pathname = usePathname()
-
-  const links = [
-    { href: "/dashboard", label: "Home", icon: Home },
-    { href: "/dashboard/messages", label: "Messages", icon: MessageSquare },
-    { href: "/dashboard/contacts", label: "Contacts", icon: ContactIcon },
-    { href: "/dashboard/templates", label: "Templates", icon: BookTemplate },
-    { href: "/dashboard/ai-chat", label: "Ai-chat", icon: Bot },
-    { href: "/dashboard/ai-agent", label: "AI Agent", icon: Brain },
-    { href: "/dashboard/profile", label: "Profile", icon: User, bottom: true },
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null)
+  
+  const topLinks = [
+    { href: "/dashboard/chats", label: "Chats", icon: { active: "/assets/icons/chat-active.svg", inactive: "/assets/icons/chat.svg" }, size: "w-6 h-6" },
+    { href: "/dashboard/contacts", label: "Contacts", icon: { active: "/assets/icons/contacts-active.svg", inactive: "/assets/icons/contacts.svg" }, size: "w-8 h-8" },
+    { href: "/dashboard/templates", label: "Templates", icon: { active: "/assets/icons/template.svg", inactive: "/assets/icons/template.svg" }, size: "w-6 h-6" },
   ]
+
+
+  const middleLinks = [
+    { href: "/dashboard/ai-agent", label: "AI Agent", icon: { active: "/assets/icons/ai-agent.svg", inactive: "/assets/icons/ai-agent.svg" }, size: "w-6 h-6" },
+    // { href: "/dashboard/campaigns", label: "Campaigns", icon: { active: Volume2, inactive: Megaphone }, size: "w-6 h-6" },
+  ]
+
+  const bottomLinks = [
+    { href: "/dashboard/settings", label: "Settings", icon: { active: "/assets/icons/setting-active.svg", inactive: "/assets/icons/setting.svg" }, size: "w-6 h-6" },
+    { href: "/dashboard/profile", label: "Profile", icon: { active: "/assets/icons/user-default.svg", inactive: "/assets/icons/user-default.svg" }, size: "w-7 h-7" },
+  ]
+
+
+  const renderLink = (href: string, label: string, icon: { active: any; inactive: any }, size: string) => {
+    const IconSrc = pathname === href ? icon.active : icon.inactive
+
+    return (
+      <div
+        key={href}
+        className="flex justify-center"
+        onMouseEnter={() => setActiveTooltip(label)}
+        onMouseLeave={() => setActiveTooltip(null)}
+      >
+
+        {/* Tooltip */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {/* Your trigger element */}
+              <Link href={href}>
+                <div
+                  className={`w-10 h-10 flex items-center justify-center rounded-full
+                    ${pathname === href
+                      ? "bg-gray-200 dark:bg-[#252727]" 
+                      : "hover:dark:bg-[#252727] hover:bg-gray-200"}`}
+                >
+                  <img 
+                    src={IconSrc} 
+                    className={`${size} dark:invert opacity-70 ${pathname === href ? "dark:opacity-100" : ""}`} 
+                    alt={label} 
+                  />
+                </div>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>{label}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+    )
+  }
+
 
   return (
     <motion.aside
-      animate={{ width: sidebarOpen ? 240 : 70 }}
-      className="bg-white dark:bg-gray-900 border-r shadow-sm flex flex-col"
+      animate={{ width: 70 }}
+      className="bg-gray-50 dark:bg-[#1D1F1F] text-white flex flex-col items-center justify-between py-2 border-r border-gray-200 dark:border-[#2a3942] h-screen sticky top-0"
     >
-      {/* Logo + Toggle */}
-      <div className="flex items-center justify-between p-4 border-b">
-        {sidebarOpen && (
-          <Link href="/">
-            <h1 className="text-lg font-bold">WA API</h1>
-          </Link>
-        )}
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          <Menu className="w-5 h-5" />
-        </Button>
+      <div className="flex flex-col items-center space-y-2 w-full">
+        {/* Top Section */}
+        <div className="flex flex-col items-center space-y-2">
+          {topLinks.map(({ href, label, icon, size }) => renderLink(href, label, icon, size))}
+        </div>
+
+        {/* Divider */}
+        <div className="w-10 border-t dark:border-[#2a3942] border-gray-300 my-3 items-center" />
+
+        {/* Middle Section */}
+        <div className="flex flex-col items-center space-y-2">
+          {middleLinks.map(({ href, label, icon, size }) => renderLink(href, label, icon, size))}
+        </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-2 space-y-2">
-        {links
-          .filter((l) => !l.bottom)
-          .map(({ href, label, icon: Icon }) => (
-            <Link key={href} href={href}>
-              <Button
-                variant={pathname === href ? "default" : "ghost"}
-                className="w-full justify-start"
-              >
-                <Icon className="mr-2 w-5 h-5" />
-                {sidebarOpen && label}
-              </Button>
-            </Link>
-          ))}
 
-        {/* Push Profile to bottom */}
-        <div className="mt-auto">
-          {links
-            .filter((l) => l.bottom)
-            .map(({ href, label, icon: Icon }) => (
-              <Link key={href} href={href}>
-                <Button
-                  variant={pathname === href ? "default" : "ghost"}
-                  className="w-full justify-start"
-                >
-                  <Icon className="mr-2 w-5 h-5" />
-                  {sidebarOpen && label}
-                </Button>
-              </Link>
-            ))}
-        </div>
-      </nav>
+      {/* Divider */}
+      {/* <div className="w-8 border-t border-[#2a3942] my-3" /> */}
+
+      {/* Bottom Section */}
+      <div className="flex flex-col items-center space-y-2">
+        <ThemeToggle />
+          {bottomLinks.map(({ href, label, icon, size }) => renderLink(href, label, icon, size))}
+      </div>
     </motion.aside>
   )
 }

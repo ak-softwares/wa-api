@@ -30,54 +30,52 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-
-    // console.log(`🔹 body.verify_token: ${body.verify_token}`);
-    // // Optional verification if included in payload
-    // if (body.verify_token && body.verify_token !== WA_VERIFY_TOKEN) {
-    //   return new NextResponse("Unauthorized", { status: 401 });
-    // }
-
     await connectDB();
 
-    // Example: iterate over incoming messages
-    const entries = body.entry || [];
+    const entries = body.entry ?? [];
 
-    for (const [i, entry] of entries.entries()) {
-      const changes = entry.changes || [];
-      for (const [j, change] of changes.entries()) {
-        const messages = change.value?.messages || [];
-        const phone_number_id = change.value?.metadata?.phone_number_id;
-        // const phone_number_id = "810369052154744";
+    for (const entry of entries) {
+      const changes = entry.changes ?? [];
 
-        for (const [k, msg] of messages.entries()) {
-          const from = msg.from; // sender
+      for (const change of changes) {
+        const value = change.value;
+        const phone_number_id = value?.metadata?.phone_number_id;
+        const messages = value?.messages ?? [];
+        if (!phone_number_id || messages.length === 0) continue;
+
+        // Find user only once per entry
+        const user = await User.findOne({ "waAccounts.phone_number_id": phone_number_id });
+        if (!user) continue;
+
+        // Local cache for chats to reduce DB calls
+        const chatCache = new Map<string, any>();
+
+        for (const msg of messages) {
+          const from = msg.from;
           const messageText = msg.text?.body || "";
           const waMessageId = msg.id;
-          // Find user by phone_number_id
-          const user = await User.findOne({ "waAccounts.phone_number_id": phone_number_id });
-          if (!user) {
-            continue;
-          }
+          if (!from) continue;
 
-          // Find or create chat
-          let chat = await Chat.findOne({
-            userId: user._id,
-            participants: {
-              $elemMatch: { number: from } // looks inside the participants array
-            },
-            type: { $ne: "broadcast" } // NOT a broadcast chat
-          });
-
+          // Get or create chat using cache
+          let chat = chatCache.get(from);
           if (!chat) {
-            chat = await Chat.create({
-              userId: user._id,
-              participants: [{ number: from }], // must be object, not string
-              type: "single"
-            });
+            chat =
+              (await Chat.findOne({
+                userId: user._id,
+                participants: { $elemMatch: { number: from } },
+                type: { $ne: "broadcast" },
+              })) ||
+              (await Chat.create({
+                userId: user._id,
+                participants: [{ number: from }],
+                type: "single",
+              }));
+
+            chatCache.set(from, chat);
           }
 
-          // Save incoming message
-          const newMessage = await Message.create({
+          // Save incoming message and update chat
+          const newMessagePromise = Message.create({
             userId: user._id,
             chatId: chat._id,
             to: phone_number_id,
@@ -88,53 +86,49 @@ export async function POST(req: NextRequest) {
             type: MessageType.Text,
           });
 
-          // Trigger Pusher event
-          await pusher.trigger(`chat-${chat._id}`, "new-message", {
-            message: newMessage,
-          });
-
-          // --- AUTO-REPLY LOGIC ---
-          if(user.aiAgent?.isActive && user.aiAgent?.webhookUrl){
-            const result = await sendToAIAgent(
-              {webhookUrl: user.aiAgent?.webhookUrl, payload:entry, chatHistory: ""});
-        
-            // const response: ApiResponse = {
-            //   success: result.success,
-            //   message: result.message,
-            //   data: result.data,
-            // };
-          }
-          else if (user.aiConfig?.isActive) {
+          // AI handling logic
+          if (user.aiAgent?.isActive && user.aiAgent?.webhookUrl) {
+            await sendToAIAgent({
+              webhookUrl: user.aiAgent.webhookUrl,
+              payload: msg, // only single message payload
+            });
+          } else if (user.aiConfig?.isActive) {
             const aiReply = await getAIReply(user.aiConfig.prompt, chat, phone_number_id);
             if (aiReply) {
               await sendMessage(user, chat, from, aiReply);
             }
           }
 
-          // await pusher.trigger("global-notifications", "new-message", {
-          //   message: newMessage,
-          // });
-
-
-          // Update chat last message
+          // Update chat meta data
           chat.lastMessage = messageText;
           chat.lastMessageAt = new Date();
           chat.unreadCount = (chat.unreadCount || 0) + 1;
-          await chat.save();
+          const saveChatPromise = chat.save();
+
+          // Wait for both write ops
+          const newMessage = await newMessagePromise;
+          await saveChatPromise;
+
+          // Pusher trigger per message
+          await pusher.trigger(`chat-${chat._id}`, "new-message", {
+            message: newMessage,
+          });
         }
       }
     }
 
-    const response: ApiResponse = { success: true, message: "Messages processed" };
-    return NextResponse.json(response, { status: 200 });
+    return NextResponse.json({ success: true, message: "Messages processed" }, { status: 200 });
   } catch (error: any) {
-    const response: ApiResponse = {
-      success: false,
-      message: `Error: ${error?.response?.data ? JSON.stringify(error.response.data) : error.message}`,
-    };
-    return NextResponse.json(response, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        message: `Error: ${error?.response?.data ? JSON.stringify(error.response.data) : error.message}`,
+      },
+      { status: 500 }
+    );
   }
 }
+
 
 
 

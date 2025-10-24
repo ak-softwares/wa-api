@@ -25,7 +25,7 @@ export default function ChatTab({ contact }: ChatTabProps) {
   const handleChatClick = () => {
     if (contact.phones.length === 1) {
       // Directly navigate to chat if only one phone number
-      router.push(`/dashboard/messages?phone=${contact.phones[0]}`);
+      router.push(`/dashboard/chats?phone=${contact.phones[0]}`);
     } else {
       // Open dialog to select phone number if multiple
       setIsDialogOpen(true);
@@ -34,7 +34,7 @@ export default function ChatTab({ contact }: ChatTabProps) {
 
   const handlePhoneSelect = (phone: string) => {
     setIsDialogOpen(false);
-    router.push(`/dashboard/messages?phone=${phone}`);
+    router.push(`/dashboard/chats?phone=${phone}`);
   };
 
   return (

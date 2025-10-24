@@ -7,7 +7,11 @@ module.exports = {
   ],
   darkMode: "class",
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ['Segoe UI', 'system-ui', 'sans-serif'],
+      },
+    },
   },
   plugins: [daisyui],
   daisyui: {

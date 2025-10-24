@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import { ApiResponse } from "@/types/apiResponse";
 import { toast } from "@/components/ui/sonner";
+import { Trash } from "lucide-react";
 
 interface ChatMenuProps {
   chatId: string;
@@ -48,8 +49,14 @@ export default function ChatMenu({ chatId, onDelete }: ChatMenuProps) {
       <DropdownMenuTrigger asChild>
         <span
         onClick={(e) => e.stopPropagation()} // ✅ stop click from reaching parent 
-        className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer flex items-center justify-center">
-          <ChevronDown className="hidden group-hover:flex h-4 w-4 text-gray-500" />
+        className="rounded-full cursor-pointer flex items-center justify-center">
+        {/* Reserve space always */}
+        <span className="h-6 flex items-center justify-center">
+          <ChevronDown
+            className="hidden group-hover:flex h-6 w-6 text-gray-400"
+            strokeWidth={2}
+          />
+        </span>
         </span>
       </DropdownMenuTrigger>
 
@@ -57,12 +64,13 @@ export default function ChatMenu({ chatId, onDelete }: ChatMenuProps) {
           Archive chat
         </DropdownMenuItem> */}
 
-      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()} className="dark:bg-[#161717]">
         <DropdownMenuItem 
           onClick={handleDelete} 
           disabled={deleting} 
-          className="text-red-600 dark:text-red-400"
+          className="text-red-600 dark:text-red-400 hover:text-red-600 hover:dark:bg-[#343636]"
         >
+          <Trash className="w-4 h-4" />
           {deleting ? "Deleting..." : "Delete chat"}
         </DropdownMenuItem>
       </DropdownMenuContent>

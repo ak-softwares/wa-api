@@ -3,7 +3,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Menu as MenuIcon, Search } from "lucide-react";
+import { MoreVertical, Search } from "lucide-react";
 import { useChatsContext } from "@/hooks/chat/ChatsContext";
 import { formatTime } from "@/utiles/formatTime/formatTime";
 import ChatMenu from "./ChatMenu";
@@ -69,24 +69,37 @@ export default function ChatList() {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+    <div className="bg-white dark:bg-[#161717] min-h-screen border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Chats</h1>
-        <Button variant="ghost" size="icon">
-          <MenuIcon />
-        </Button>
+      <div className="p-5 flex items-center justify-between">
+        <h1 className="text-xl font-semibold">WA API</h1>
+        <div
+          className={`w-10 h-10 flex items-center justify-center rounded-full dark:hover:bg-[#252727] hover:bg-gray-200`}
+          >
+          <MoreVertical  size={22}/>
+        </div>
       </div>
 
       {/* Search Bar */}
-      <div className="p-4 border-b">
-        <div className="relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
+      <div className="px-5">
+        <div className="relative z-10">
+          <Search className="absolute left-3 top-2.5 h-4 w-6 text-gray-500" size={22} strokeWidth={2} />
+          <input
+            type="text"
             placeholder="Search chats..."
-            className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            className="
+              p-1.5
+              pl-12 rounded-full
+              bg-gray-200 dark:bg-[#2E2F2F]
+              border border-transparent
+              focus:border-2 focus:border-white
+              focus:outline-none
+              placeholder:text-base placeholder:text-gray-400
+              dark:text-white
+              w-full
+            "
           />
           {searchTerm && (
             <Button
@@ -102,7 +115,7 @@ export default function ChatList() {
 
       {/* Search Status */}
       {searchTerm && (
-        <div className="px-4 py-2 border-b text-sm flex justify-between items-center">
+        <div className="px-5 py-2 border-b text-sm flex justify-between items-center">
           <span className="text-gray-600">
             {isSearching
               ? "Searching..."
@@ -118,10 +131,10 @@ export default function ChatList() {
       )}
 
       {/* Chat List */}
-      <div ref={sidebarRef} className="flex-1 overflow-y-auto">
+      <div ref={sidebarRef} className="flex-1 overflow-y-auto mt-3">
         {loading ? (
           Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center p-4 border-b">
+            <div key={i} className="flex items-center p-4 mx-3 mb-1">
               <Skeleton className="w-12 h-12 rounded-full mr-3" />
               <div className="flex-1 min-w-0 space-y-2">
                 <Skeleton className="h-5 w-32 rounded" />
@@ -148,8 +161,8 @@ export default function ChatList() {
               <div
                 key={chat._id}
                 onClick={() => handleOpenChat(chat)}
-                className={`group flex items-center p-4 border-b cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                  isActive ? "bg-gray-100 dark:bg-gray-800" : ""
+                className={`mx-3 mb-1 rounded-lg group flex items-center p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-[#2E2F2F] transition-colors ${
+                  isActive ? "bg-gray-100 dark:bg-[#2E2F2F]" : ""
                 }`}
               >
                 {/* Avatar */}
@@ -157,7 +170,7 @@ export default function ChatList() {
                   imageUrl={displayImage}
                   title={displayName}
                   subtitle={chat.lastMessage || "No messages yet"}
-                  size="lg"
+                  size="xl"
                   isGroup={isBroadcast}
                 />
 
@@ -171,7 +184,7 @@ export default function ChatList() {
                     {formatTime(chat.lastMessageAt)}
                   </span>
                   <div className="flex items-center gap-2 mt-1">
-                    {/* <span className="w-5 h-5" /> */}
+                    <span className="w-5 h-5" />
                     {/* Simple circle with unread count */}
                     {(chat?.unreadCount ?? 0) > 0 && (
                       <div
@@ -191,7 +204,7 @@ export default function ChatList() {
         {hasMore &&
           loadingMore &&
           Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="flex items-center p-4 border-b">
+            <div key={i} className="flex items-center p-4 mx-3 mb-1">
               <Skeleton className="w-12 h-12 rounded-full mr-3" />
               <div className="flex-1 min-w-0 space-y-2">
                 <Skeleton className="h-5 w-32 rounded" />

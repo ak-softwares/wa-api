@@ -109,7 +109,7 @@ export default function APIToken() {
                 <p>Content-Type: application/json</p>
                 <pre>
 {`{
-  "phone": "+1234567890",
+  "to": "1234567890",
   "message": "Your response message"
 }`}
                 </pre>
