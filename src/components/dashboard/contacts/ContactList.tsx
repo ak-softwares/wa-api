@@ -39,7 +39,7 @@ export default function ContactList() {
   const router = useRouter();
 
   const selectedContacts: SelectedContact[] = contacts
-    .filter(contact => selectedContactIds.includes(contact._id))
+    .filter(contact => selectedContactIds.includes(contact._id!.toString()))
     .map(contact => ({
       number: contact.phones[0] // Using first phone number
     }));
@@ -74,7 +74,7 @@ export default function ContactList() {
 
   // Select all contacts
   const selectAllContacts = () => {
-    setSelectedContactIds(contacts.map(contact => contact._id));
+    setSelectedContactIds(contacts.map(contact => contact._id!.toString()));
   };
 
   // Clear all selections
@@ -229,7 +229,7 @@ export default function ContactList() {
           contacts.map((contact) => {
             return (
               <div
-                key={contact._id}
+                key={contact._id!.toString()}
                 // onClick={() => handleOpenChat(contact)}
                 className={"mx-3 mb-1 rounded-lg group flex items-center p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-[#2E2F2F] transition-colors"}
               >

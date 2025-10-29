@@ -23,7 +23,7 @@ export default function ContactMenu({ contact, onDelete }: ContactMenuProps) {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { deleteContact, deleting } = useDeleteContacts(() => {
-    onDelete?.(contact._id);
+    onDelete?.(contact._id!.toString());
   });
 
   const handleChatClick = () => {
@@ -80,7 +80,7 @@ export default function ContactMenu({ contact, onDelete }: ContactMenuProps) {
 
           {/* Delete Item */}
           <DropdownMenuItem
-            onClick={() => deleteContact(contact._id, contact.name)}
+            onClick={() => deleteContact(contact._id!.toString(), contact.name)}
             disabled={deleting}
             className="text-red-600 dark:text-red-400 hover:text-red-600 hover:dark:bg-[#343636] flex items-center gap-2"
           >
