@@ -11,6 +11,7 @@ import { useTemplates } from "@/hooks/template/useTemplate";
 import { useDebounce } from "@/hooks/common/useDebounce";
 import { Skeleton } from "@/components/ui/skeleton";
 import DeleteTemplateDialog from "@/components/dashboard/templates/DeleteTemplateDialog";
+import { TemplateComponent, TemplateHeaderComponent } from "@/types/Template";
 
 export default function TemplateManagementPage() {
   const router = useRouter();
@@ -174,10 +175,12 @@ export default function TemplateManagementPage() {
                     </Badge>
                   </div>
                   <div>
-                    {(() => {
-                      const headerComponent = template.components.find((c) => c.type === "HEADER");
-                      return headerComponent?.format || "TEXT";
-                    })()}
+                  {(() => {
+                    const headerComponent = template.components.find((c: TemplateComponent) => c.type === "HEADER"
+                    ) as TemplateHeaderComponent | undefined;
+                    return headerComponent?.format || "TEXT";
+                  })()}
+
                   </div>
 
                   <div>{template.createdAt ? new Date(template.createdAt).toLocaleDateString() : "—"}</div>
