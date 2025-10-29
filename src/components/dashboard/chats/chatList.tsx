@@ -40,8 +40,8 @@ export default function ChatList() {
   };
 
   const handleDeleteChat = (chatId: string) => {
-    setChats((prev) => prev.filter((chat) => chat._id !== chatId));
-    if(activeChat?._id == chatId) {
+    setChats((prev) => prev.filter(chat => String(chat._id) !== chatId));
+    if(String(activeChat?._id) === chatId) {
       setActiveChat(null);
     }
   };
@@ -159,7 +159,7 @@ export default function ChatList() {
               : partner?.imageUrl;
             return (
               <div
-                key={chat._id}
+                key={chat._id!.toString()}
                 onClick={() => handleOpenChat(chat)}
                 className={`mx-3 mb-1 rounded-lg group flex items-center p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-[#2E2F2F] transition-colors ${
                   isActive ? "bg-gray-100 dark:bg-[#2E2F2F]" : ""
@@ -193,7 +193,7 @@ export default function ChatList() {
                         {(chat?.unreadCount ?? 0) > 99 ? "99+" : chat.unreadCount}
                       </div>
                     )}
-                    <ChatMenu chatId={chat._id} onDelete={handleDeleteChat} />
+                    <ChatMenu chatId={chat._id!.toString()} onDelete={handleDeleteChat} />
                   </div>
                 </div>
               </div>
