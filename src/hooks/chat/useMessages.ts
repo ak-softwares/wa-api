@@ -4,19 +4,20 @@ import { useEffect, useState, useCallback } from "react";
 import Pusher from "pusher-js";
 import { toast } from "@/components/ui/sonner";
 import { useRouter } from "next/navigation";
-import { IMessage } from "@/types/Message";
-import { IChat, ChatParticipant } from "@/types/Chat";
+import { Message } from "@/types/Message";
+import { Chat, ChatParticipant } from "@/types/Chat";
 import { MessageStatus } from "@/types/MessageStatus";
 import { useSendWhatsappMessage } from "@/hooks/whatsapp/useSendWhatsappMessage";
 import { ApiResponse } from "@/types/apiResponse";
+import { Types } from "mongoose";
 
 interface UseMessagesProps {
   containerRef?: React.RefObject<HTMLDivElement | null>;
-  activeChat: IChat | null;
+  activeChat: Chat | null;
 }
 
 export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
-  const [messages, setMessages] = useState<IMessage[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [page, setPage] = useState(1);
   const [perPage] = useState(10);
   const [loading, setLoading] = useState(false);
@@ -129,14 +130,14 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
     };
   }, [activeChat?._id, router]);
 
-  const getChatPartner = (chat: IChat): ChatParticipant => chat.participants[0];
+  const getChatPartner = (chat: Chat): ChatParticipant => chat.participants[0];
 
   const onSend = async (text: string) => {
     if (!text.trim() || !activeChat) return;
     const partner = getChatPartner(activeChat);
-    const tempId = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+    const tempId = new Types.ObjectId();
 
-    const tempMessage: IMessage = {
+    const tempMessage: Message = {
         _id: tempId,
         userId: "local-user" as any,
         chatId: activeChat._id as any,
@@ -144,6 +145,7 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
         from: "me",
         message: text,
         status: MessageStatus.Sent,
+        participants: activeChat?.participants ?? [], // ✅ required
         type: "text" as any,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -179,10 +181,10 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
     // Proceed only if it's a broadcast chat
     if (activeChat.type !== "broadcast") return;
 
-    const tempId = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+    const tempId = new Types.ObjectId();
 
     // Temporary message for instant UI update
-    const tempMessage: IMessage = {
+    const tempMessage: Message = {
       _id: tempId,
       userId: "local-user" as any,
       chatId: activeChat._id as any,
@@ -190,6 +192,7 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
       from: "me",
       message,
       status: MessageStatus.Sent, // ✅ use Sending before actual result
+      participants: activeChat?.participants ?? [], // ✅ required
       type: "text" as any,
       createdAt: new Date(),
       updatedAt: new Date(),

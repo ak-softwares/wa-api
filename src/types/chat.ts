@@ -11,6 +11,7 @@ export interface IChatParticipant {
 export type ChatParticipant = IChatParticipant;
 
 export interface IChat {
+  _id?: Types.ObjectId;
   userId: Types.ObjectId;
   waAccountId: Types.ObjectId;
   participants: IChatParticipant[];

@@ -5,15 +5,16 @@ import { MessageType } from "@/types/MessageType";
 import { ChatParticipant } from "@/types/Chat";
 
 export interface IMessage {
+  _id?: Types.ObjectId;
   userId: Types.ObjectId;
   chatId: Types.ObjectId;
   to: string;
   from: string;
   message: string;
   waMessageId?: string;
-  status: MessageStatus;
-  type: MessageType;
-  tag: string;
+  status?: MessageStatus;
+  type?: MessageType;
+  tag?: string;
   participants: ChatParticipant[];
   createdAt?: Date;
   updatedAt?: Date;

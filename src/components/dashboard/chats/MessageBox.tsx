@@ -12,6 +12,7 @@ import ContactAvatar from "../contacts/ContactAvatar";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import ContactDetails from "./ContactDetails";
 import { useTheme } from "next-themes"; // if using next-themes
+import { ChatParticipant } from "@/types/Chat";
 
 export default function MessageBox() {
   const { activeChat, setActiveChat } = useChatsContext();
@@ -194,11 +195,11 @@ export default function MessageBox() {
                   })
                   : messages.map((m) => {
                       const isMine = !activeChat.participants.some(
-                        (p) => p.number === m.from
+                        (p: ChatParticipant) => p.number === m.from
                       );
                       return (
                         <div
-                          key={m._id}
+                          key={m._id!.toString()}
                           className={`flex ${
                             isMine ? "justify-end" : "justify-start"
                           }`}
