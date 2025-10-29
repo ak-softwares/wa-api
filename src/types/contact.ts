@@ -11,3 +11,5 @@ export interface IContact {
   createdAt?: Date;
   updatedAt?: Date;
 }
+// ✅ alias interface as a type — so you can use whichever you prefer
+export type Contact = IContact;

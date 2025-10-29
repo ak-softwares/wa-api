@@ -1,12 +1,13 @@
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
-import Contact, { IContact } from "@/models/Contact";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/mongoose";
 import { getServerSession } from "next-auth";
 import { ApiResponse } from "@/types/apiResponse";
 import { authOptions } from "../../auth/[...nextauth]/authOptions";
 import { User } from "@/models/User";
+import Contact from "@/models/Contact";
+import { IContact } from "@/types/Contact";
 
 export async function GET(req: Request) {
   try {
