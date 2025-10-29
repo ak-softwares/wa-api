@@ -48,7 +48,7 @@ export default function AIChatPage() {
     try {
       setIsSaving(true);
       const response = await fetch('/api/ai/ai-config', {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -79,7 +79,7 @@ export default function AIChatPage() {
     try {
       setIsSaving(true);
       const response = await fetch('/api/ai/ai-config', {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },

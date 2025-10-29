@@ -3,7 +3,7 @@ import { User } from "@/models/User";
 import { connectDB } from "@/lib/mongoose";
 import { ApiResponse } from "@/types/apiResponse";
 import { getServerSession } from "next-auth"
-
+import { WaAccount } from "@/types/WaAccount";
 
 export async function POST(req: Request) {
   try {
@@ -21,15 +21,18 @@ export async function POST(req: Request) {
     await connectDB();
 
     const user = await User.findOne({ email });
-    if (!user || !user.waAccounts) {
+    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
       const response: ApiResponse = {
         success: false,
         message: "No WA account found for this user",
       };
       return NextResponse.json(response, { status: 404 });
     }
+    
+    // Find the default WA account or use the first one
+    const defaultWaAccount = user.waAccounts.find((account: WaAccount) => account.default) || user.waAccounts[0];
 
-    const { waba_id, permanent_token } = user.waAccounts;
+    const { waba_id, permanent_token } = defaultWaAccount;
     if (!waba_id || !permanent_token) {
       const response: ApiResponse = {
         success: false,

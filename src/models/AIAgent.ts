@@ -1,26 +1,22 @@
-import { Schema, Document } from "mongoose";
+// /models/AIAgent.ts
 
-export interface IAIAgent extends Document {
-  webhookUrl?: string;
-  isActive?: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+import { Schema } from "mongoose";
+import { IAIAgent } from "@/types/AIAgent";
 
 export const AIAgentSchema = new Schema<IAIAgent>(
   {
-    webhookUrl: { 
-      type: String, 
+    webhookUrl: {
+      type: String,
       required: false,
-      default: "" 
+      default: "",
     },
-    isActive: { 
-      type: Boolean, 
-      default: false 
-    }
+    isActive: {
+      type: Boolean,
+      default: false,
+    },
   },
-  { 
-    _id: false, // ✅ Prevent creation of _id
-    timestamps: true // ✅ Automatically adds createdAt and updatedAt
+  {
+    _id: false,       // ✅ keep as subdocument without id
+    timestamps: true, // ✅ add createdAt & updatedAt
   }
 );

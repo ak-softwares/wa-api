@@ -8,14 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MessageCircle, MessageSquare, Phone } from "lucide-react";
+import { MessageCircle, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { IContact } from "@/types/Contact";
 
 interface ChatTabProps {
-  contact: {
-    name: string;
-    phones: string[];
-  };
+  contact: IContact;
 }
 
 export default function ChatTab({ contact }: ChatTabProps) {

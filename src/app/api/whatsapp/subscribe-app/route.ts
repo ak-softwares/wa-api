@@ -6,6 +6,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/authOptions";
 import { ApiResponse } from "@/types/apiResponse";
 import { User } from "@/models/User";
+import { WaAccount } from "@/types/WaAccount";
 
 // 📌 Subscribe App to WABA
 export async function POST(req: NextRequest) {
@@ -22,15 +23,18 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     const user = await User.findOne({ email });
-    if (!user || !user.waAccounts) {
+    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
       const response: ApiResponse = {
         success: false,
         message: "No WA account found for this user",
       };
       return NextResponse.json(response, { status: 404 });
     }
+    
+    // Find the default WA account or use the first one
+    const defaultWaAccount = user.waAccounts.find((account: WaAccount) => account.default) || user.waAccounts[0];
 
-    const { waba_id, permanent_token } = user.waAccounts;
+    const { waba_id, permanent_token } = defaultWaAccount;
     if (!waba_id || !permanent_token) {
       const response: ApiResponse = {
         success: false,
@@ -50,7 +54,7 @@ export async function POST(req: NextRequest) {
 
     if (fbResponse.data?.success === true) {
       // ✅ Update user WA account in DB
-      user.waAccounts.is_app_subscribed = true;
+      defaultWaAccount.is_app_subscribed = true;
       await user.save();
 
       const response: ApiResponse = {
@@ -82,44 +86,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// 📌 Check subscription status
-export async function GET(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email;
-
-    if (!email) {
-      const response: ApiResponse = { success: false, message: "Unauthorized" };
-      return NextResponse.json(response, { status: 401 });
-    }
-
-    await connectDB();
-    const user = await User.findOne({ email });
-
-    if (!user || !user.waAccounts) {
-      const response: ApiResponse = {
-        success: false,
-        message: "No WA account found for this user",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    const response: ApiResponse & { isSubscribed: boolean } = {
-      success: true,
-      message: "Fetched subscription status successfully",
-      isSubscribed: !!user.waAccounts.is_app_subscribed,
-    };
-
-    return NextResponse.json(response, { status: 200 });
-  } catch (error: any) {
-    const response: ApiResponse = {
-      success: false,
-      message: `Error: ${error.message}`,
-    };
-    return NextResponse.json(response, { status: 500 });
-  }
-}
-
 // 📌 Unsubscribe App from WABA
 export async function DELETE(req: NextRequest) {
   try {
@@ -134,15 +100,18 @@ export async function DELETE(req: NextRequest) {
     await connectDB();
     const user = await User.findOne({ email });
 
-    if (!user || !user.waAccounts) {
+    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
       const response: ApiResponse = {
         success: false,
         message: "No WA account found for this user",
       };
       return NextResponse.json(response, { status: 404 });
     }
+    
+    // Find the default WA account or use the first one
+    const defaultWaAccount = user.waAccounts.find((account: WaAccount) => account.default) || user.waAccounts[0];
 
-    const { waba_id, permanent_token } = user.waAccounts;
+    const { waba_id, permanent_token } = defaultWaAccount;
     if (!waba_id || !permanent_token) {
       const response: ApiResponse = {
         success: false,
@@ -161,7 +130,7 @@ export async function DELETE(req: NextRequest) {
     const fbResponse = await axios.delete(url, { headers });
 
     if (fbResponse.data?.success === true) {
-      user.waAccounts.is_app_subscribed = false;
+      defaultWaAccount.is_app_subscribed = false;
       await user.save();
 
       const response: ApiResponse = {

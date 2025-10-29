@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { ApiResponse } from "@/types/apiResponse";
 import { toast } from "@/components/ui/sonner";
-import { IChat } from "@/types/chat";
+import { IChat } from "@/types/Chat";
 
 interface UseChatsProps {
   sidebarRef?: React.RefObject<HTMLDivElement | null>;

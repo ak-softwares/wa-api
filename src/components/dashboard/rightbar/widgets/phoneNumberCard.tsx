@@ -70,7 +70,7 @@ export default function PhoneNumberCard({ showRemoveButton = false }: PhoneNumbe
   const handleDelete = async () => {
     setDeletingPhone(true)
     try {
-      const res = await fetch("/api/whatsapp/delete-wa-account", {
+      const res = await fetch("/api/whatsapp/accounts", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       })

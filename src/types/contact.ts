@@ -1,13 +1,13 @@
-export type IContact = {
-  _id: string;
-  userId: string;
+// /types/Contact.ts
+import { Types } from "mongoose";
+
+export interface IContact {
+  userId: Types.ObjectId;
   name?: string;
-  phones: string[];   // multiple phone numbers
+  phones: string[];
   email?: string;
   tags?: string[];
-  imageUrl?: string;   // profile/contact photo
-  lastMessage?: string;
-  lastMessageAt?: string; // ISO date string
-  createdAt: string;      // ISO date string
-  updatedAt: string;      // ISO date string
-};
+  imageUrl?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}

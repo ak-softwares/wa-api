@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog"
 import { CheckCircle2, AlertCircle, Info } from "lucide-react"
-import { toast } from "sonner"
+import { toast } from "@/components/ui/sonner"
 import { ApiResponse } from "@/types/apiResponse"
 import { useRouter } from "next/navigation"
 import SendTestMessagePopup from "./SendTestMessagePopup"
@@ -36,7 +36,7 @@ export default function WhatsAppSetupCard() {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const res = await fetch("/api/whatsapp/setup-status")
+        const res = await fetch("/api/whatsapp/check-status")
         const result: ApiResponse = await res.json()
 
         if (!result.success) {
@@ -67,7 +67,7 @@ export default function WhatsAppSetupCard() {
   const handleDelete = async () => {
     setDeletingPhone(true)
     try {
-      const res = await fetch("/api/whatsapp/delete-wa-account", { method: "DELETE" })
+      const res = await fetch("/api/whatsapp/accounts", { method: "DELETE" })
       const result: ApiResponse = await res.json()
 
       if (result.success) {

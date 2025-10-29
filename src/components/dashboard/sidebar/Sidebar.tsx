@@ -106,8 +106,7 @@ export default function Sidebar() {
 
       {/* Bottom Section */}
       <div className="flex flex-col items-center space-y-2">
-        <ThemeToggle />
-          {bottomLinks.map(({ href, label, icon, size }) => renderLink(href, label, icon, size))}
+        {bottomLinks.map(({ href, label, icon, size }) => renderLink(href, label, icon, size))}
       </div>
     </motion.aside>
   )

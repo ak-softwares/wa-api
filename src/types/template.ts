@@ -1,13 +1,19 @@
+import { Types } from "mongoose";
+
 export interface ITemplate {
-  id?: string;
+  userId: Types.ObjectId;
+  waAccountId: Types.ObjectId;
   name: string;
   category: "MARKETING" | "UTILITY" | "AUTHENTICATION";
   language: string; // e.g. "en"
   components: TemplateComponent[];
-  status?: string; // e.g. "APPROVED", "REJECTED", etc.
-  createdAt?: string;
+  status?: "APPROVED" | "REJECTED" | "PENDING" | string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
   [key: string]: any; // for any extra Facebook fields
 }
+
+export type Template = ITemplate;
 
 export type TemplateComponent =
   | TemplateHeaderComponent

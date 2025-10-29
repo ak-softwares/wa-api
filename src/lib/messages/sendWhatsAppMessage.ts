@@ -1,8 +1,8 @@
 import axios from "axios";
 import { Message } from "@/models/Message";
-import { MessageStatus } from "@/types/messageStatus";
-import { MessageType } from "@/types/messageType";
-import { ChatParticipant } from "@/models/Chat";
+import { MessageStatus } from "@/types/MessageStatus";
+import { MessageType } from "@/types/MessageType";
+import { ChatParticipant } from "@/types/Chat";
 
 interface SendMessageOptions {
   userId: string;

@@ -4,9 +4,9 @@ import { useEffect, useState, useCallback } from "react";
 import Pusher from "pusher-js";
 import { toast } from "@/components/ui/sonner";
 import { useRouter } from "next/navigation";
-import { IMessage } from "@/types/message";
-import { IChat, ChatParticipant } from "@/types/chat";
-import { MessageStatus } from "@/types/messageStatus";
+import { IMessage } from "@/types/Message";
+import { IChat, ChatParticipant } from "@/types/Chat";
+import { MessageStatus } from "@/types/MessageStatus";
 import { useSendWhatsappMessage } from "@/hooks/whatsapp/useSendWhatsappMessage";
 import { ApiResponse } from "@/types/apiResponse";
 

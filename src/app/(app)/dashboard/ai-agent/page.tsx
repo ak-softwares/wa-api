@@ -55,7 +55,7 @@ export default function AIAgentPage() {
     try {
       setIsSaving(true);
       const res = await fetch('/api/ai/agent-config', {
-        method: 'POST',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config),
       });
@@ -86,7 +86,7 @@ export default function AIAgentPage() {
     try {
       setIsSaving(true);
       const res = await fetch('/api/ai/agent-config', {
-        method: 'POST',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...config, isActive: newStatus }),
       });

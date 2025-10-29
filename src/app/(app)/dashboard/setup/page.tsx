@@ -30,7 +30,7 @@ import { sampleMessageSchema } from "@/schemas/sampleMessageSchema";
 import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
 import { Controller } from "react-hook-form";
 import { useSubscribeApp } from "@/hooks/SetupPageHooks/useSubscribeApp";
 

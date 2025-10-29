@@ -4,7 +4,7 @@ import UpdateContactDialog from "./UpdateContact";
 import DeleteContactDialog from "./DeleteConstact";
 import ChatTab from "./ChatWithContact";
 import { useContacts } from "@/hooks/contact/useContacts";
-import { User, Phone, Search, Users, Check, MessageCircle } from "lucide-react";
+import { User, Phone, Search, Users, Check, MessageCircle, MoreVertical } from "lucide-react";
 import ContactAvatar from "./ContactAvatar";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState, useCallback } from "react";
@@ -17,6 +17,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/sonner";
 import { useRouter } from "next/navigation";
+import ContactMenu from "./ContactMenu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
+import ContactsMenu from "./ContactsMenu";
 
 interface SelectedContact {
   number: string;
@@ -94,6 +97,11 @@ export default function ContactList() {
     setIsBroadcastDialogOpen(true);
   };
 
+  const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
+    const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
+    return phoneNumber ? phoneNumber.formatInternational() : number;
+  }
+
   // Create broadcast
   const createBroadcast = async () => {
     if (!selectedContacts || selectedContacts.length === 0) {
@@ -157,346 +165,109 @@ export default function ContactList() {
   }
 
   return (
-    <div className="space-y-3">
-      {/* Broadcast Dialog */}
-      <Dialog open={isBroadcastDialogOpen} onOpenChange={setIsBroadcastDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create Broadcast</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="broadcastName">Broadcast Name</Label>
-              <Input
-                id="broadcastName"
-                placeholder="Enter broadcast name"
-                value={broadcastName}
-                onChange={(e) => setBroadcastName(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label>Selected Contacts</Label>
-              <div className="mt-1 p-3 border rounded-md max-h-32 overflow-y-auto">
-                {selectedContacts.map((contact, index) => (
-                  <div key={index} className="text-sm text-gray-600 py-1">
-                    {contact.number}
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {selectedContacts.length} contact{selectedContacts.length !== 1 ? 's' : ''} selected
-              </p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsBroadcastDialogOpen(false)}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={createBroadcast}
-              disabled={isLoading || !broadcastName.trim()}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {isLoading ? "Creating..." : "Create Broadcast"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Selection Mode Header */}
-      {isSelectionMode && (
-        <Card className="p-4 bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-full">
-                <Check className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-blue-900 dark:text-blue-100">
-                  Selection Mode
-                </h3>
-                <p className="text-sm text-blue-700 dark:text-blue-300">
-                  {selectedContactIds.length} contact{selectedContactIds.length !== 1 ? 's' : ''} selected
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              {selectedContactIds.length > 0 && (
-                <>
-                  <Button
-                    onClick={openBroadcastDialog}
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                    size="sm"
-                  >
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Create Broadcast ({selectedContactIds.length})
-                  </Button>
-                  
-                  <Button
-                    onClick={selectAllContacts}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Select All
-                  </Button>
-                </>
-              )}
-              
-              <Button
-                onClick={clearSelection}
-                variant="outline"
-                size="sm"
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Total Contacts and Broadcast Button */}
-      <div className="flex items-center justify-between">
+    <div className="bg-white dark:bg-[#161717] min-h-screen border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
+      {/* Header */}
+      <div className="p-5 flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Contacts <span className="text-gray-500 text-sm">({totalContacts})</span></h1>
         <div className="flex items-center gap-2">
-          <Users className="h-4 w-4" />
-          <span>Contacts</span>
-          <Badge variant="secondary">{totalContacts}</Badge>
+          <div className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white dark:hover:bg-[#252727] hover:bg-gray-200">
+            <img src="/assets/icons/add-contacts.svg" className="w-6 h-6 dark:invert" alt="add contact" />
+          </div>
+          <ContactsMenu />
         </div>
-
-        {!isSelectionMode && contacts.length > 0 && (
-          <Button
-            onClick={startBroadcastSelection}
-            variant="outline"
-            size="sm"
-          >
-            <MessageCircle className="h-4 w-4 mr-2" />
-            Create Broadcast
-          </Button>
-        )}
+      </div>
+      
+      {/* Search Bar */}
+      <div className="px-5">
+        <div className="relative z-10">
+          <Search className="absolute left-3 top-2.5 h-4 w-6 text-gray-500" size={22} strokeWidth={2} />
+          <input
+            type="text"
+            placeholder="Search contacts..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="
+              p-1.5
+              pl-12 rounded-full
+              bg-gray-200 dark:bg-[#2E2F2F]
+              border border-transparent
+              focus:border-2 focus:border-white
+              focus:outline-none
+              placeholder:text-base placeholder:text-gray-400
+              dark:text-white
+              w-full
+            "
+          />
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              onClick={handleClearSearch}
+              className="absolute right-0 top-0 text-gray-500 hover:text-gray-700 hover:bg-transparent"
+            >
+              ✕
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* 🔍 Search Bar */} 
-      <Card className="p-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-          <Input 
-            placeholder="Search contacts by name or phone..." 
-            className="pl-10" 
-            value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)} 
-          />
-          {searchTerm && ( 
-            <Button 
-              variant={"ghost"}
-              onClick={handleClearSearch} 
-              className="absolute right-0 top-0 text-gray-500 hover:text-gray-700 hover:bg-transparent" 
-            > 
-              ✕ 
-            </Button> 
-          )}
-        </div> 
-      </Card>
-      
-      {/* 🔎 Search Status */}
-      {searchTerm && ( 
-        <Card className="p-3 mt-2"> 
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600"> 
-              {isSearching ? "Searching..." : `Search results for "${searchTerm}"`}
-            </span> 
-            <button onClick={handleClearSearch} className="text-blue-600 hover:text-blue-800 text-sm">
-              Clear search
-            </button>
-          </div>
-        </Card> 
-      )}
-
-      {/* 📋 List Header (desktop only) */}
-      <Card className="p-4 hidden md:block mt-4">
-        <div className="grid grid-cols-12 gap-4 font-semibold">
-          {isSelectionMode && (
-            <div className="col-span-1 flex items-center justify-center">
-              <Checkbox 
-                checked={selectedContactIds.length === contacts.length && contacts.length > 0}
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    selectAllContacts();
-                  } else {
-                    setSelectedContactIds([]);
-                  }
-                }}
-              />
-            </div>
-          )}
-          <div className={`flex items-center ${isSelectionMode ? 'col-span-4' : 'col-span-5'}`}>
-            <User className="w-4 h-4 mr-2" /> Name 
-          </div>
-          <div className="col-span-4 flex items-center">
-            <Phone className="w-4 h-4 mr-2" /> Phone 
-          </div>
-          <div className={`text-center ${isSelectionMode ? 'col-span-3' : 'col-span-3'}`}>
-            {isSelectionMode ? 'Selection' : 'Actions'}
-          </div>
-        </div>
-      </Card>
-
-      <div className="space-y-3">
+      {/* Contact List */}
+      <div className="flex-1 overflow-y-auto mt-3">
         {loading ? (
           Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i} className="p-4">
-              <div className="grid grid-cols-12 gap-4 items-center">
-                {isSelectionMode && (
-                  <div className="col-span-12 md:col-span-1 flex justify-center">
-                    <Skeleton className="h-5 w-5 rounded" />
-                  </div>
-                )}
-                <div className={`flex items-center gap-3 ${isSelectionMode ? 'col-span-12 md:col-span-4' : 'col-span-12 md:col-span-5'}`}>
-                  <Skeleton className="h-12 w-12 rounded-full" />
-                  <div>
-                    <Skeleton className="h-4 w-40 mb-2" />
-                    <Skeleton className="h-3 w-32" />
-                  </div>
-                </div>
-                <div className="col-span-12 md:col-span-4">
-                  <Skeleton className="h-4 w-28" />
-                </div>
-                <div className={`flex gap-2 ${isSelectionMode ? 'col-span-12 md:col-span-3' : 'col-span-12 md:col-span-3'}`}>
-                  {isSelectionMode ? (
-                    <Skeleton className="h-8 w-20" />
-                  ) : (
-                    <>
-                      <Skeleton className="h-8 w-8 rounded-full" />
-                      <Skeleton className="h-8 w-8 rounded-full" />
-                      <Skeleton className="h-8 w-8 rounded-full" />
-                    </>
-                  )}
-                </div>
+            <div key={i} className="flex items-center p-4 mx-3 mb-1">
+              <Skeleton className="w-12 h-12 rounded-full mr-3" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <Skeleton className="h-5 w-32 rounded" />
+                <Skeleton className="h-4 w-48 rounded" />
               </div>
-            </Card>
+              <Skeleton className="h-4 w-10 ml-2 rounded" />
+            </div>
           ))
         ) : contacts.length === 0 ? (
-          <Card className="p-8 text-center">
-            <p>No contacts yet. Add your first contact!</p>
-          </Card>
+          <div className="p-8 text-center">No contacts found.</div>
         ) : (
-          <>
-            {contacts.map((contact) => (
-              <Card
+          contacts.map((contact) => {
+            return (
+              <div
                 key={contact._id}
-                className={`p-4 transition-colors ${
-                  selectedContactIds.includes(contact._id)
-                    ? 'bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-800'
-                }`}
+                // onClick={() => handleOpenChat(contact)}
+                className={"mx-3 mb-1 rounded-lg group flex items-center p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-[#2E2F2F] transition-colors"}
               >
-                <div className="grid grid-cols-12 gap-4 items-center">
-                  {/* Checkbox for selection */}
-                  {isSelectionMode && (
-                    <div className="col-span-12 md:col-span-1 flex justify-center">
-                      <Checkbox
-                        checked={selectedContactIds.includes(contact._id)}
-                        onCheckedChange={() => toggleContactSelection(contact._id)}
-                      />
-                    </div>
-                  )}
+                {/* Avatar */}
+                <ContactAvatar
+                  imageUrl={contact.imageUrl}
+                  title={contact.name || formatPhone(String(contact.phones[0])) || "Unknown"}
+                  subtitle={formatAndJoinPhones(contact.phones)}
+                  size="xl"
+                />
 
-                  {/* Contact Info */}
-                  <div className={`${isSelectionMode ? 'col-span-12 md:col-span-4' : 'col-span-12 md:col-span-5'}`}>
-                    <ContactAvatar
-                      imageUrl={contact.imageUrl}
-                      title={contact.name}
-                      subtitle={contact.email}
-                    />
-                  </div>
-
-                  {/* Phone Numbers */}
-                  <div className="col-span-12 md:col-span-4">
-                    {formatAndJoinPhones(contact.phones)}
-                  </div>
-
-                  {/* Actions */}
-                  <div className={`flex justify-start md:justify-center gap-2 ${
-                    isSelectionMode ? 'col-span-12 md:col-span-3' : 'col-span-12 md:col-span-3'
-                  }`}>
-                    {isSelectionMode ? (
-                      <Badge variant="secondary" className="px-3 py-1">
-                        {selectedContactIds.includes(contact._id) ? 'Selected' : 'Not selected'}
-                      </Badge>
-                    ) : (
-                      <>
-                        <ChatTab
-                          contact={{
-                            name: contact.name ?? "",
-                            phones: contact.phones,
-                          }}
-                        />
-
-                        <UpdateContactDialog
-                          contact={{
-                            id: contact._id,
-                            name: contact.name ?? "",
-                            phones: contact.phones,
-                            email: contact.email,
-                          }}
-                          onContactUpdated={refreshContacts}
-                        />
-
-                        <DeleteContactDialog
-                          contactId={contact._id}
-                          contactName={contact.name ?? ""}
-                          onContactDeleted={() => handleContactDeleted(contact._id)}
-                        />
-                      </>
-                    )}
+                {/* Right Side */}
+                <div className="flex-1 flex flex-col items-end">
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="w-5 h-5" />
+                    {/* Simple circle with unread count */}
+                    <ContactMenu contact={contact} />
                   </div>
                 </div>
-              </Card>
-            ))}
-
-            {hasMore && loadingMore && (
-              <>
-                {Array.from({ length: 2 }).map((_, i) => (
-                  <Card key={`skeleton-${i}`} className="p-4">
-                    <div className="grid grid-cols-12 gap-4 items-center">
-                      {isSelectionMode && (
-                        <div className="col-span-12 md:col-span-1 flex justify-center">
-                          <Skeleton className="h-5 w-5 rounded" />
-                        </div>
-                      )}
-                      <div className={`flex items-center gap-3 ${isSelectionMode ? 'col-span-12 md:col-span-4' : 'col-span-12 md:col-span-5'}`}>
-                        <Skeleton className="h-12 w-12 rounded-full" />
-                        <div>
-                          <Skeleton className="h-4 w-40 mb-2" />
-                          <Skeleton className="h-3 w-32" />
-                        </div>
-                      </div>
-                      <div className="col-span-12 md:col-span-4">
-                        <Skeleton className="h-4 w-28" />
-                      </div>
-                      <div className={`flex gap-2 ${isSelectionMode ? 'col-span-12 md:col-span-3' : 'col-span-12 md:col-span-3'}`}>
-                        {isSelectionMode ? (
-                          <Skeleton className="h-8 w-20" />
-                        ) : (
-                          <>
-                            <Skeleton className="h-8 w-8 rounded-full" />
-                            <Skeleton className="h-8 w-8 rounded-full" />
-                            <Skeleton className="h-8 w-8 rounded-full" />
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </>
-            )}
-          </>
+              </div>
+            );
+          })
         )}
+
+        {hasMore &&
+          loadingMore &&
+          Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="flex items-center p-4 mx-3 mb-1">
+              <Skeleton className="w-12 h-12 rounded-full mr-3" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <Skeleton className="h-5 w-32 rounded" />
+                <Skeleton className="h-4 w-48 rounded" />
+              </div>
+              <Skeleton className="h-4 w-10 ml-2 rounded" />
+            </div>
+          ))}
       </div>
+
     </div>
   );
 }

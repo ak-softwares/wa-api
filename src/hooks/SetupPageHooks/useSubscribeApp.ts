@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ApiResponse } from "@/types/apiResponse";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
 
 export function useSubscribeApp() {
   const [isLoading, setIsLoading] = useState(false);

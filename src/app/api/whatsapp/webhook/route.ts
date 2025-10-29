@@ -3,12 +3,12 @@ import { connectDB } from "@/lib/mongoose";
 import { User } from "@/models/User";
 import { Chat } from "@/models/Chat";
 import { Message } from "@/models/Message";
-import { ApiResponse } from "@/types/apiResponse";
-import { MessageStatus } from "@/types/messageStatus";
-import { MessageType } from "@/types/messageType";
+import { MessageStatus } from "@/types/MessageStatus";
+import { MessageType } from "@/types/MessageType";
 import { pusher } from "@/lib/pusher";
 import { getAIReply, sendMessage } from "@/lib/ai/aiService";
 import { sendToAIAgent } from "@/lib/ai/webhookService";
+import { WaAccount } from "@/types/WaAccount";
 
 const WA_VERIFY_TOKEN = process.env.WA_VERIFY_TOKEN; // secret token
 
@@ -46,6 +46,8 @@ export async function POST(req: NextRequest) {
         // Find user only once per entry
         const user = await User.findOne({ "waAccounts.phone_number_id": phone_number_id });
         if (!user) continue;
+        const wa = user.waAccounts?.find((acc: WaAccount) => acc.phone_number_id === phone_number_id);
+        if (!wa) continue;
 
         // Local cache for chats to reduce DB calls
         const chatCache = new Map<string, any>();
@@ -62,11 +64,13 @@ export async function POST(req: NextRequest) {
             chat =
               (await Chat.findOne({
                 userId: user._id,
+                waAccountId: wa._id,
                 participants: { $elemMatch: { number: from } },
                 type: { $ne: "broadcast" },
               })) ||
               (await Chat.create({
                 userId: user._id,
+                waAccountId: wa._id,
                 participants: [{ number: from }],
                 type: "single",
               }));
@@ -87,13 +91,13 @@ export async function POST(req: NextRequest) {
           });
 
           // AI handling logic
-          if (user.aiAgent?.isActive && user.aiAgent?.webhookUrl) {
+          if (wa.aiAgent?.isActive && wa.aiAgent?.webhookUrl) {
             await sendToAIAgent({
-              webhookUrl: user.aiAgent.webhookUrl,
+              webhookUrl: wa.aiAgent.webhookUrl,
               payload: msg, // only single message payload
             });
-          } else if (user.aiConfig?.isActive) {
-            const aiReply = await getAIReply(user.aiConfig.prompt, chat, phone_number_id);
+          } else if (wa.aiConfig?.isActive) {
+            const aiReply = await getAIReply(wa.aiConfig.prompt, chat, phone_number_id);
             if (aiReply) {
               await sendMessage(user, chat, from, aiReply);
             }

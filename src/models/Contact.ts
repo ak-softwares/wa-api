@@ -1,15 +1,6 @@
-import mongoose, { Schema, Document, models } from "mongoose";
-
-export interface IContact extends Document {
-  userId: mongoose.Types.ObjectId;
-  name?: string;
-  phones: string[]; // multiple phone numbers
-  email?: string; // optional
-  tags?: string[];
-  imageUrl?: string; // profile/contact photo
-  createdAt: Date;
-  updatedAt: Date;
-}
+// /models/Contact.ts
+import mongoose, { Schema, models } from "mongoose";
+import { IContact } from "@/types/Contact";
 
 const ContactSchema = new Schema<IContact>(
   {
@@ -29,5 +20,4 @@ const ContactSchema = new Schema<IContact>(
   { timestamps: true }
 );
 
-// Avoid model overwrite on hot-reload
 export default models.Contact || mongoose.model<IContact>("Contact", ContactSchema);

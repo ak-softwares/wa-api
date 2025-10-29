@@ -5,7 +5,6 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { MessageSquare , Phone, Bell, CheckCircle } from "lucide-react"
-import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ApiResponse } from "@/types/apiResponse"
 import { useRouter } from "next/navigation"
@@ -15,14 +14,14 @@ import { useSubscribeApp } from "@/hooks/SetupPageHooks/useSubscribeApp"
 
 interface SetupStatus {
   token: boolean
-  phone: boolean
   subscription: boolean
+  phone: boolean
 }
 
 const steps = [
   { id: 1, label: "Connect Whatsapp Number", icon: <MessageSquare  className="h-5 w-5" /> },
-  { id: 2, label: "Phone Number Registered", icon: <Phone className="h-5 w-5" /> },
-  { id: 3, label: "Notification Subscription", icon: <Bell className="h-5 w-5" /> },
+  { id: 2, label: "Notification Subscription", icon: <Bell className="h-5 w-5" /> },
+  { id: 3, label: "Phone Number Registered", icon: <Phone className="h-5 w-5" /> },
 ]
 
 export default function SetupProgressCard() {
@@ -39,7 +38,7 @@ export default function SetupProgressCard() {
   const fetchStatus = useCallback(async () => {
     try {
       setLoading(true)
-      const res = await fetch("/api/whatsapp/setup-status")
+      const res = await fetch("/api/whatsapp/check-status")
       const result: ApiResponse = await res.json()
 
       if (result.success) {
@@ -97,8 +96,8 @@ export default function SetupProgressCard() {
             {steps.map((step, idx) => {
               const isDone =
                 (idx === 0 && status?.token) ||
-                (idx === 1 && status?.phone) ||
-                (idx === 2 && status?.subscription)
+                (idx === 1 && status?.subscription) ||
+                (idx === 2 && status?.phone)
 
               return (
                 <div
@@ -136,7 +135,27 @@ export default function SetupProgressCard() {
             </div>
           ) : (
             <>
-              {!status?.phone && (
+              { !status?.token ? (
+                // 1) Setup
+                <Button
+                  className="w-full mb-2"
+                  variant="outline"
+                  onClick={() => router.push("/dashboard/setup")}
+                >
+                  Launch Setup
+                </Button>
+              ) : !status?.subscription ? (
+                // 2) Subscribe
+                <Button
+                  className="w-full mb-2"
+                  variant="outline"
+                  disabled={subLoading}
+                  onClick={() => subscribeAppToWABA(fetchStatus)}
+                >
+                  {subLoading ? "Subscribing..." : "Subscribe App"}
+                </Button>
+              ) : !status?.phone ? (
+                // 3) Register Phone
                 <Button
                   className="w-full mb-2"
                   variant="outline"
@@ -145,29 +164,7 @@ export default function SetupProgressCard() {
                 >
                   {phoneLoading ? "Registering..." : "Register Phone Number"}
                 </Button>
-              )}
-
-              {!status?.subscription && (
-                <Button
-                  className="w-full mb-2"
-                  variant="outline"
-                  disabled={subLoading}
-                  onClick={() => subscribeAppToWABA(fetchStatus)}
-                >
-                 {subLoading ? "Subscribing..." : "Subscribe App"}
-                </Button>
-              )}
-
-              {/* fallback button if needed */}
-              {status?.phone && status?.subscription === undefined && (
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  onClick={() => router.push("/dashboard/setup")}
-                >
-                  Launch Setup
-                </Button>
-              )}
+              ) : null }
             </>
           )}
         </div>

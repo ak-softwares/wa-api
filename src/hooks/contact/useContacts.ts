@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { ApiResponse } from "@/types/apiResponse";
-import { IContact } from "@/types/contact";
+import { IContact } from "@/types/Contact";
 import { toast } from "@/components/ui/sonner";
 
 export function useContacts() {

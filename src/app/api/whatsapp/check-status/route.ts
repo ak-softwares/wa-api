@@ -5,6 +5,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/authOptions";
 import { ApiResponse } from "@/types/apiResponse";
 import { User } from "@/models/User";
+import { WaAccount } from "@/types/WaAccount";
+
+type StatusData = { token: boolean; phone: boolean; subscription: boolean };
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,41 +15,46 @@ export async function GET(req: NextRequest) {
     const email = session?.user?.email;
 
     if (!email) {
-      const response: ApiResponse = { success: false, message: "Unauthorized" };
+      const response: ApiResponse = { success: false, message: "Unauthorized", data: null };
       return NextResponse.json(response, { status: 401 });
     }
 
     await connectDB();
     const user = await User.findOne({ email });
 
-    if (!user || !user.waAccounts) {
-      const response: ApiResponse = {
-        success: false,
-        message: "No WA account found for this user",
-      };
+    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
+      const response: ApiResponse = { success: false, message: "No WA account found", data: null };
       return NextResponse.json(response, { status: 404 });
     }
 
-    const { permanent_token, is_phone_number_registered, is_app_subscribed } =
-      user.waAccounts;
+    const wa = user.waAccounts.find((acc: WaAccount) => acc.default === true);
 
-    const response: ApiResponse & {
-      data: { token: boolean; phone: boolean; subscription: boolean };
-    } = {
+    if (!wa) {
+      const response: ApiResponse = { success: false, message: "No default WA account", data: null };
+      return NextResponse.json(response, { status: 404 });
+    }
+
+    const { permanent_token, is_phone_number_registered, is_app_subscribed } = wa;
+
+    const data: StatusData = {
+      token: !!permanent_token,
+      phone: !!is_phone_number_registered,
+      subscription: !!is_app_subscribed,
+    };
+
+    const response: ApiResponse = {
       success: true,
       message: "Fetched setup status successfully",
-      data: {
-        token: !!permanent_token,
-        phone: !!is_phone_number_registered,
-        subscription: !!is_app_subscribed,
-      },
+      data,
     };
 
     return NextResponse.json(response, { status: 200 });
+
   } catch (error: any) {
     const response: ApiResponse = {
       success: false,
       message: `Error: ${error.message}`,
+      data: null,
     };
     return NextResponse.json(response, { status: 500 });
   }

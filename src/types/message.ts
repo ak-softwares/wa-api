@@ -1,17 +1,23 @@
-import { MessageStatus } from "./messageStatus";
-import { MessageType } from "./messageType";
+// /types/Message.ts
+import { Types } from "mongoose";
+import { MessageStatus } from "@/types/MessageStatus";
+import { MessageType } from "@/types/MessageType";
+import { ChatParticipant } from "@/types/Chat";
 
-export type IMessage = {
-  _id: string;
-  userId: string;        // the service user
-  chatId: string;     // the recipient
-  to: string;            // recipient phone number
-  from: string;          // sender phone number (user’s WhatsApp)
+export interface IMessage {
+  userId: Types.ObjectId;
+  chatId: Types.ObjectId;
+  to: string;
+  from: string;
   message: string;
   waMessageId?: string;
   status: MessageStatus;
   type: MessageType;
-  tag?: string;
-  createdAt: Date;     // ISO date string
-  updatedAt: Date;     // ISO date string
-};
+  tag: string;
+  participants: ChatParticipant[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+// ✅ alias interface as a type — so you can use whichever you prefer
+export type Message = IMessage;

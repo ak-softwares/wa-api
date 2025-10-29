@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Info, Plus, X } from "lucide-react";
-import { TemplateButton, TemplateComponent } from "@/types/template"
+import { TemplateButton, TemplateComponent } from "@/types/Template"
 import { toast } from "@/components/ui/sonner";
 import { useRouter } from "next/navigation";
 

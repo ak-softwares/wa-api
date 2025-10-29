@@ -5,6 +5,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 import { connectDB } from "@/lib/mongoose";
 import { User } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
+import { WaAccount } from "@/types/WaAccount";
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,6 +31,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(response, { status: 404 });
     }
 
+    const wa = user.waAccounts.find((acc: WaAccount) => acc.default === true);
+    if (!wa) {
+      const response: ApiResponse = {
+        success: false, 
+        message: "No active WhatsApp account found",
+      };
+      return NextResponse.json(response, { status: 404 });
+    }
+    
     // 📦 Parse request
     const { participants, chatName, chatImage } = await req.json();
 
@@ -44,6 +54,7 @@ export async function POST(req: NextRequest) {
     // ✅ Create broadcast chat
     const chat = await Chat.create({
       userId: user._id,
+      waAccountId: wa._id,
       participants: participants.map((p: any) => ({
         number: String(p.number),
         name: p.name ?? "",

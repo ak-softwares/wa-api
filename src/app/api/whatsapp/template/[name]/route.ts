@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/mongoose";
 import { User } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { WaAccount } from "@/types/WaAccount";
 
 // DELETE /api/whatsapp/templates/[name]
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ name: string }> }) {
@@ -17,16 +18,27 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ n
 
     await connectDB();
     const user = await User.findOne({ email });
-    if (!user || !user.waAccounts)
-      return NextResponse.json({ success: false, message: "No WA account found" }, { status: 404 });
+    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
+      const response: ApiResponse = { success: false, message: "No WA account found", data: null };
+      return NextResponse.json(response, { status: 404 });
+    }
+
+    const wa = user.waAccounts.find((acc: WaAccount) => acc.default === true);
+
+    if (!wa) {
+      const response: ApiResponse = { success: false, message: "No default WA account", data: null };
+      return NextResponse.json(response, { status: 404 });
+    }
+
+    const { waba_id, permanent_token } = wa;
+
+    if (!waba_id || !permanent_token)
+      return NextResponse.json({ success: false, message: "WA account not configured" }, { status: 400 });
 
     const { name } = await params;
     if (!name)
       return NextResponse.json({ success: false, message: "Template name is required" }, { status: 400 });
 
-    const { waba_id, permanent_token } = user.waAccounts;
-    if (!waba_id || !permanent_token)
-      return NextResponse.json({ success: false, message: "WA account not configured" }, { status: 400 });
 
     // ✅ Delete from Facebook
     const fbUrl = `https://graph.facebook.com/v23.0/${waba_id}/message_templates?name=${name}`;

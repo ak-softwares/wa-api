@@ -7,6 +7,7 @@ import { Message } from "@/models/Message";
 import { Chat } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
+import { WaAccount } from "@/types/WaAccount";
 
 export async function GET(req: NextRequest) {
   try {
@@ -85,13 +86,20 @@ export async function POST(req: NextRequest) {
     await connectDB();
     const user = await User.findOne({ email });
 
-    if (!user || !user.waAccounts)
-      return NextResponse.json(
-        { success: false, message: "No WA account found for this user" },
-        { status: 404 }
-      );
+    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
+      const response: ApiResponse = { success: false, message: "No WA account found", data: null };
+      return NextResponse.json(response, { status: 404 });
+    }
 
-    const { phone_number_id, permanent_token } = user.waAccounts;
+    const wa = user.waAccounts.find((acc: WaAccount) => acc.default === true);
+
+    if (!wa) {
+      const response: ApiResponse = { success: false, message: "No default WA account", data: null };
+      return NextResponse.json(response, { status: 404 });
+    }
+
+    const { phone_number_id, permanent_token } = wa;
+
     if (!phone_number_id || !permanent_token)
       return NextResponse.json(
         { success: false, message: "User WA account not configured properly" },
@@ -109,6 +117,7 @@ export async function POST(req: NextRequest) {
     // ✅ Find or create chat
     let chat = await Chat.findOne({
       userId: user._id,
+      waAccountId: wa._id,
       participants: {
         $elemMatch: { number: to } // looks inside the participants array
       },
@@ -119,6 +128,7 @@ export async function POST(req: NextRequest) {
       // Try to link with contact (optional)
       chat = await Chat.create({
         userId: user._id,
+        waAccountId: wa._id,
         participants: [{ number: to }], // must be object, not string
         type: "single",
       });

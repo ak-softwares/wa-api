@@ -6,6 +6,7 @@ import { ApiResponse } from "@/types/apiResponse";
 import axios from "axios";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/authOptions";
+import { WaAccount } from "@/types/WaAccount";
 
 // 📌 Full WhatsApp setup: exchange token → register phone → subscribe app
 export async function POST(req: NextRequest) {
@@ -87,42 +88,132 @@ export async function POST(req: NextRequest) {
     }
 
     // ---------------- Step 5: Update & Save User ----------------
-    user.waAccounts = {
+    const newAccount = {
       phone_number_id,
       waba_id,
       business_id,
       permanent_token,
       is_phone_number_registered: phoneRegistered,
       is_app_subscribed: appSubscribed,
+      default: true,
     };
+
+    const index = user.waAccounts.findIndex((acc: WaAccount) => acc.phone_number_id === phone_number_id);
+
+    if (index !== -1) {
+      // ✅ update existing — keep default as it is OR override if you want
+      user.waAccounts[index] = {
+        ...user.waAccounts[index],
+        ...newAccount,
+        updatedAt: new Date(),
+      };
+    } else {
+      // ✅ insert new account and mark as default
+      user.waAccounts.push({
+        ...newAccount,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+
     await user.save();
+
 
     // ---------------- Final Response ----------------
     if (permanent_token) {
-      return NextResponse.json(
-        {
-          success: true,
-          message: "Setup completed successfully",
-          data: {
-            permanent_token: true,
-            phone_registered: phoneRegistered,
-            app_subscribed: appSubscribed,
-          },
-        } as ApiResponse,
-        { status: 200 }
-      );
+      const response: ApiResponse = {
+        success: true,
+        message: "Setup completed successfully",
+        data: {
+          permanent_token: true,
+          phone_registered: phoneRegistered,
+          app_subscribed: appSubscribed,
+        },
+      };
+      return NextResponse.json(response, { status: 200 });
     } else {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Token exchange failed",
-        } as ApiResponse,
-        { status: 500 }
-      );
+      const response: ApiResponse = {
+        success: false,
+        message: "Token exchange failed",
+      };
+      return NextResponse.json(response, { status: 500 });
     }
-
   } catch (err: any) {
     const response: ApiResponse = { success: false, message: err.message || "Unexpected error" };
     return NextResponse.json(response, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" } as ApiResponse,
+        { status: 401 }
+      );
+    }
+
+    await connectDB();
+    const user = await User.findOne({ email: session.user.email });
+    if (!user || !Array.isArray(user.waAccounts)) {
+      return NextResponse.json(
+        { success: false, message: "No WA accounts found" } as ApiResponse,
+        { status: 404 }
+      );
+    }
+
+    // ✅ find default account
+    const acc = user.waAccounts.find((a: WaAccount) => a.default === true);
+    if (!acc) {
+      return NextResponse.json(
+        { success: false, message: "Default WA Account not found" } as ApiResponse,
+        { status: 404 }
+      );
+    }
+
+    const { phone_number_id, permanent_token, waba_id } = acc;
+    if (!permanent_token) {
+      return NextResponse.json(
+        { success: false, message: "WA account not configured properly" } as ApiResponse,
+        { status: 400 }
+      );
+    }
+
+    // Step 1: Deregister
+    try {
+      await axios.post(
+        `https://graph.facebook.com/v23.0/${phone_number_id}/deregister`,
+        {},
+        { headers: { Authorization: `Bearer ${permanent_token}` } }
+      );
+    } catch {}
+
+    // Step 2: Unsubscribe
+    try {
+      if (waba_id) {
+        await axios.delete(
+          `https://graph.facebook.com/v23.0/${waba_id}/subscribed_apps`,
+          { headers: { Authorization: `Bearer ${permanent_token}` } }
+        );
+      }
+    } catch {}
+
+    // Step 3: Remove only default account from DB
+    user.waAccounts = user.waAccounts.filter(
+      (a: WaAccount) => a.phone_number_id !== phone_number_id
+    );
+    await user.save();
+
+    return NextResponse.json(
+      { success: true, message: "Default WA Account deleted successfully", data: acc } as ApiResponse,
+      { status: 200 }
+    );
+
+  } catch (err: any) {
+    return NextResponse.json(
+      { success: false, message: err.message || "Unexpected error" } as ApiResponse,
+      { status: 500 }
+    );
   }
 }

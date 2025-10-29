@@ -6,6 +6,7 @@ import { authOptions } from "../../auth/[...nextauth]/authOptions";
 import { User } from "@/models/User";
 import { Template } from "@/models/Template";
 import { ApiResponse } from "@/types/apiResponse";
+import { WaAccount } from "@/types/WaAccount";
 
 
 export async function GET(req: NextRequest) {
@@ -18,13 +19,25 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
     const user = await User.findOne({ email });
+    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
+      const response: ApiResponse = { success: false, message: "No WA account found", data: null };
+      return NextResponse.json(response, { status: 404 });
+    }
 
-    if (!user || !user.waAccounts)
-      return NextResponse.json({ success: false, message: "No WA account found" }, { status: 404 });
+    const wa = user.waAccounts.find((acc: WaAccount) => acc.default === true);
 
-    const { waba_id, permanent_token } = user.waAccounts;
+    if (!wa) {
+      const response: ApiResponse = { success: false, message: "No default WA account", data: null };
+      return NextResponse.json(response, { status: 404 });
+    }
+
+    const { waba_id, permanent_token } = wa;
+
     if (!waba_id || !permanent_token)
-      return NextResponse.json({ success: false, message: "WA account not configured" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "User WA account not configured properly" },
+        { status: 400 }
+      );
 
     // Pagination support from query params
     const { searchParams } = new URL(req.url);
@@ -81,12 +94,17 @@ export async function POST(req: NextRequest) {
     await connectDB();
     const user = await User.findOne({ email });
 
-    if (!user || !user.waAccounts)
+    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
       return NextResponse.json({ success: false, message: "No WA account found" }, { status: 404 });
-
-    const { waba_id, permanent_token } = user.waAccounts;
-    if (!waba_id || !permanent_token)
+    }
+    const wa = user.waAccounts.find((acc: WaAccount) => acc.default === true);
+    if (!wa) {
+      return NextResponse.json({ success: false, message: "No default WA account" }, { status: 404 });
+    }
+    const { waba_id, permanent_token } = wa;
+    if (!waba_id || !permanent_token) {
       return NextResponse.json({ success: false, message: "WA account not configured" }, { status: 400 });
+    }
 
     // Parse request
     const { name, category, language, components } = await req.json();
@@ -128,6 +146,7 @@ export async function POST(req: NextRequest) {
     // ✅ Save in DB
     const newTemplate = await Template.create({
       userId: user._id,
+      waAccountId: wa._id,
       name,
       category,
       language,

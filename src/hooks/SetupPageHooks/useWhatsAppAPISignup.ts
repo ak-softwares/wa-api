@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
+import { ApiResponse } from "@/types/apiResponse";
 
 interface UseWhatsAppSignupReturn {
   launchWhatsAppSignup: () => void;
@@ -25,11 +26,13 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
     const checkFacebookConnection = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch("/api/whatsapp/check-facebook-status");
-        const data = await res.json();
-        if (data.success) {
+        const res = await fetch("/api/whatsapp/check-status");
+         const result: ApiResponse = await res.json()
+        if (result.success && result.data.token) {
           setFacebookConnected(true);
-        } else {
+          return;
+        }
+        else {
           setFacebookConnected(false);
         }
       } catch (err) {
@@ -156,7 +159,7 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
     access_token: string;
   }) => {
     try {
-      const res = await fetch("/api/whatsapp/exchange-token", {
+      const res = await fetch("/api/whatsapp/accounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

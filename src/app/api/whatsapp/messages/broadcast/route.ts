@@ -5,11 +5,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 import { User } from "@/models/User";
 import { Chat } from "@/models/Chat";
-import { Message } from "@/models/Message";
-import { MessageStatus } from "@/types/messageStatus";
-import { MessageType } from "@/types/messageType";
 import { ApiResponse } from "@/types/apiResponse";
 import { sendBroadcastMessage } from "@/lib/messages/sendWhatsAppMessage";
+import { WaAccount } from "@/types/WaAccount";
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,12 +22,19 @@ export async function POST(req: NextRequest) {
     await connectDB();
     const user = await User.findOne({ email });
 
-    if (!user || !user.waAccounts) {
-      const response: ApiResponse = { success: false, message: "No WA account found for this user" };
+    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
+      const response: ApiResponse = { success: false, message: "No WA account found", data: null };
       return NextResponse.json(response, { status: 404 });
     }
 
-    const { phone_number_id, permanent_token } = user.waAccounts;
+    const wa = user.waAccounts.find((acc: WaAccount) => acc.default === true);
+
+    if (!wa) {
+      const response: ApiResponse = { success: false, message: "No default WA account", data: null };
+      return NextResponse.json(response, { status: 404 });
+    }
+
+    const { phone_number_id, permanent_token } = wa;
     if (!phone_number_id || !permanent_token) {
       const response: ApiResponse = { success: false, message: "User WA account not configured properly" };
       return NextResponse.json(response, { status: 400 });

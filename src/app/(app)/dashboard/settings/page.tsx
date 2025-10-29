@@ -1,8 +1,5 @@
 "use client";
-
-import ContactList from "@/components/dashboard/contacts/ContactList";
-import AddContactDialog from "@/components/dashboard/contacts/AddContact";
-import GoogleContactsImporter from "@/components/dashboard/contacts/GoogleContactsImporter";
+import SettingsPage from "@/components/dashboard/settings/SettingsPage";
 
 export default function ContactsPage() {
 
@@ -12,7 +9,7 @@ export default function ContactsPage() {
       <div className="flex h-screen w-full">
         {/* Contacts Sidebar - 1/3 width */}
         <div className="w-1/3 h-full">
-          <ContactList />
+          <SettingsPage />
         </div>
         <div className="w-2/3 flex h-full max-w-4xl mx-auto space-y-6">
           {/* Header */}

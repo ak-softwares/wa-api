@@ -1,25 +1,8 @@
-import mongoose, { Schema, Document, models } from "mongoose";
+// /models/Chat.ts
+import mongoose, { Schema, models } from "mongoose";
+import { IChat, IChatParticipant } from "@/types/Chat";
 
-export interface ChatParticipant {
-  number: string;
-  name?: string;
-  imageUrl?: string;
-}
-
-export interface IChat extends Document {
-  userId: mongoose.Types.ObjectId;
-  participants: ChatParticipant[];
-  type: "single" | "broadcast";
-  chatName?: string;
-  chatImage?: string;
-  lastMessage?: string;
-  lastMessageAt?: Date;
-  unreadCount?: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export const ChatParticipantSchema = new Schema<ChatParticipant>(
+export const ChatParticipantSchema = new Schema<IChatParticipant>(
   {
     number: { type: String, required: true, trim: true },
     name: { type: String, trim: true },
@@ -31,6 +14,7 @@ export const ChatParticipantSchema = new Schema<ChatParticipant>(
 const ChatSchema = new Schema<IChat>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    waAccountId: { type: Schema.Types.ObjectId, ref: "User.waAccounts", required: true },
     participants: { type: [ChatParticipantSchema], required: true },
     type: {
       type: String,
@@ -47,9 +31,8 @@ const ChatSchema = new Schema<IChat>(
   { timestamps: true }
 );
 
-// 🔍 Indexes for faster lookup
-// ChatSchema.index({ userId: 1, type: 1 });
+// Index
 ChatSchema.index({ userId: 1, "participants.number": 1 });
 
-// ✅ Prevent model overwrite during hot reload
+// Prevent overwrite in dev
 export const Chat = models.Chat || mongoose.model<IChat>("Chat", ChatSchema);

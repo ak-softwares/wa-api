@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/mongoose";
 import { User } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { authOptions } from "../../auth/[...nextauth]/authOptions";
+import { WaAccount } from "@/types/WaAccount";
 
 // GET - Fetch AI Agent configuration from the user document
 export async function GET() {
@@ -19,18 +20,21 @@ export async function GET() {
     }
 
     await connectDB();
-    const user = await User.findOne({ email: session.user.email }).select("aiAgent");
+    const user = await User.findOne({ email: session.user.email });
+    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
+      const response: ApiResponse = { success: false, message: "No WA account found", data: null };
+      return NextResponse.json(response, { status: 404 });
+    }
 
-    if (!user) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User not found",
-      };
+    const wa = user.waAccounts.find((acc: WaAccount) => acc.default === true);
+
+    if (!wa) {
+      const response: ApiResponse = { success: false, message: "No default WA account", data: null };
       return NextResponse.json(response, { status: 404 });
     }
 
     // Default fallback if config doesn't exist yet
-    const aiAgentConfig = user.aiAgent || {
+    const aiAgentConfig = wa.aiAgent || {
       webhookUrl: "",
       isActive: false,
       createdAt: new Date(),
@@ -54,7 +58,7 @@ export async function GET() {
 }
 
 // POST - Update AI Agent configuration inside user document
-export async function POST(req: Request) {
+export async function PATCH(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -69,22 +73,25 @@ export async function POST(req: Request) {
 
     await connectDB();
     const user = await User.findOne({ email: session.user.email });
+    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
+      const response: ApiResponse = { success: false, message: "No WA account found", data: null };
+      return NextResponse.json(response, { status: 404 });
+    }
 
-    if (!user) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User not found",
-      };
+    const wa = user.waAccounts.find((acc: WaAccount) => acc.default === true);
+
+    if (!wa) {
+      const response: ApiResponse = { success: false, message: "No default WA account", data: null };
       return NextResponse.json(response, { status: 404 });
     }
 
     // Update or initialize aiAgent configuration
     const now = new Date();
     
-    user.aiAgent = {
-      webhookUrl: webhookUrl || user.aiAgent?.webhookUrl || "",
-      isActive: typeof isActive === "boolean" ? isActive : user.aiAgent?.isActive || false,
-      createdAt: user.aiAgent?.createdAt || now,
+    wa.aiAgent = {
+      webhookUrl: webhookUrl || wa.aiAgent?.webhookUrl || "",
+      isActive: typeof isActive === "boolean" ? isActive : wa.aiAgent?.isActive || false,
+      createdAt: wa.aiAgent?.createdAt || now,
       updatedAt: now,
     };
 
@@ -93,7 +100,7 @@ export async function POST(req: Request) {
     const response: ApiResponse = {
       success: true,
       message: "AI Agent configuration saved successfully",
-      data: user.aiAgent,
+      data: wa.aiAgent,
     };
 
     return NextResponse.json(response, { status: 200 });

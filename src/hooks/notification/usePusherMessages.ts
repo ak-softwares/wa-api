@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import Pusher from "pusher-js";
 import { toast } from "@/components/ui/sonner";
-import { IMessage } from "@/types/message";
+import { IMessage } from "@/types/Message";
 
 export function usePusherGlobalNotifications() {
   const pusherRef = useRef<Pusher | null>(null);

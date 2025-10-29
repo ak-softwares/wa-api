@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { ApiResponse } from "@/types/apiResponse";
 import { toast } from "@/components/ui/sonner";
-import { ITemplate } from "@/types/template";
+import { ITemplate } from "@/types/Template";
 
 export function useTemplates() {
   const [templates, setTemplates] = useState<ITemplate[]>([]);

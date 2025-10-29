@@ -1,11 +1,11 @@
 import OpenAI from "openai";
 import axios from "axios";
 import { Message } from "@/models/Message";
-import { MessageStatus } from "@/types/messageStatus";
-import { MessageType } from "@/types/messageType";
+import { MessageStatus } from "@/types/MessageStatus";
+import { MessageType } from "@/types/MessageType";
 import { pusher } from "@/lib/pusher";
 import { connectDB } from "../mongoose";
-import { IChat } from "@/types/chat";
+import { IChat } from "@/types/Chat";
 import { Chat } from "@/models/Chat";
 import { sendWhatsAppMessage } from "../messages/sendWhatsAppMessage";
 

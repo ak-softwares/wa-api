@@ -3,6 +3,8 @@ import { connectDB } from "@/lib/mongoose";
 import { User } from "@/models/User";
 import { Chat } from "@/models/Chat";
 import { sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
+import { WaAccount } from "@/types/WaAccount";
+import { ApiResponse } from "@/types/apiResponse";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,21 +24,26 @@ export async function POST(req: NextRequest) {
 
     // find user by API token
     const user = await User.findOne({ apiToken: token });
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: "Invalid token" },
-        { status: 401 }
-      );
+    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
+      const response: ApiResponse = { success: false, message: "No WA account found", data: null };
+      return NextResponse.json(response, { status: 404 });
     }
 
-    if (!user.waAccounts?.phone_number_id || !user.waAccounts?.permanent_token) {
+    const wa = user.waAccounts.find((acc: WaAccount) => acc.default === true);
+
+    if (!wa) {
+      const response: ApiResponse = { success: false, message: "No default WA account", data: null };
+      return NextResponse.json(response, { status: 404 });
+    }
+
+    if (!wa.phone_number_id || !wa.permanent_token) {
       return NextResponse.json(
         { success: false, message: "WA account not configured for this user" },
         { status: 400 }
       );
     }
 
-    const { phone_number_id, permanent_token } = user.waAccounts;
+    const { phone_number_id, permanent_token } = wa;
 
     // Parse request
     const { to, message } = await req.json();
@@ -50,6 +57,7 @@ export async function POST(req: NextRequest) {
     // Find or create chat
     let chat = await Chat.findOne({
       userId: user._id,
+      waAccountId: wa._id,
       participants: { $elemMatch: { number: to } },
       type: { $ne: "broadcast" },
     });
@@ -57,6 +65,7 @@ export async function POST(req: NextRequest) {
     if (!chat) {
       chat = await Chat.create({
         userId: user._id,
+        waAccountId: wa._id,
         participants: [{ number: to }],
         type: "single",
       });
