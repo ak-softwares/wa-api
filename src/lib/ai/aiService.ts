@@ -72,7 +72,7 @@ export async function sendMessage(user: any, chat: IChat, to: string, message: s
 
     const { newMessage, waMessageId } = await sendWhatsAppMessage({
       userId: user._id.toString(),
-      chatId: chat._id,
+      chatId: chat._id?.toString() || "",
       phone_number_id,
       permanent_token,
       to,
