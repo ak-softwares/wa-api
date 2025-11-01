@@ -1,45 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { Chat } from "@/models/Chat";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
-import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
-import { WaAccount } from "@/types/WaAccount";
+import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function POST(req: NextRequest) {
   try {
-    // 🔐 Authenticate user
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email;
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    if (!email) {
-      const response: ApiResponse = {
-        success: false,
-        message: "Unauthorized",
-      };
-      return NextResponse.json(response, { status: 401 });
-    }
-
-    await connectDB();
-    const user = await User.findOne({ email });
-    if (!user) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User not found",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    const wa = user.waAccounts.find((acc: WaAccount) => acc.default === true);
-    if (!wa) {
-      const response: ApiResponse = {
-        success: false, 
-        message: "No active WhatsApp account found",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-    
     // 📦 Parse request
     const { participants, chatName, chatImage } = await req.json();
 
@@ -54,7 +22,7 @@ export async function POST(req: NextRequest) {
     // ✅ Create broadcast chat
     const chat = await Chat.create({
       userId: user._id,
-      waAccountId: wa._id,
+      waAccountId: waAccount._id,
       participants: participants.map((p: any) => ({
         number: String(p.number),
         name: p.name ?? "",

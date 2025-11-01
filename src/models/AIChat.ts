@@ -1,7 +1,7 @@
 import { Schema } from "mongoose";
-import { IAIConfig } from "@/types/AIConfig";
+import { IAIChat } from "@/types/AIChat";
 
-export const AIConfigSchema = new Schema<IAIConfig>(
+export const AIChatSchema = new Schema<IAIChat>(
   {
     prompt: { type: String },
     isActive: { type: Boolean, default: false },

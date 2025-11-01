@@ -8,23 +8,12 @@ import { Chat } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
 import { WaAccount } from "@/types/WaAccount";
+import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email;
-
-    if (!email) {
-      const response: ApiResponse = { success: false, message: "Unauthorized" };
-      return NextResponse.json(response, { status: 401 });
-    }
-
-    await connectDB();
-    const user = await User.findOne({ email });
-    if (!user) {
-      const response: ApiResponse = { success: false, message: "User not found" };
-      return NextResponse.json(response, { status: 404 });
-    }
+    const { user, errorResponse } = await fetchAuthenticatedUser();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     // Extract query params (?chatId=...&per_page=...&page=...)
     const { searchParams } = new URL(req.url);
@@ -74,37 +63,10 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email;
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    if (!email)
-      return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 }
-      );
-
-    await connectDB();
-    const user = await User.findOne({ email });
-
-    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
-      const response: ApiResponse = { success: false, message: "No WA account found", data: null };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    const wa = user.waAccounts.find((acc: WaAccount) => acc.default === true);
-
-    if (!wa) {
-      const response: ApiResponse = { success: false, message: "No default WA account", data: null };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    const { phone_number_id, permanent_token } = wa;
-
-    if (!phone_number_id || !permanent_token)
-      return NextResponse.json(
-        { success: false, message: "User WA account not configured properly" },
-        { status: 400 }
-      );
+    const { phone_number_id, permanent_token } = waAccount;
 
     // Parse request body
     const { to, message } = await req.json();
@@ -117,7 +79,7 @@ export async function POST(req: NextRequest) {
     // ✅ Find or create chat
     let chat = await Chat.findOne({
       userId: user._id,
-      waAccountId: wa._id,
+      waAccountId: waAccount._id,
       participants: {
         $elemMatch: { number: to } // looks inside the participants array
       },
@@ -128,7 +90,7 @@ export async function POST(req: NextRequest) {
       // Try to link with contact (optional)
       chat = await Chat.create({
         userId: user._id,
-        waAccountId: wa._id,
+        waAccountId: waAccount._id,
         participants: [{ number: to }], // must be object, not string
         type: "single",
       });

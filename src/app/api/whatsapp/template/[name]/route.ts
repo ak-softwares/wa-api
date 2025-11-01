@@ -1,39 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import axios from "axios";
-import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
-import { WaAccount } from "@/types/WaAccount";
+import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 // DELETE /api/whatsapp/templates/[name]
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ name: string }> }) {
   try {
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email;
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    if (!email)
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-
-    await connectDB();
-    const user = await User.findOne({ email });
-    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
-      const response: ApiResponse = { success: false, message: "No WA account found", data: null };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    const wa = user.waAccounts.find((acc: WaAccount) => acc.default === true);
-
-    if (!wa) {
-      const response: ApiResponse = { success: false, message: "No default WA account", data: null };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    const { waba_id, permanent_token } = wa;
-
-    if (!waba_id || !permanent_token)
-      return NextResponse.json({ success: false, message: "WA account not configured" }, { status: 400 });
+    const { waba_id, permanent_token } = waAccount;
 
     const { name } = await params;
     if (!name)

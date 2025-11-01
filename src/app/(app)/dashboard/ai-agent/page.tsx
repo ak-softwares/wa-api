@@ -11,10 +11,9 @@ import { Bot, Power, Link, Save } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import APIToken from '@/components/dashboard/setup/APIToken';
 import { IAIAgent } from '@/types/AIAgent';
-import { testSendToAIAgent } from '@/lib/ai/webhookService';
 
 export default function AIAgentPage() {
-  const [config, setConfig] = useState<IAIAgent>({
+  const [aiAgent, setAiAgent] = useState<IAIAgent>({
     webhookUrl: '',
     isActive: false,
   });
@@ -29,11 +28,11 @@ export default function AIAgentPage() {
   const loadConfig = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch('/api/ai/agent-config');
+      const res = await fetch('/api/ai/ai-agent');
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.data) {
-          setConfig(data.data);
+          setAiAgent(data.data);
         }
       } else {
         throw new Error('Failed to load configuration');
@@ -47,23 +46,23 @@ export default function AIAgentPage() {
 
   const handleSave = async () => {
     // Validate webhook URL before saving
-    if (config.webhookUrl && !isValidUrl(config.webhookUrl)) {
+    if (aiAgent.webhookUrl && !isValidUrl(aiAgent.webhookUrl)) {
       toast.error('Please enter a valid webhook URL');
       return;
     }
 
     try {
       setIsSaving(true);
-      const res = await fetch('/api/ai/agent-config', {
+      const res = await fetch('/api/ai/ai-agent', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
+        body: JSON.stringify(aiAgent),
       });
 
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setConfig(data.data);
+        setAiAgent(data.data);
         toast.success('Configuration saved successfully!');
       } else {
         throw new Error(data.message || 'Failed to save configuration');
@@ -77,24 +76,24 @@ export default function AIAgentPage() {
 
   const toggleAgent = async () => {
     // Don't allow activation without webhook URL
-    if (!config.isActive && (!config.webhookUrl || !isValidUrl(config.webhookUrl))) {
+    if (!aiAgent.isActive && (!aiAgent.webhookUrl || !isValidUrl(aiAgent.webhookUrl))) {
       toast.error('Please set a valid webhook URL before activating the agent');
       return;
     }
 
-    const newStatus = !config.isActive;
+    const newStatus = !aiAgent.isActive;
     try {
       setIsSaving(true);
-      const res = await fetch('/api/ai/agent-config', {
+      const res = await fetch('/api/ai/ai-agent', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...config, isActive: newStatus }),
+        body: JSON.stringify({ ...aiAgent, isActive: newStatus }),
       });
 
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setConfig(data.data);
+        setAiAgent(data.data);
         toast.success(`AI Agent ${newStatus ? 'activated' : 'deactivated'}`);
       } else {
         throw new Error(data.message || 'Failed to update status');
@@ -107,7 +106,7 @@ export default function AIAgentPage() {
   };
 
   const handleTestWebhook = async () => {
-    const webhookUrl = config?.webhookUrl?.trim() || "";
+    const webhookUrl = aiAgent?.webhookUrl?.trim() || "";
 
     if (!webhookUrl) {
       toast.error("Webhook URL is required");
@@ -169,10 +168,10 @@ export default function AIAgentPage() {
           </div>
         </div>
         <Badge
-          variant={config.isActive ? "default" : "secondary"}
-          className={config.isActive ? 'bg-green-500 hover:bg-green-600' : ''}
+          variant={aiAgent.isActive ? "default" : "secondary"}
+          className={aiAgent.isActive ? 'bg-green-500 hover:bg-green-600' : ''}
         >
-          {config.isActive ? 'Active' : 'Inactive'}
+          {aiAgent.isActive ? 'Active' : 'Inactive'}
         </Badge>
       </div>
 
@@ -194,11 +193,11 @@ export default function AIAgentPage() {
                 <Input
                   id="webhookUrl"
                   placeholder="https://n8n.example.com/webhook/123"
-                  value={config.webhookUrl || ''}
-                  onChange={e => setConfig(prev => ({ ...prev, webhookUrl: e.target.value }))}
+                  value={aiAgent.webhookUrl || ''}
+                  onChange={e => setAiAgent(prev => ({ ...prev, webhookUrl: e.target.value }))}
                   type="url"
                 />
-                {config.webhookUrl && !isValidUrl(config.webhookUrl) && (
+                {aiAgent.webhookUrl && !isValidUrl(aiAgent.webhookUrl) && (
                   <p className="text-sm text-red-500">Please enter a valid URL</p>
                 )}
               </div>
@@ -206,7 +205,7 @@ export default function AIAgentPage() {
               <div className="flex space-x-2">
                 <Button
                   onClick={handleSave}
-                  disabled={isSaving || (config.webhookUrl ? !isValidUrl(config.webhookUrl) : false)}
+                  disabled={isSaving || (aiAgent.webhookUrl ? !isValidUrl(aiAgent.webhookUrl) : false)}
                   className="flex items-center space-x-2"
                 >
                   <Save className="h-4 w-4" />
@@ -215,7 +214,7 @@ export default function AIAgentPage() {
 
                 <Button
                   onClick={handleTestWebhook}
-                  disabled={isSaving || !config.webhookUrl || !isValidUrl(config.webhookUrl) || isTesting}
+                  disabled={isSaving || !aiAgent.webhookUrl || !isValidUrl(aiAgent.webhookUrl) || isTesting}
                 >
                   {isTesting ? "Testing..." : "Test Webhook"}
                 </Button>
@@ -240,21 +239,21 @@ export default function AIAgentPage() {
             <CardContent className="space-y-4">
               <Button
                 onClick={toggleAgent}
-                variant={config.isActive ? 'destructive' : 'default'}
+                variant={aiAgent.isActive ? 'destructive' : 'default'}
                 className="w-full flex items-center space-x-2"
-                disabled={isSaving || (!config.isActive && (!config.webhookUrl || !isValidUrl(config.webhookUrl)))}
+                disabled={isSaving || (!aiAgent.isActive && (!aiAgent.webhookUrl || !isValidUrl(aiAgent.webhookUrl)))}
               >
                 <Power className="h-4 w-4" />
                 <span>
                   {isSaving 
                     ? 'Updating...' 
-                    : config.isActive 
+                    : aiAgent.isActive 
                       ? 'Deactivate Agent' 
                       : 'Activate Agent'
                   }
                 </span>
               </Button>
-              {!config.isActive && (!config.webhookUrl || !isValidUrl(config.webhookUrl)) && (
+              {!aiAgent.isActive && (!aiAgent.webhookUrl || !isValidUrl(aiAgent.webhookUrl)) && (
                 <p className="text-xs text-muted-foreground">
                   Set a valid webhook URL to activate the agent
                 </p>

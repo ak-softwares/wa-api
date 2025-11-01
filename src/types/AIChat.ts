@@ -1,4 +1,4 @@
-export interface IAIConfig {
+export interface IAIChat {
   prompt?: string;
   isActive?: boolean;
   createdAt?: Date;

@@ -165,7 +165,7 @@ export default function ContactList() {
   }
 
   return (
-    <div className="bg-white dark:bg-[#161717] min-h-screen border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
+    <div className="bg-white dark:bg-[#161717] min-h-screen flex flex-col h-full">
       {/* Header */}
       <div className="p-5 flex items-center justify-between">
         <h1 className="text-xl font-semibold">Contacts <span className="text-gray-500 text-sm">({totalContacts})</span></h1>

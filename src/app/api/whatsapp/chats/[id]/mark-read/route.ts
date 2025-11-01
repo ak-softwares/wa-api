@@ -1,26 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
 import { Chat } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
 // PATCH /api/whatsapp/chats/[id]
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email;
-
-    if (!email) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
-
-    await connectDB();
-    const user = await User.findOne({ email });
-    if (!user) {
-      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
-    }
+    const { user, errorResponse } = await fetchAuthenticatedUser();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const { id: chatId } = await params;
     if (!chatId) {

@@ -9,14 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Bot, Power, Settings, Save } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
+import { IAIChat } from '@/types/AIChat';
 
-interface AIConfig {
-  prompt: string;
-  isActive: boolean;
-}
 
 export default function AIChatPage() {
-  const [aiConfig, setAiConfig] = useState<AIConfig>({
+  const [aiChat, setAiChat] = useState<IAIChat>({
     prompt: '',
     isActive: false,
   });
@@ -32,10 +29,10 @@ export default function AIChatPage() {
     try {
       setIsLoading(true);
       // Replace with your actual API endpoint
-      const response = await fetch('/api/ai/ai-config');
+      const response = await fetch('/api/ai/ai-chat');
       if (response.ok) {
         const result = await response.json();
-        setAiConfig(result.data);
+        setAiChat(result.data);
       }
     } catch (error) {
       toast.error(`Error: ${error}`)
@@ -47,20 +44,20 @@ export default function AIChatPage() {
   const handleSaveConfig = async () => {
     try {
       setIsSaving(true);
-      const response = await fetch('/api/ai/ai-config', {
+      const response = await fetch('/api/ai/ai-chat', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: aiConfig.prompt,
-          isActive: aiConfig.isActive,
+          prompt: aiChat.prompt,
+          isActive: aiChat.isActive,
         }),
       });
 
       if (response.ok) {
         const updatedConfig = await response.json();
-        setAiConfig(updatedConfig);
+        setAiChat(updatedConfig);
         // Show success message
         toast.success('AI configuration saved successfully!');
       } else {
@@ -74,24 +71,24 @@ export default function AIChatPage() {
   };
 
  const toggleAIChat = async () => {
-    const newStatus = !aiConfig.isActive;
+    const newStatus = !aiChat.isActive;
     
     try {
       setIsSaving(true);
-      const response = await fetch('/api/ai/ai-config', {
+      const response = await fetch('/api/ai/ai-chat', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...aiConfig,
+          ...aiChat,
           isActive: newStatus,
         }),
       });
 
       if (response.ok) {
         const updatedConfig = await response.json();
-        setAiConfig(updatedConfig);
+        setAiChat(updatedConfig);
         toast.success('AI Chat is successfully updated')
       } else {
         throw new Error('Failed to update AI status');
@@ -104,7 +101,7 @@ export default function AIChatPage() {
   };
 
   const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setAiConfig(prev => ({
+    setAiChat(prev => ({
       ...prev,
       prompt: e.target.value
     }));
@@ -137,10 +134,10 @@ export default function AIChatPage() {
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <Badge 
-              variant={aiConfig.isActive ? "default" : "secondary"}
-              className={aiConfig.isActive ? "bg-green-500" : ""}
+              variant={aiChat.isActive ? "default" : "secondary"}
+              className={aiChat.isActive ? "bg-green-500" : ""}
             >
-              {aiConfig.isActive ? 'Active' : 'Inactive'}
+              {aiChat.isActive ? 'Active' : 'Inactive'}
             </Badge>
           </div>
         </div>
@@ -168,7 +165,7 @@ export default function AIChatPage() {
                 <Textarea
                   id="ai-prompt"
                   placeholder="You are a helpful AI assistant for our business. Respond to customer inquiries in a friendly and professional manner. Keep responses concise and helpful..."
-                  value={aiConfig.prompt}
+                  value={aiChat.prompt}
                   onChange={handlePromptChange}
                   rows={12}
                   className="font-mono text-sm"
@@ -177,7 +174,7 @@ export default function AIChatPage() {
               
               <div className="flex justify-between items-center">
                 <div className="text-sm text-muted-foreground">
-                  {aiConfig.prompt.length} characters
+                  {aiChat.prompt?.length} characters
                 </div>
                 <Button 
                   onClick={handleSaveConfig} 
@@ -209,7 +206,7 @@ export default function AIChatPage() {
             <CardContent className="space-y-4">
               <Button
                 onClick={toggleAIChat}
-                variant={aiConfig.isActive ? "destructive" : "default"}
+                variant={aiChat.isActive ? "destructive" : "default"}
                 className="w-full flex items-center space-x-2"
                 disabled={isSaving}
               >
@@ -217,7 +214,7 @@ export default function AIChatPage() {
                 <span>
                   {isSaving 
                     ? 'Updating...' 
-                    : aiConfig.isActive 
+                    : aiChat.isActive 
                       ? 'Deactivate AI' 
                       : 'Activate AI'
                   }

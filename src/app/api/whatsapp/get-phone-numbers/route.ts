@@ -1,45 +1,13 @@
 import { NextResponse } from "next/server";
-import { User } from "@/models/User";
-import { connectDB } from "@/lib/mongoose";
 import { ApiResponse } from "@/types/apiResponse";
-import { getServerSession } from "next-auth"
-import { WaAccount } from "@/types/WaAccount";
+import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession()
-    const email = session?.user?.email
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    if (!email) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User email not found in session",
-      };
-      return NextResponse.json(response, { status: 401 });
-    }
-
-    await connectDB();
-
-    const user = await User.findOne({ email });
-    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
-      const response: ApiResponse = {
-        success: false,
-        message: "No WA account found for this user",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-    
-    // Find the default WA account or use the first one
-    const defaultWaAccount = user.waAccounts.find((account: WaAccount) => account.default) || user.waAccounts[0];
-
-    const { waba_id, permanent_token } = defaultWaAccount;
-    if (!waba_id || !permanent_token) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User WA account not configured properly",
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
+    const { waba_id, permanent_token } = waAccount;
 
     // Call Facebook Graph API
     const url = `https://graph.facebook.com/v23.0/${waba_id}?fields=phone_numbers`;

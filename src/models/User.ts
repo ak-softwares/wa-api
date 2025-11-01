@@ -2,6 +2,7 @@ import mongoose, { Schema, Document, models, model } from "mongoose";
 import bcrypt from "bcryptjs";
 import { WaAccountSchema } from "./WaAccount";
 import { IUser } from "@/types/User";
+import { encrypt, safeDecrypt } from "@/lib/crypto";
 
 const UserSchema = new Schema<IUser>(
   {
@@ -10,12 +11,22 @@ const UserSchema = new Schema<IUser>(
     phone: { type: Number, required: true, unique: true },
     password: { type: String, required: true },
     company: { type: String },
+    defaultWaAccountId: { type: mongoose.Schema.Types.ObjectId, ref: "WaAccount" },
     waAccounts: { type: [WaAccountSchema], default: [] },
     resetPasswordToken: String,
-    apiToken: { type: String, unique: true, sparse: true },
+    apiToken: { 
+      type: String,
+      unique: true,
+      sparse: true,
+      set: (value: string) => encrypt(String(value)),
+      get: (value: string) => safeDecrypt(value) ?? "",
+    },
     resetPasswordExpires: Date,
   },
-  { timestamps: true }
+  { timestamps: true,
+    toJSON: { getters: true },
+    toObject: { getters: true },
+  }
 );
 
 UserSchema.pre("save", async function (next) {
@@ -25,6 +36,14 @@ UserSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
+
+// 🧩 Virtual: get the default WaAccount object easily
+UserSchema.virtual("defaultWaAccount").get(function () {
+  if (!this.waAccounts?.length || !this.defaultWaAccountId) return null;
+  const defaultId = String(this.defaultWaAccountId);
+  return this.waAccounts.find((account) => String(account._id) === defaultId);
+});
+
 
 export const User =
   models.User || model<IUser>("User", UserSchema);

@@ -1,47 +1,16 @@
 // src/app/api/whatsapp/register/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
-import { connectDB } from "@/lib/mongoose";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/authOptions";
 import { ApiResponse } from "@/types/apiResponse";
-import { User } from "@/models/User";
-import { WaAccount } from "@/types/WaAccount";
+import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 // 📌 Register phone number
 export async function POST(req: NextRequest) {
   try {
-    // get logged-in user session
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email;
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    if (!email) {
-      const response: ApiResponse = { success: false, message: "Unauthorized" };
-      return NextResponse.json(response, { status: 401 });
-    }
-
-    await connectDB();
-
-    const user = await User.findOne({ email });
-    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
-      const response: ApiResponse = {
-        success: false,
-        message: "No WA account found for this user",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    // Find the default WA account or use the first one
-    const defaultWaAccount = user.waAccounts.find((account: WaAccount) => account.default) || user.waAccounts[0];
-    
-    const { phone_number_id, permanent_token } = defaultWaAccount;
-    if (!phone_number_id || !permanent_token) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User WA account not configured properly",
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
+    const { phone_number_id, permanent_token } = waAccount;
 
     // Call WhatsApp Cloud API register endpoint
     const url = `https://graph.facebook.com/v23.0/${phone_number_id}/register`;
@@ -58,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     if (fbResponse.data?.success === true) {
       // ✅ Update user WA account in DB
-      defaultWaAccount.is_phone_number_registered = true;
+      waAccount.is_phone_number_registered = true;
       await user.save();
 
       const response: ApiResponse = {
@@ -93,36 +62,10 @@ export async function POST(req: NextRequest) {
 // 📌 Deregister phone number
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email;
-
-    if (!email) {
-      const response: ApiResponse = { success: false, message: "Unauthorized" };
-      return NextResponse.json(response, { status: 401 });
-    }
-
-    await connectDB();
-
-    const user = await User.findOne({ email });
-    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
-      const response: ApiResponse = {
-        success: false,
-        message: "No WA account found for this user",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    // Find the default WA account or use the first one
-    const defaultWaAccount = user.waAccounts.find((account: WaAccount) => account.default) || user.waAccounts[0];
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
     
-    const { phone_number_id, permanent_token } = defaultWaAccount;
-    if (!phone_number_id || !permanent_token) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User WA account not configured properly",
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
+    const { phone_number_id, permanent_token } = waAccount;
 
     // Call WhatsApp Cloud API deregister endpoint
     const url = `https://graph.facebook.com/v23.0/${phone_number_id}/deregister`;
@@ -135,7 +78,7 @@ export async function DELETE(req: NextRequest) {
 
     if (fbResponse.data?.success === true) {
       // ✅ Update DB status
-      defaultWaAccount.is_phone_number_registered = false;
+      waAccount.is_phone_number_registered = false;
       await user.save();
 
       const response: ApiResponse = {

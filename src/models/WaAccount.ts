@@ -1,7 +1,7 @@
 import { Schema } from "mongoose";
 import { encrypt, safeDecrypt } from "@/lib/crypto";
 import { IWaAccount } from "@/types/WaAccount";
-import { AIConfigSchema } from "./AIConfig";
+import { AIChatSchema } from "./AIChat";
 import { AIAgentSchema } from "./AIAgent";
 
 export const WaAccountSchema = new Schema<IWaAccount>(
@@ -24,12 +24,11 @@ export const WaAccountSchema = new Schema<IWaAccount>(
     display_phone_number: String,
     quality_rating: String,
     last_onboarded_time: { type: Date },
-    business_verification_status: Boolean,
+    code_verification_status: String,
     is_phone_number_registered: Boolean,
     is_app_subscribed: Boolean,
-    aiConfig: { type: AIConfigSchema },
+    aiChat: { type: AIChatSchema },
     aiAgent: { type: AIAgentSchema },
-    default: { type: Boolean, default: true },
   },
   {
     _id: true,

@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
 import { Chat } from "@/models/Chat";
 import { sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
-import { WaAccount } from "@/types/WaAccount";
-import { ApiResponse } from "@/types/apiResponse";
+import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,30 +17,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await connectDB();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    // find user by API token
-    const user = await User.findOne({ apiToken: token });
-    if (!user || !user.waAccounts || user.waAccounts.length === 0) {
-      const response: ApiResponse = { success: false, message: "No WA account found", data: null };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    const wa = user.waAccounts.find((acc: WaAccount) => acc.default === true);
-
-    if (!wa) {
-      const response: ApiResponse = { success: false, message: "No default WA account", data: null };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    if (!wa.phone_number_id || !wa.permanent_token) {
-      return NextResponse.json(
-        { success: false, message: "WA account not configured for this user" },
-        { status: 400 }
-      );
-    }
-
-    const { phone_number_id, permanent_token } = wa;
+    const { phone_number_id, permanent_token } = waAccount;
 
     // Parse request
     const { to, message } = await req.json();
@@ -57,7 +34,7 @@ export async function POST(req: NextRequest) {
     // Find or create chat
     let chat = await Chat.findOne({
       userId: user._id,
-      waAccountId: wa._id,
+      waAccountId: waAccount._id,
       participants: { $elemMatch: { number: to } },
       type: { $ne: "broadcast" },
     });
@@ -65,7 +42,7 @@ export async function POST(req: NextRequest) {
     if (!chat) {
       chat = await Chat.create({
         userId: user._id,
-        waAccountId: wa._id,
+        waAccountId: waAccount._id,
         participants: [{ number: to }],
         type: "single",
       });

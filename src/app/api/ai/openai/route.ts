@@ -1,21 +1,12 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/authOptions";
-import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
 import OpenAI from "openai";
+import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function POST(req: Request) {
   try {
-    // 1. Auth check
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
+    
     // 2. Parse body
     const body = await req.json();
     const { messages } = body; 
@@ -28,17 +19,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3. (Optional) you could load user’s aiConfig, or user-specific context
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email }).select("aiConfig");
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: "User not found" },
-        { status: 404 }
-      );
-    }
-
-    const systemPrompt = user.aiConfig?.prompt || "You are a helpful AI assistant.";
+    const systemPrompt = waAccount.aiConfig?.prompt || "You are a helpful AI assistant.";
 
     // 4. Prepare OpenAI client
     const openai = new OpenAI({

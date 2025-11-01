@@ -1,30 +1,16 @@
-// src/app/api/whatsapp/chats/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
 import { Chat } from "@/models/Chat";
 import { Message } from "@/models/Message";
 import { ApiResponse } from "@/types/apiResponse";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
 // DELETE /api/whatsapp/chats/[id]
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email;
+    const { user, errorResponse } = await fetchAuthenticatedUser();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    if (!email) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
-
-    await connectDB();
-    const user = await User.findOne({ email });
-    if (!user) {
-      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
-    }
-
-    const { id: chatId } = await params
+    const { id: chatId } = await params;
 
     if (!chatId) {
       return NextResponse.json({ success: false, message: "chatId is required" }, { status: 400 });

@@ -1,33 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
 import { Chat } from "@/models/Chat";
 import Contact from "@/models/Contact";
 import { ApiResponse } from "@/types/apiResponse";
-import { authOptions } from "../../auth/[...nextauth]/authOptions";
-import { WaAccount } from "@/types/WaAccount";
+import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email;
-
-    if (!email) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
-
-    await connectDB();
-    const user = await User.findOne({ email });
-    if (!user) {
-      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
-    }
-
-    // Get user's active WhatsApp account
-    const wa = user.waAccounts.find((a: WaAccount) => a.default === true);
-    if (!wa) {
-      return NextResponse.json({ success: false, message: "No active WhatsApp account found" }, { status: 404 });
-    }
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const { searchParams } = new URL(req.url);
     const phone = searchParams.get("phone");
@@ -46,7 +26,7 @@ export async function GET(req: NextRequest) {
       // Find or create chat
       let chat = await Chat.findOne({
         userId: user._id,
-        waAccountId: wa._id,
+        waAccountId: waAccount._id,
         participants: {
           $elemMatch: { number: phone } // looks inside the participants array
         },
@@ -56,7 +36,7 @@ export async function GET(req: NextRequest) {
       if (!chat) {
         await Chat.create({
           userId: user._id,
-          waAccountId: wa._id,
+          waAccountId: waAccount._id,
           participants: [{ number: phone }], // must be object, not string
           type: "single"
         });
@@ -80,7 +60,7 @@ export async function GET(req: NextRequest) {
         {
           $match: {
             userId: user._id,
-            waAccountId: wa._id,
+            waAccountId: waAccount._id,
           },
         },
         {
@@ -103,7 +83,7 @@ export async function GET(req: NextRequest) {
       // 🔹 Regular paginated query
       [chats, totalChats] = await Promise.all([
         Chat.aggregate([
-          { $match: { userId: user._id, waAccountId: wa._id } },
+          { $match: { userId: user._id, waAccountId: waAccount._id } },
           {
             $addFields: {
               sortDate: { $ifNull: ["$lastMessageAt", "$createdAt"] }, // 👈 fallback
@@ -113,7 +93,7 @@ export async function GET(req: NextRequest) {
           { $skip: skip },
           { $limit: perPage },
         ]),
-        Chat.countDocuments({ userId: user._id, waAccountId: wa._id }),
+        Chat.countDocuments({ userId: user._id, waAccountId: waAccount._id }),
       ]);
     }
 

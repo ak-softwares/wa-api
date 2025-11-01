@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/authOptions"; // adjust path
 import { ApiResponse } from "@/types/apiResponse";
 import { testSendToAIAgent } from "@/lib/ai/webhookService";
+import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function POST(req: NextRequest) {
   try {
-    // Get session
-    const session = await getServerSession(authOptions);
-    const email = session?.user?.email;
-
-    if (!email) {
-      const response: ApiResponse = { success: false, message: "Unauthorized" };
-      return NextResponse.json(response, { status: 401 });
-    }
+    const { user, errorResponse } = await fetchAuthenticatedUser();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     // Parse request body
     const body = await req.json();

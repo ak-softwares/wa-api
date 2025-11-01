@@ -17,8 +17,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { toast } from "sonner" // or your toast library
-
+import { toast } from "@/components/ui/sonner"
+import { useRouter } from "next/navigation";
 
 interface PhoneNumber {
   verified_name: string
@@ -38,6 +38,7 @@ export default function PhoneNumberCard({ showRemoveButton = false }: PhoneNumbe
   const [error, setError] = useState<string | null>(null)
   const [deletingPhone, setDeletingPhone] = useState(false)
 
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,6 +79,7 @@ export default function PhoneNumberCard({ showRemoveButton = false }: PhoneNumbe
       const result: ApiResponse = await res.json()
       if (result.success) {
         setPhoneData(null)
+        router.refresh(); // ✅ Revalidates and refreshes current route
         toast.success("Phone number removed successfully")
       } else {
         toast.error(result.message || "Failed to remove phone number")

@@ -1,7 +1,9 @@
-import { IAIConfig } from "./AIConfig";
+import { IAIChat } from "./AIChat";
 import { IAIAgent } from "./AIAgent";
+import { Types } from "mongoose";
 
 export interface IWaAccount {
+  _id?: Types.ObjectId;
   phone_number_id: string;
   waba_id: string;
   business_id: string;
@@ -10,12 +12,11 @@ export interface IWaAccount {
   display_phone_number?: string;
   quality_rating?: string;
   last_onboarded_time?: Date;
-  business_verification_status?: boolean;
+  code_verification_status?: string;
   is_phone_number_registered?: boolean;
   is_app_subscribed?: boolean;
-  aiConfig?: IAIConfig;
+  aiChat?: IAIChat;
   aiAgent?: IAIAgent;
-  default?: boolean;
   phone_number?: string;
   createdAt?: Date;
   updatedAt?: Date;

@@ -73,6 +73,7 @@ export default function WhatsAppSetupCard() {
       if (result.success) {
         setPhoneData(null)
         toast.success("Phone number removed successfully")
+        router.refresh();
       } else {
         toast.error(result.message || "Failed to remove phone number")
       }
