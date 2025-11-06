@@ -25,7 +25,7 @@ type NewContact = z.infer<typeof contactSchema>;
 export default function AddContactDialog() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { refreshContacts } = useContacts();
+  // const { refreshContacts } = useContacts();
 
   const {
     control,
@@ -64,7 +64,7 @@ export default function AddContactDialog() {
       if (json.success) {
         setIsAddDialogOpen(false);
         reset();
-        refreshContacts();
+        // refreshContacts();
         toast.success("Contact added successfully");
       } else {
         toast.error(json.message || "Failed to add contact");
