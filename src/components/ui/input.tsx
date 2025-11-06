@@ -27,16 +27,18 @@ function ShadcnPhoneInput({ value, onChange }: { value: string; onChange: (phone
   const [countryCode, setCountryCode] = useState("us"); // fallback
 
   useEffect(() => {
-    // Fetch country by IP
-    fetch("https://ipapi.co/json/")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.country_code) {
-          setCountryCode(data.country_code.toLowerCase());
-        }
-      })
-      .catch(() => setCountryCode("in")); // fallback on error
-  }, []);
+    // ✅ Only auto-detect if no phone yet
+    if (!value) {
+      fetch("https://ipapi.co/json/")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.country_code) {
+            setCountryCode(data.country_code.toLowerCase());
+          }
+        })
+        .catch(() => setCountryCode("in")); // fallback on error
+    }
+  }, [value]);
 
   return (
     <div className="w-full relative">

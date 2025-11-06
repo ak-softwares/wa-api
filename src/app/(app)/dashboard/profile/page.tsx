@@ -112,10 +112,10 @@ export default function ProfilePage() {
                       name="phone"
                       control={control}
                       render={({ field }) => (
-                            <ShadcnPhoneInput
-                              value={field.value || ""}          // ✅ always a string
-                              onChange={(val: string) => field.onChange(val || "")} // ✅ enforce string
-                            />
+                        <ShadcnPhoneInput
+                          value={field.value || ""}  
+                          onChange={(val: string) => field.onChange(val || "")}
+                        />
                       )}
                     />
                     {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
