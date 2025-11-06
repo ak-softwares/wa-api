@@ -1,16 +1,19 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { MoreVertical, Search } from "lucide-react";
 import { useChatsContext } from "@/hooks/chat/ChatsContext";
 import { formatTime } from "@/utiles/formatTime/formatTime";
 import ChatMenu from "./ChatMenu";
 import ContactAvatar from "../contacts/ContactAvatar";
-import { useState, useEffect, useCallback } from "react";
-import { useDebounce } from "@/hooks/common/useDebounce";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
+import ChatsMenu from "../contacts/ChatsMenu";
+import SearchBar from "@/components/common/SearchBar";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import IconButton from "@/components/common/IconButton";
+import { toast } from "@/components/ui/sonner";
+import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
+import SelectedChatMenu from "./SelectedChatsMenu";
 
 export default function ChatList() {
   const {
@@ -26,10 +29,12 @@ export default function ChatList() {
     searchChats,
   } = useChatsContext();
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
-
+  const router = useRouter();
+  const [selectedChatIds, setSelectedChatIds] = useState<string[]>([]);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const { deleteChat, deleteChatsBulk, deleting } = useDeleteChats();
+  
+  
   const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
     const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
     return phoneNumber ? phoneNumber.formatInternational() : number;
@@ -46,89 +51,87 @@ export default function ChatList() {
     }
   };
 
-  const handleSearch = useCallback(
-    async (term: string) => {
-      if (term.trim()) {
-        setIsSearching(true);
-        await searchChats(term); // <-- hook should implement this like `searchContacts`
-        setIsSearching(false);
-      } else {
-        refreshChats();
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    handleSearch(debouncedSearchTerm);
-  }, [debouncedSearchTerm, handleSearch]);
-
-  const handleClearSearch = () => {
-    setSearchTerm("");
-    refreshChats();
+  // Clear all selections
+  const clearSelection = () => {
+    setSelectedChatIds([]);
+    setIsSelectionMode(false);
   };
 
+  const goToChat = (id: string) => {
+    router.push(`/dashboard/chats/${id}`);
+  };
+
+  const handleDelete = (deletedId: string) => {
+    setChats((prev) => prev.filter((c) => c._id!.toString() !== deletedId));
+    // refreshContacts();
+  };
+
+  const handleDeleteSelected = async () => {
+    if (!selectedChatIds || selectedChatIds.length === 0) {
+      toast.error("No contacts selected");
+      return;
+    }
+
+    const success = await deleteChatsBulk(selectedChatIds);
+    if (success) {
+      // ✅ Remove deleted contacts from UI
+      setChats((prev) =>
+        prev.filter((c) => !selectedChatIds.includes(c._id!.toString()))
+      );
+      clearSelection?.(); // ✅ Optionally clear selection state
+    }
+  };
+
+    // Select all contacts
+  const selectAllChats = () => {
+    setSelectedChatIds(chats.map(chat => chat._id!.toString()));
+  };
+
+  // Toggle contact selection
+  const toggleContactSelection = (contactId: string) => {
+    setSelectedChatIds(prev => 
+      prev.includes(contactId) 
+        ? prev.filter(id => id !== contactId)
+        : [...prev, contactId]
+    );
+  };
+
+
   return (
-    <div className="bg-white dark:bg-[#161717] min-h-screen border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-5 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">WA API</h1>
-        <div
-          className={`w-10 h-10 flex items-center justify-center rounded-full dark:hover:bg-[#252727] hover:bg-gray-200`}
-          >
-          <MoreVertical  size={22}/>
+        <h1 className="text-xl font-semibold">Chat <span className="text-gray-500 text-sm">({0})</span></h1>
+        <div className="flex items-center gap-2">
+          <ChatsMenu onSelectChats={() => setIsSelectionMode(true)} />
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="px-5">
-        <div className="relative z-10">
-          <Search className="absolute left-3 top-2.5 h-4 w-6 text-gray-500" size={22} strokeWidth={2} />
-          <input
-            type="text"
-            placeholder="Search chats..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="
-              p-1.5
-              pl-12 rounded-full
-              bg-gray-200 dark:bg-[#2E2F2F]
-              border border-transparent
-              focus:border-2 focus:border-white
-              focus:outline-none
-              placeholder:text-base placeholder:text-gray-400
-              dark:text-white
-              w-full
-            "
-          />
-          {searchTerm && (
-            <Button
-              variant="ghost"
-              onClick={handleClearSearch}
-              className="absolute right-0 top-0 text-gray-500 hover:text-gray-700 hover:bg-transparent"
-            >
-              ✕
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Search Status */}
-      {searchTerm && (
-        <div className="px-5 py-2 border-b text-sm flex justify-between items-center">
-          <span className="text-gray-600">
-            {isSearching
-              ? "Searching..."
-              : `Search results for "${searchTerm}"`}
-          </span>
-          <button
-            onClick={handleClearSearch}
-            className="text-blue-600 hover:text-blue-800 text-sm"
-          >
-            Clear
-          </button>
+      {/* Selection Mode */}
+      {isSelectionMode && (
+        <div>
+          <div className="px-4 py-2 mb-2 flex items-center justify-between bg-gray-100 dark:bg-[#1E1F1F] border-b border-t border-gray-300 dark:border-[#333434]">
+            <div className="flex items-center gap-3">
+              <IconButton
+                onClick={clearSelection}
+                label={"Close Selection"}
+                IconSrc={"/assets/icons/close.svg"}
+              />
+              <h2 className="text-lg">{selectedChatIds.length} selected</h2>
+            </div>
+            <SelectedChatMenu
+              onDeleteSelected={handleDeleteSelected}
+              onSelectAll={selectAllChats} 
+            />
+          </div>
         </div>
       )}
+
+      {/* Search Bar */}
+      <SearchBar
+          placeholder="Search contacts..."
+          onSearch={searchChats}
+      />
 
       {/* Chat List */}
       <div ref={sidebarRef} className="flex-1 overflow-y-auto mt-3">
@@ -147,6 +150,7 @@ export default function ChatList() {
           <div className="p-8 text-center">No chats found.</div>
         ) : (
           chats.map((chat) => {
+            const isSelected = selectedChatIds.includes(chat._id!.toString());
             const isBroadcast = chat.type === "broadcast";
             const partner = chat.participants[0];
             const isActive = chat._id === activeChat?._id
@@ -160,10 +164,7 @@ export default function ChatList() {
             return (
               <div
                 key={chat._id!.toString()}
-                onClick={() => handleOpenChat(chat)}
-                className={`mx-3 mb-1 rounded-lg group flex items-center p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-[#2E2F2F] transition-colors ${
-                  isActive ? "bg-gray-100 dark:bg-[#2E2F2F]" : ""
-                }`}
+                className={"mx-3"} 
               >
                 {/* Avatar */}
                 <ContactAvatar
@@ -172,30 +173,37 @@ export default function ChatList() {
                   subtitle={chat.lastMessage || "No messages yet"}
                   size="xl"
                   isGroup={isBroadcast}
-                />
-
-                {/* Right Side */}
-                <div className="flex-1 flex flex-col items-end">
-                  <span
-                      className={`text-xs ${
-                        (chat?.unreadCount ?? 0) > 0 ? "text-green-500 font-medium" : "text-gray-500"
-                      }`}
-                    >
-                    {formatTime(chat.lastMessageAt)}
-                  </span>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="w-5 h-5" />
-                    {/* Simple circle with unread count */}
-                    {(chat?.unreadCount ?? 0) > 0 && (
-                      <div
-                        className={`flex items-center justify-center min-w-[20px] px-1.5 h-5 bg-green-500 dark:bg-green-700 text-white text-xs font-medium rounded-full`}
-                      >
-                        {(chat?.unreadCount ?? 0) > 99 ? "99+" : chat.unreadCount}
+                  isSelectionMode={isSelectionMode}
+                  isSelected={isSelected}
+                  onClick={() =>
+                    isSelectionMode
+                      ? toggleContactSelection(chat._id!.toString())
+                      : goToChat(chat._id!.toString())
+                  }
+                  rightMenu={
+                    <div className="flex-1 flex flex-col items-end">
+                      <span
+                          className={`text-xs ${
+                            (chat?.unreadCount ?? 0) > 0 ? "text-green-500 font-medium" : "text-gray-500"
+                          }`}
+                        >
+                        {formatTime(chat.lastMessageAt)}
+                      </span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="w-5 h-5" />
+                        {/* Simple circle with unread count */}
+                        {(chat?.unreadCount ?? 0) > 0 && (
+                          <div
+                            className={`flex items-center justify-center min-w-[20px] px-1.5 h-5 bg-green-500 dark:bg-green-700 text-white text-xs font-medium rounded-full`}
+                          >
+                            {(chat?.unreadCount ?? 0) > 99 ? "99+" : chat.unreadCount}
+                          </div>
+                        )}
+                        <ChatMenu chatId={chat._id!.toString()} onDelete={handleDeleteChat} />
                       </div>
-                    )}
-                    <ChatMenu chatId={chat._id!.toString()} onDelete={handleDeleteChat} />
-                  </div>
-                </div>
+                    </div>
+                  }
+                />
               </div>
             );
           })

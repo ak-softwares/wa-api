@@ -9,6 +9,7 @@ export interface IUser {
   company?: string;
   password: string;
   apiToken?: string;
+  apiTokenHashed?: string;
   defaultWaAccountId?: Types.ObjectId;
   waAccounts?: IWaAccount[];
   createdAt?: Date;

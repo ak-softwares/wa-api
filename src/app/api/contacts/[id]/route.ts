@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
 import Contact from "@/models/Contact";
 import { ApiResponse } from "@/types/apiResponse";
-import { authOptions } from "../../auth/[...nextauth]/authOptions";
+import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
 // ✅ Update a contact
 export async function PUT(
@@ -12,14 +9,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      const response: ApiResponse = {
-        success: false,
-        message: "Unauthorized",
-      };
-      return NextResponse.json(response, { status: 401 });
-    }
+   const { user, errorResponse } = await fetchAuthenticatedUser();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     // ⬅️ Await params because it’s a Promise
     const { id } = await params
@@ -31,16 +22,6 @@ export async function PUT(
         message: "Name and at least one phone number are required",
       };
       return NextResponse.json(response, { status: 400 });
-    }
-
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email }).select("_id");
-    if (!user) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User not found",
-      };
-      return NextResponse.json(response, { status: 404 });
     }
 
     const contact = await Contact.findOneAndUpdate(
@@ -78,27 +59,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      const response: ApiResponse = {
-        success: false,
-        message: "Unauthorized",
-      };
-      return NextResponse.json(response, { status: 401 });
-    }
+    const { user, errorResponse } = await fetchAuthenticatedUser();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
+
 
     // ⬅️ Await params because it’s a Promise
     const { id } = await params
-
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email }).select("_id");
-    if (!user) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User not found",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
 
     const contact = await Contact.findOneAndDelete({ _id: id, userId: user._id });
     if (!contact) {

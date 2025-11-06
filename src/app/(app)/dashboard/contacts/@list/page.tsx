@@ -1,10 +1,14 @@
-import { Suspense } from "react";
-import ContactsPage from "@/components/dashboard/contacts/ContactPage";
+'use client';
 
-export default function ContactList() {
+import { Suspense } from "react";
+import ContactList from "@/components/dashboard/contacts/ContactList";
+
+export default function ContactsPage() {
   return (
-    <Suspense fallback={<div>Loading contacts...</div>}>
-      <ContactsPage />
+    <Suspense>
+      <div className="w-full h-screen">
+        <ContactList />
+      </div>
     </Suspense>
   );
 }

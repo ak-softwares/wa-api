@@ -139,7 +139,7 @@ export async function sendBroadcastMessage({
   }
 
   // ✅ Save a single broadcast record (optional summary message)
-  await Message.create({
+  const newMessage = await Message.create({
     userId,
     chatId,
     to: "broadcast",
@@ -152,5 +152,5 @@ export async function sendBroadcastMessage({
     participants,
   });
 
-  return { results };
+  return { newMessage, results };
 }

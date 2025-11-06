@@ -19,7 +19,7 @@ type SendMessageForm = z.infer<typeof sampleMessageSchema>;
 export default function SendTestMessagePopup() {
   const [preview, setPreview] = useState({ to: "", message: "" })
   const [testMessageSent, setTestMessageSent] = useState(false)
-  const { isLoading: isLoading_sendMessage, sendMessage } = useSendWhatsappMessage()
+  const { isLoading: isLoading_sendMessage, sendMessageByPhone } = useSendWhatsappMessage()
 
   const form = useForm<SendMessageForm>({
     resolver: zodResolver(sampleMessageSchema),
@@ -37,7 +37,7 @@ export default function SendTestMessagePopup() {
   )
 
   const onSubmit = async (data: SendMessageForm) => {
-    await sendMessage(
+    await sendMessageByPhone(
       data.to,
       data.message,
       () => {

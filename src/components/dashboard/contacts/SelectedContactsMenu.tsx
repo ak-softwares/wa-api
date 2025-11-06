@@ -1,6 +1,7 @@
 "use client";
 
-import { ImportIcon, FileSpreadsheet, Mail } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -8,26 +9,14 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import IconButton from "@/components/common/IconButton";
-import { useGoogleImport } from "@/hooks/contact/useGoogleImport";
-import { useRouter } from "next/navigation";
 
 interface ContactsMenuProps {
-  onSelectContacts?: () => void; // ✅ Prop for parent callback
+  onSelectAll?: () => void; // ✅ Prop for parent callback
+  onMakeBroadcast?: () => void; // ✅ Prop for parent callback
+  onDeleteSelected?: () => void; // ✅ Prop for parent callback
 }
 
-export default function ContactsMenu({ onSelectContacts }: ContactsMenuProps) {
-
-  const router = useRouter();
-  const { handleGoogleImport, loading } = useGoogleImport();
-
-  const goToImportedContacts = () => {
-    router.push("/dashboard/contacts/imported-contacts");
-  };
-  
-  // In your navigation
-  const goToBroadcasts = () => {
-    router.push('/dashboard/contacts/broadcasts');
-  };
+export default function SelectedContactsMenu({ onSelectAll, onMakeBroadcast, onDeleteSelected }: ContactsMenuProps) {
 
   return (
     <>
@@ -46,49 +35,44 @@ export default function ContactsMenu({ onSelectContacts }: ContactsMenuProps) {
           onClick={(e) => e.stopPropagation()}
           className="dark:bg-[#161717]"
         >
-          
-          {/* Edit Placeholder */}
+          {/* Chat Item */}
           <DropdownMenuItem
-            className="hover:dark:bg-[#343636] flex items-center gap-2"
-            onClick={() => onSelectContacts?.()}
+            className="flex items-center gap-2 hover:dark:bg-[#343636]"
+            onClick={() => onSelectAll?.()}
           >
             <img
               src={"/assets/icons/select.svg"}
               className="w-6 h-6 dark:invert"
               alt={"more options"}
             />
-            Select Contacts
+            Select All
           </DropdownMenuItem>
 
           {/* Chat Item */}
           <DropdownMenuItem
             className="flex items-center gap-2 hover:dark:bg-[#343636]"
-            onClick={goToBroadcasts}
+            onClick={() => onMakeBroadcast?.()}
           >
             <img
               src={"/assets/icons/broadcast.svg"}
               className="w-6 h-6 dark:invert"
               alt={"more options"}
             />
-            Broadcast List
+            Make Broadcast
           </DropdownMenuItem>
 
+          {/* Edit Placeholder */}
           <DropdownMenuItem
-            className="flex items-center gap-2 hover:dark:bg-[#343636]"
-            onClick={handleGoogleImport}
+            className="hover:dark:bg-[#343636] flex items-center gap-2"
+            onClick={() => onDeleteSelected?.()}
           >
-            <Mail size={22} strokeWidth={2.5} />
-            Import from Google
+            <img
+              src={"/assets/icons/delete.svg"}
+              className="w-6 h-6 dark:invert"
+              alt={"Delete Selected"}
+            />
+            Delete Selected
           </DropdownMenuItem>
-
-          <DropdownMenuItem
-            className="flex items-center gap-2 hover:dark:bg-[#343636]"
-            onClick={goToImportedContacts}
-          >
-            <FileSpreadsheet size={22} strokeWidth={2.5} />
-            Import from Excel
-          </DropdownMenuItem>
-
         </DropdownMenuContent>
       </DropdownMenu>
     </>

@@ -1,29 +1,15 @@
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
-import { connectDB } from "@/lib/mongoose";
-import { getServerSession } from "next-auth";
 import { ApiResponse } from "@/types/apiResponse";
-import { authOptions } from "../../auth/[...nextauth]/authOptions";
-import { User } from "@/models/User";
 import Contact from "@/models/Contact";
 import { IContact } from "@/types/Contact";
+import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.email) {
-      const response: ApiResponse = { success: false, message: "Unauthorized" };
-      return NextResponse.json(response, { status: 401 });
-    }
-
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email }).select("_id");
-    if (!user) {
-      const response: ApiResponse = { success: false, message: "User not found" };
-      return NextResponse.json(response, { status: 404 });
-    }
+    const { user, errorResponse } = await fetchAuthenticatedUser();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const url = new URL(req.url);
     const code = url.searchParams.get("code");

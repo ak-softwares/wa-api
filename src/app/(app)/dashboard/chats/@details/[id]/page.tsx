@@ -5,24 +5,30 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import { formatTime } from "@/utiles/formatTime/formatTime";
 import { useMessages } from "@/hooks/chat/useMessages";
-import { useChatsContext } from "@/hooks/chat/ChatsContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams, useRouter } from "next/navigation";
-import ContactAvatar from "../contacts/ContactAvatar";
+import ContactAvatar from "@/components/dashboard/contacts/ContactAvatar";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
-import ContactDetails from "./ContactDetails";
+import ContactDetails from "@/components/dashboard/chats/ContactDetails";
 import { useTheme } from "next-themes"; // if using next-themes
 import { ChatParticipant } from "@/types/Chat";
+import { useChats } from "@/hooks/chat/useChats";
+import IconButton from "@/components/common/IconButton";
 
-export default function MessageBox() {
-  const { activeChat, setActiveChat } = useChatsContext();
+interface Props {
+  params: { id: string };
+}
+
+export default function MessagePage({ params }: Props) {
+  const { id: chatId } = params;
+  const { chats, activeChat, setActiveChat } = useChats({phone: "+919876543210"});
   const containerRef = useRef<HTMLDivElement | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
   const [showContactDetails, setShowContactDetails] = useState(false);
 
   // ✅ Correct destructuring
-  const { messages, onSend, onBroadcastSend, loading, loadingMore, hasMore } = useMessages({ containerRef, activeChat });
+  const { messages, onSend, loading, loadingMore, hasMore } = useMessages({ containerRef, chatId });
   
   const [message, setMessage] = useState("");
 
@@ -35,11 +41,7 @@ export default function MessageBox() {
 
   const messageSend = () => {
     if (message.trim()) {
-      if(activeChat?.type == "broadcast"){
-        onBroadcastSend(message);
-      }else{
-        onSend(message);
-      }
+      onSend(message);
       setMessage("");
     }
   };
@@ -64,27 +66,7 @@ export default function MessageBox() {
   // ✅ Empty state if no active chat
   if (!activeChat) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-green-50 dark:bg-[#161717]">
-        <img
-          src="/assets/icons/empty-chat.svg"
-          alt="chat"
-          className="w-60 h-60"
-        />
-        <h1 className="text-3xl mb-2">
-          Whatsapp API on Web 
-        </h1>
-        <p className="text-gray-400 text-sm">
-          Organise and manage you api account
-        </p>
-        <p className="flex items-center gap-1 text-gray-400 text-sm absolute bottom-10">
-          <img
-            src="/assets/icons/lock.svg"
-            alt="chat"
-            className="w-5 h-5 dark:invert opacity-70"
-          />
-          Your personal message are end-to-end encypted
-        </p>
-      </div>
+      null
     );
   }
 
@@ -128,12 +110,16 @@ export default function MessageBox() {
               </button>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white dark:hover:bg-[#252727] hover:bg-gray-200">
-                <img src="/assets/icons/search.svg" className="w-6 h-6 dark:invert" alt="search" />
-              </div>
-              <div className={"w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white dark:hover:bg-[#252727] hover:bg-gray-200"}>
-                <img src={"/assets/icons/more-vertical.svg"} className="w-6 h-6 dark:invert" alt={"search"} />
-              </div>
+              <IconButton
+                // onClick={clearSelection}
+                label={"Search"}
+                IconSrc={"/assets/icons/search.svg"}
+              />
+              <IconButton
+                // onClick={clearSelection}
+                label={"More option"}
+                IconSrc={"/assets/icons/more-vertical.svg"}
+              />
             </div>
           </div>
 
@@ -262,12 +248,16 @@ export default function MessageBox() {
               <div className="relative flex items-center">
                 {/* PREFIX buttons (left side inside input) */}
                 <div className="absolute left-1.5 flex gap-2 items-center">
-                  <div className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white dark:hover:bg-[#383A3A] hover:bg-gray-200">
-                    <img src="/assets/icons/plus.svg" className="w-6 h-6 dark:invert opacity-70" alt="search" />
-                  </div>
-                  <div className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white dark:hover:bg-[#383A3A] hover:bg-gray-200">
-                    <img src="/assets/icons/emoji.svg" className="w-6 h-6 dark:invert opacity-70" alt="search" />
-                  </div>
+                  <IconButton
+                    // onClick={clearSelection}
+                    label={"Attach"}
+                    IconSrc={"/assets/icons/plus.svg"}
+                  />
+                  <IconButton
+                    // onClick={clearSelection}
+                    label={"Emoji"}
+                    IconSrc={"/assets/icons/emoji.svg"}
+                  />
                 </div>
                 <Input
                   placeholder="Type a message"
@@ -300,22 +290,18 @@ export default function MessageBox() {
                   {
                     message.trim() === "" 
                       ? (
-                        <button
-                          onClick={messageSend}
-                          disabled={!message.trim()}
-                          className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white dark:hover:bg-[#252727] hover:bg-gray-200"
-                        >
-                          <img src="/assets/icons/mic-outlined.svg" className="w-6 h-6 dark:invert" alt="mic" />
-                        </button>
+                        <IconButton
+                            // onClick={clearSelection}
+                            label={"Voice message"}
+                            IconSrc={"/assets/icons/mic-outlined.svg"}
+                        />
                       )
                       : (
-                        <button
-                          onClick={messageSend}
-                          disabled={!message.trim()}
-                          className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 dark:bg-gray-200 bg-[#252727]"
-                        >
-                          <img src="/assets/icons/send-message.svg" className="w-6 h-6 dark:invert-0 invert" alt="send" />
-                        </button>
+                        <IconButton
+                            onClick={messageSend}
+                            label={"Send"}
+                            IconSrc={"/assets/icons/send-message.svg"}
+                        />
                       )
                   }
                 </div>
@@ -326,10 +312,10 @@ export default function MessageBox() {
         </div>
 
         {/* Contact Details Panel */}
-        <ContactDetails 
+        {/* <ContactDetails 
           isOpen={showContactDetails} 
           onClose={() => setShowContactDetails(false)} 
-        />
+        /> */}
       </div>
     </div>
   );

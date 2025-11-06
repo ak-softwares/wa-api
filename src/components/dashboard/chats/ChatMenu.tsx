@@ -11,6 +11,7 @@ import { useState } from "react";
 import { ApiResponse } from "@/types/apiResponse";
 import { toast } from "@/components/ui/sonner";
 import { Trash } from "lucide-react";
+import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
 
 interface ChatMenuProps {
   chatId: string;
@@ -19,30 +20,15 @@ interface ChatMenuProps {
 
 export default function ChatMenu({ chatId, onDelete }: ChatMenuProps) {
 
-  const [deleting, setDeleting] = useState(false);
+  const { deleteChat, deleteChatsBulk, deleting } = useDeleteChats();
 
-    const handleDelete = async (e: React.MouseEvent) => {
-        e.preventDefault(); // ✅ prevent menu from closing immediately
-        e.stopPropagation();
-        setDeleting(true);
-        try {
-          const res = await fetch(`/api/whatsapp/chats/${chatId}`, {
-            method: "DELETE",
-          });
-    
-          const json: ApiResponse = await res.json();
-          if (json.success) {
-            toast.success(`Chat deleted successfully`);
-            onDelete?.(chatId); // ✅ call callback to remove chat from list
-          } else {
-            toast.error(json.message || "Failed to delete chat");
-          }
-        } catch (err) {
-          toast.error("Error deleting chat");
-        } finally {
-          setDeleting(false);
-        }
-    };
+  const handleDelete = async () => {
+    if (!chatId) return;
+    const success = await deleteChat(chatId);
+    if (success) {
+      onDelete?.(chatId); // ✅ refresh or remove from UI
+    }
+  };
       
   return (
     <DropdownMenu>

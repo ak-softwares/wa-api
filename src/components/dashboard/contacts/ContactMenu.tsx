@@ -22,9 +22,16 @@ interface ContactMenuProps {
 export default function ContactMenu({ contact, onDelete }: ContactMenuProps) {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { deleteContact, deleting } = useDeleteContacts(() => {
-    onDelete?.(contact._id!.toString());
-  });
+  const { deleteContact, deleting } = useDeleteContacts();
+
+  const handleDelete = async () => {
+    if (!contact._id) return;
+    const success = await deleteContact(contact._id!.toString(), contact.name);
+    if (success) {
+      onDelete?.(contact._id!.toString()); // ✅ refresh or remove from UI
+      setIsDialogOpen(false);
+    }
+  };
 
   const handleChatClick = () => {
     if (contact.phones.length === 1) {
@@ -80,7 +87,7 @@ export default function ContactMenu({ contact, onDelete }: ContactMenuProps) {
 
           {/* Delete Item */}
           <DropdownMenuItem
-            onClick={() => deleteContact(contact._id!.toString(), contact.name)}
+            onClick={handleDelete}
             disabled={deleting}
             className="text-red-600 dark:text-red-400 hover:text-red-600 hover:dark:bg-[#343636] flex items-center gap-2"
           >

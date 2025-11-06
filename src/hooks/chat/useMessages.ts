@@ -13,10 +13,10 @@ import { Types } from "mongoose";
 
 interface UseMessagesProps {
   containerRef?: React.RefObject<HTMLDivElement | null>;
-  activeChat: Chat | null;
+  chatId: string;
 }
 
-export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
+export function useMessages({ containerRef, chatId }: UseMessagesProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [page, setPage] = useState(1);
   const [perPage] = useState(10);
@@ -29,14 +29,13 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
 
   const fetchMessages = useCallback(
     async (pageToFetch: number) => {
-      if (!activeChat?._id) return;
 
       if (pageToFetch === 1) setLoading(true);
       else setLoadingMore(true);
 
       try {
         const res = await fetch(
-          `/api/whatsapp/messages?chatId=${activeChat._id}&page=${pageToFetch}&per_page=${perPage}`
+          `/api/whatsapp/messages?chatId=${chatId}&page=${pageToFetch}&per_page=${perPage}`
         );
         const json: ApiResponse = await res.json();
 
@@ -58,22 +57,16 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
         else setLoadingMore(false);
       }
     },
-    [activeChat?._id, perPage]
+    [chatId, perPage]
   );
 
   // fetch on chat/page/refresh
   useEffect(() => {
-    if (!activeChat) return;
     fetchMessages(page);
-  }, [activeChat?._id, page, refreshFlag, fetchMessages]);
+  }, [chatId, page, refreshFlag, fetchMessages]);
 
 
   useEffect(() => {
-    if (!activeChat) {
-      setMessages([]);
-      return;
-    }
-
     // Reset everything on chat change
     setMessages([]);
     setPage(1);
@@ -81,7 +74,7 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
 
     // Fetch first page explicitly
     fetchMessages(1);
-  }, [activeChat?._id, fetchMessages]);
+  }, [chatId, fetchMessages]);
 
 
   // infinite scroll
@@ -103,13 +96,12 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
 
   // pusher
   useEffect(() => {
-    if (!activeChat?._id) return;
 
     const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
     });
 
-    const channel = pusher.subscribe(`chat-${activeChat._id}`);
+    const channel = pusher.subscribe(`chat-${chatId}`);
     channel.bind("new-message", (data: any) => {
       toast.message(data.message.from, {
         description: data.message.message,
@@ -125,27 +117,25 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
     });
 
     return () => {
-      pusher.unsubscribe(`chat-${activeChat._id}`);
+      pusher.unsubscribe(`chat-${chatId}`);
       pusher.disconnect();
     };
-  }, [activeChat?._id, router]);
+  }, [chatId, router]);
 
-  const getChatPartner = (chat: Chat): ChatParticipant => chat.participants[0];
 
   const onSend = async (text: string) => {
-    if (!text.trim() || !activeChat) return;
-    const partner = getChatPartner(activeChat);
+    if (!text.trim()) return;
     const tempId = new Types.ObjectId();
 
     const tempMessage: Message = {
         _id: tempId,
         userId: "local-user" as any,
-        chatId: activeChat._id as any,
-        to: partner.number,
+        chatId: chatId as any,
+        to: "",
         from: "me",
         message: text,
         status: MessageStatus.Sent,
-        participants: activeChat?.participants ?? [], // ✅ required
+        participants: [], // ✅ required
         type: "text" as any,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -154,7 +144,7 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
     setMessages((prev) => [tempMessage, ...prev]);
 
     await sendMessage(
-        partner.number,
+        chatId,
         text.trim(),
         () => {
             setMessages((prev) =>
@@ -175,79 +165,6 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
     );
   };
 
-  const onBroadcastSend = async (message: string) => {
-    if (!message.trim() || !activeChat) return;
-
-    // Proceed only if it's a broadcast chat
-    if (activeChat.type !== "broadcast") return;
-
-    const tempId = new Types.ObjectId();
-
-    // Temporary message for instant UI update
-    const tempMessage: Message = {
-      _id: tempId,
-      userId: "local-user" as any,
-      chatId: activeChat._id as any,
-      to: "broadcast",
-      from: "me",
-      message,
-      status: MessageStatus.Sent, // ✅ use Sending before actual result
-      participants: activeChat?.participants ?? [], // ✅ required
-      type: "text" as any,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    // Instantly add message to UI
-    setMessages((prev) => [tempMessage, ...prev]);
-
-    try {
-      const res = await fetch("/api/whatsapp/messages/broadcast", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chatId: activeChat._id,
-          participants: activeChat.participants,
-          message,
-        }),
-      });
-
-      const data: ApiResponse = await res.json();
-
-      if (data.success) {
-        // ✅ Update message status to "Sent"
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg._id === tempId
-              ? { ...msg, status: MessageStatus.Sent }
-              : msg
-          )
-        );
-      } else {
-        // ❌ Update message status to "Failed"
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg._id === tempId
-              ? { ...msg, status: MessageStatus.Failed }
-              : msg
-          )
-        );
-        // console.error("Broadcast failed:", data.message);
-      }
-    } catch (error: any) {
-      // ❌ Network or unexpected error
-      // console.error("Error sending broadcast:", error);
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg._id === tempId
-            ? { ...msg, status: MessageStatus.Failed }
-            : msg
-        )
-      );
-    }
-  };
-
-
   const refreshMessages = () => {
     setMessages([]);
     setHasMore(true);
@@ -258,7 +175,6 @@ export function useMessages({ containerRef, activeChat }: UseMessagesProps) {
   return {
     messages,
     onSend,
-    onBroadcastSend,
     loading,
     loadingMore,
     hasMore,

@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
-import { authOptions } from "../auth/[...nextauth]/authOptions";
 import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function POST() {
@@ -11,11 +7,8 @@ export async function POST() {
     const { user, errorResponse } = await fetchAuthenticatedUser();
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    // Generate new API token
-    const newToken = generateApiToken();
-    
     // Update user's API token at root level (since your User model has apiToken field)
-    user.apiToken = newToken;
+    const newToken = user.generateApiToken();
     user.updatedAt = new Date();
 
     await user.save();
@@ -43,7 +36,7 @@ export async function GET() {
   try {
     const { user, errorResponse } = await fetchAuthenticatedUser();
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
-
+        
     const response: ApiResponse = {
       success: true,
       message: "API token retrieved successfully",
@@ -70,6 +63,7 @@ export async function DELETE() {
 
     // Revoke the token by setting it to null
     user.apiToken = null;
+    user.apiTokenHashed = null;
     user.updatedAt = new Date();
 
     await user.save();
@@ -87,12 +81,4 @@ export async function DELETE() {
     };
     return NextResponse.json(response, { status: 500 });
   }
-}
-
-// Helper function to generate secure API token
-function generateApiToken(): string {
-  const timestamp = Date.now().toString();
-  const random = Math.random().toString(36).substring(2, 15);
-  const buffer = Buffer.from(`${timestamp}_${random}`);
-  return `wa_agent_${buffer.toString('base64url')}`;
 }

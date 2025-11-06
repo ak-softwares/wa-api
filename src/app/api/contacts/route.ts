@@ -82,7 +82,7 @@ export async function GET(req: Request) {
 
       [contacts, total] = await Promise.all([
         Contact.find(query)
-          .sort({ createdAt: -1 })
+          .sort({ name: 1 })
           .skip(skip)
           .limit(perPage),
         Contact.countDocuments(query),

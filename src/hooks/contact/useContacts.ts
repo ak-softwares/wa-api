@@ -5,7 +5,11 @@ import { ApiResponse } from "@/types/apiResponse";
 import { IContact } from "@/types/Contact";
 import { toast } from "@/components/ui/sonner";
 
-export function useContacts() {
+interface UseContactsProps {
+  sidebarRef?: React.RefObject<HTMLDivElement | null>;
+}
+
+export function useContacts({ sidebarRef }: UseContactsProps) {
   const [contacts, setContacts] = useState<IContact[]>([]);
   const [totalContacts, setTotalContacts] = useState(0);
   const [page, setPage] = useState(1);
@@ -51,20 +55,20 @@ export function useContacts() {
   }, [page, query, refreshFlag, fetchContacts]);
 
   useEffect(() => {
-    const container = document.querySelector("main");
+    const container = sidebarRef?.current;
     if (!container) return;
 
     const handleScroll = () => {
       if (container.scrollTop + container.clientHeight + 50 >= container.scrollHeight) {
         if (!loading && !loadingMore && hasMore) {
-          setPage((prev) => prev + 1);
+          setPage(prev => prev + 1);
         }
       }
     };
 
     container.addEventListener("scroll", handleScroll);
     return () => container.removeEventListener("scroll", handleScroll);
-  }, [loading, loadingMore, hasMore]);
+  }, [sidebarRef, loading, loadingMore, hasMore]);
 
   const refreshContacts = () => {
     setQuery("");
@@ -81,5 +85,5 @@ export function useContacts() {
     setHasMore(true);
   };
 
-  return { contacts, loading, loadingMore, hasMore, refreshContacts, searchContacts, totalContacts };
+  return { contacts, setContacts, loading, loadingMore, hasMore, refreshContacts, searchContacts, totalContacts, sidebarRef };
 }

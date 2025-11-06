@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongoose";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/authOptions";
-import { User } from "@/models/User";
 import { Message } from "@/models/Message";
 import { Chat } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
-import { sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
-import { WaAccount } from "@/types/WaAccount";
+import { sendBroadcastMessage, sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
 import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function GET(req: NextRequest) {
@@ -69,66 +64,81 @@ export async function POST(req: NextRequest) {
     const { phone_number_id, permanent_token } = waAccount;
 
     // Parse request body
-    const { to, message } = await req.json();
-    if (!to || !message)
-      return NextResponse.json(
-        { success: false, message: "Missing required fields: to, message" },
-        { status: 400 }
-      );
-
-    // ✅ Find or create chat
-    let chat = await Chat.findOne({
-      userId: user._id,
-      waAccountId: waAccount._id,
-      participants: {
-        $elemMatch: { number: to } // looks inside the participants array
-      },
-      type: { $ne: "broadcast" } // NOT a broadcast chat
-    });
-
-    if (!chat) {
-      // Try to link with contact (optional)
-      chat = await Chat.create({
-        userId: user._id,
-        waAccountId: waAccount._id,
-        participants: [{ number: to }], // must be object, not string
-        type: "single",
-      });
+    const { chatId, message: inputMessage } = await req.json();
+    if (!chatId || !inputMessage) {
+      const response: ApiResponse = {
+        success: false,
+        message: "Missing required fields: chatId, message",
+      };
+      return NextResponse.json(response, { status: 400 });
     }
 
-    const { newMessage, waMessageId } = await sendWhatsAppMessage({
-      userId: user._id.toString(),
-      chatId: chat._id,
-      phone_number_id,
-      permanent_token,
-      to,
-      message,
-    });
-   
-    // ✅ Update chat
-    chat.lastMessage = message;
+    const chat = await Chat.findOne({ _id: chatId });
+    if (!chat) {
+      const response: ApiResponse = {
+        success: false,
+        message: "Chat not found",
+      };
+      return NextResponse.json(response, { status: 404 });
+    }
+
+    const participants = chat.participants || [];
+    let sentMessage: any = null;
+    let success = false;
+
+    // ✅ Handle different chat types
+    if (chat.type === "broadcast") {
+      const { newMessage } = await sendBroadcastMessage({
+        userId: user._id,
+        chatId: chat._id,
+        phone_number_id,
+        permanent_token,
+        participants,
+        message: inputMessage,
+        tag: "broadcast",
+      });
+      sentMessage = newMessage;
+      success = true;
+    } else if (chat.type === "single") {
+      const to = participants?.[0]?.phoneNumber;
+      const { newMessage, waMessageId } = await sendWhatsAppMessage({
+        userId: user._id.toString(),
+        chatId: chat._id,
+        phone_number_id,
+        permanent_token,
+        to,
+        message: inputMessage,
+      });
+      sentMessage = newMessage;
+      success = !!waMessageId;
+    }
+
+    // ✅ Update chat with last message
+    chat.lastMessage = sentMessage;
     chat.lastMessageAt = new Date();
     await chat.save();
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: waMessageId
-          ? "Message sent successfully"
-          : "Message failed to send",
-        data: newMessage,
-      },
-      { status: waMessageId ? 200 : 400 }
-    );
+    const response: ApiResponse = {
+      success,
+      message: success
+        ? "Message sent successfully"
+        : "Message failed to send",
+      data: sentMessage,
+    };
+
+    return NextResponse.json(response, {
+      status: success ? 200 : 400,
+    });
+
   } catch (error: any) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: `Error: ${
-          error?.response?.data ? JSON.stringify(error.response.data) : error.message
-        }`,
-      },
-      { status: 500 }
-    );
+    const response: ApiResponse = {
+      success: false,
+      message: `Error: ${
+        error?.response?.data
+          ? JSON.stringify(error.response.data)
+          : error.message
+      }`,
+    };
+    return NextResponse.json(response, { status: 500 });
   }
 }

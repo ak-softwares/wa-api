@@ -2,7 +2,8 @@ import mongoose, { Schema, Document, models, model } from "mongoose";
 import bcrypt from "bcryptjs";
 import { WaAccountSchema } from "./WaAccount";
 import { IUser } from "@/types/User";
-import { encrypt, safeDecrypt } from "@/lib/crypto";
+import { encrypt, safeDecrypt, hmacHash } from "@/lib/crypto";
+import crypto from "crypto";
 
 const UserSchema = new Schema<IUser>(
   {
@@ -21,6 +22,7 @@ const UserSchema = new Schema<IUser>(
       set: (value: string) => encrypt(String(value)),
       get: (value: string) => safeDecrypt(value) ?? "",
     },
+    apiTokenHashed: String,
     resetPasswordExpires: Date,
   },
   { timestamps: true,
@@ -44,6 +46,11 @@ UserSchema.virtual("defaultWaAccount").get(function () {
   return this.waAccounts.find((account) => String(account._id) === defaultId);
 });
 
+UserSchema.methods.generateApiToken = function () {
+  const rawToken = `wa_agent_${crypto.randomBytes(32).toString("hex")}`;
+  this.apiToken = rawToken;
+  this.apiTokenHashed = hmacHash(rawToken);
+  return rawToken; // return for user display
+};
 
-export const User =
-  models.User || model<IUser>("User", UserSchema);
+export const User = models.User || model<IUser>("User", UserSchema);

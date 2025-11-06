@@ -4,9 +4,19 @@ import { connectDB } from "@/lib/mongoose";
 import { User } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { NextRequest, NextResponse } from "next/server";
+import { hmacHash } from "@/lib/crypto";
 
-export function getBearerToken(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
+/**
+ * Finds a user by plain (unencrypted) API token
+ */
+export async function findUserByApiToken(token: string) {
+  if (!token) return null;
+  const hashed = hmacHash(token);
+  return await User.findOne({ apiTokenHashed: hashed });
+}
+
+export function getBearerToken(req?: NextRequest) {
+  const authHeader = req?.headers.get("authorization");
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.split(" ")[1]
     : null;
@@ -26,8 +36,24 @@ export function getBearerToken(req: NextRequest) {
  * ✅ Helper function to get authenticated user session and database record.
  * Handles authorization and database connection errors.
  */
-export async function fetchAuthenticatedUser() {
-  // 1️⃣ Check user session
+export async function fetchAuthenticatedUser(req?: NextRequest) {
+  await connectDB();
+
+  // 1️⃣ Try Bearer token first
+  const { token } = getBearerToken(req);
+  if (token) {
+    const user = await findUserByApiToken(token);
+    if (user) return { user };
+
+    // 🧩 Return proper response if token exists but user not found
+    const response: ApiResponse = {
+      success: false,
+      message: "Invalid or expired API token",
+    };
+    return { errorResponse: NextResponse.json(response, { status: 401 }) };
+  }
+
+  // 2️⃣ Try session-based authentication
   const session = await getServerSession(authOptions);
   const email = session?.user?.email;
 
@@ -36,8 +62,6 @@ export async function fetchAuthenticatedUser() {
     return { errorResponse: NextResponse.json(response, { status: 401 }) };
   }
 
-  // 2️⃣ Connect to DB and fetch user
-  await connectDB();
   const user = await User.findOne({ email });
 
   if (!user) {
@@ -52,8 +76,8 @@ export async function fetchAuthenticatedUser() {
  * ✅ Get the authenticated user's default WhatsApp account.
  * Includes validation for waAccounts, default account, and token existence.
  */
-export async function getDefaultWaAccount() {
-  const { user, errorResponse } = await fetchAuthenticatedUser();
+export async function getDefaultWaAccount(req?: NextRequest) {
+  const { user, errorResponse } = await fetchAuthenticatedUser(req);
   if (errorResponse) return { errorResponse };
 
   // Check WhatsApp account list

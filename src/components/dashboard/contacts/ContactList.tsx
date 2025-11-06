@@ -1,42 +1,56 @@
-import { Card } from "@/components/ui/card";
+'use client';
+
 import { Skeleton } from "@/components/ui/skeleton";
-import UpdateContactDialog from "./UpdateContact";
-import DeleteContactDialog from "./DeleteConstact";
-import ChatTab from "./ChatWithContact";
 import { useContacts } from "@/hooks/contact/useContacts";
-import { User, Phone, Search, Users, Check, MessageCircle, MoreVertical } from "lucide-react";
 import ContactAvatar from "./ContactAvatar";
-import { Input } from "@/components/ui/input";
-import { useEffect, useState, useCallback } from "react";
-import { useDebounce } from "@/hooks/common/useDebounce";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useState, useRef } from "react";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/sonner";
 import { useRouter } from "next/navigation";
 import ContactMenu from "./ContactMenu";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import ContactsMenu from "./ContactsMenu";
+import IconButton from "@/components/common/IconButton";
+import SearchBar from "@/components/common/SearchBar";
+import SelectedContactsMenu from "./SelectedContactsMenu";
+import { useDeleteContacts } from "@/hooks/contact/useDeleteContacts";
+
 
 interface SelectedContact {
   number: string;
 }
 
 export default function ContactList() {
-  const { contacts, loading, loadingMore, hasMore, refreshContacts, searchContacts, totalContacts } = useContacts();
+  const sidebarRef = useRef<HTMLDivElement | null>(null);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isSearching, setIsSearching] = useState(false); 
+  const { contacts, setContacts, loading, loadingMore, hasMore, refreshContacts, searchContacts, totalContacts } = useContacts({ sidebarRef });
   const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isBroadcastDialogOpen, setIsBroadcastDialogOpen] = useState(false);
   const [broadcastName, setBroadcastName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const router = useRouter();
+  const { deleteContact, deleteContactsBulk, deleting } = useDeleteContacts();
+
+  const handleDeleteSelected = async () => {
+    if (!selectedContactIds || selectedContactIds.length === 0) {
+      toast.error("No contacts selected");
+      return;
+    }
+
+    const success = await deleteContactsBulk(selectedContactIds);
+    if (success) {
+      // ✅ Remove deleted contacts from UI
+      setContacts((prev) =>
+        prev.filter((c) => !selectedContactIds.includes(c._id!.toString()))
+      );
+      clearSelection?.(); // ✅ Optionally clear selection state
+    }
+  };
+
+  const handleDelete = (deletedId: string) => {
+    setContacts((prev) => prev.filter((c) => c._id!.toString() !== deletedId));
+    // refreshContacts();
+  };
 
   const selectedContacts: SelectedContact[] = contacts
     .filter(contact => selectedContactIds.includes(contact._id!.toString()))
@@ -44,24 +58,6 @@ export default function ContactList() {
       number: contact.phones[0] // Using first phone number
     }));
 
-  const handleSearch = useCallback(async (term: string) => { 
-    if (term.trim()) { 
-      setIsSearching(true); 
-      await searchContacts(term);
-      setIsSearching(false); 
-    } else { 
-      refreshContacts(); 
-    } 
-  }, []);
-  
-  useEffect(() => { 
-    handleSearch(debouncedSearchTerm); 
-  }, [debouncedSearchTerm, handleSearch]);
-
-  const handleClearSearch = () => {
-    setSearchTerm("");
-    refreshContacts(); 
-  };
 
   // Toggle contact selection
   const toggleContactSelection = (contactId: string) => {
@@ -164,54 +160,60 @@ export default function ContactList() {
       .join(", ");
   }
 
+  const goToContact = (id: string) => {
+    router.push(`/dashboard/contacts/${id}`);
+  };
+
+  // In your navigation
+  const goToNewContact = () => {
+    router.push('/dashboard/contacts/new');
+  };
+
   return (
-    <div className="bg-white dark:bg-[#161717] min-h-screen flex flex-col h-full">
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-5 flex items-center justify-between">
         <h1 className="text-xl font-semibold">Contacts <span className="text-gray-500 text-sm">({totalContacts})</span></h1>
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-white dark:hover:bg-[#252727] hover:bg-gray-200">
-            <img src="/assets/icons/add-contacts.svg" className="w-6 h-6 dark:invert" alt="add contact" />
-          </div>
-          <ContactsMenu />
-        </div>
-      </div>
-      
-      {/* Search Bar */}
-      <div className="px-5">
-        <div className="relative z-10">
-          <Search className="absolute left-3 top-2.5 h-4 w-6 text-gray-500" size={22} strokeWidth={2} />
-          <input
-            type="text"
-            placeholder="Search contacts..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="
-              p-1.5
-              pl-12 rounded-full
-              bg-gray-200 dark:bg-[#2E2F2F]
-              border border-transparent
-              focus:border-2 focus:border-white
-              focus:outline-none
-              placeholder:text-base placeholder:text-gray-400
-              dark:text-white
-              w-full
-            "
+          <IconButton
+            onClick={goToNewContact}
+            label={"Add Contact"}
+            IconSrc={"/assets/icons/add-contacts.svg"}
           />
-          {searchTerm && (
-            <Button
-              variant="ghost"
-              onClick={handleClearSearch}
-              className="absolute right-0 top-0 text-gray-500 hover:text-gray-700 hover:bg-transparent"
-            >
-              ✕
-            </Button>
-          )}
+          <ContactsMenu onSelectContacts={() => setIsSelectionMode(true)} />
         </div>
       </div>
 
+      {/* Selection Mode */}
+      {isSelectionMode && (
+        <div>
+          <div className="px-4 py-2 mb-2 flex items-center justify-between bg-gray-100 dark:bg-[#1E1F1F] border-b border-t border-gray-300 dark:border-[#333434]">
+            <div className="flex items-center gap-3">
+              <IconButton
+                onClick={clearSelection}
+                label={"Close Selection"}
+                IconSrc={"/assets/icons/close.svg"}
+              />
+              <h2 className="text-lg">{selectedContactIds.length} selected</h2>
+            </div>
+            <SelectedContactsMenu 
+              onDeleteSelected={handleDeleteSelected}
+              // onMakeBroadcast={handleMakeBroadcast} 
+              onSelectAll={selectAllContacts} 
+            />
+          </div>
+        </div>
+      )}
+
+
+      {/* Search Bar */}
+      <SearchBar
+          placeholder="Search contacts..."
+          onSearch={searchContacts}
+      />
+
       {/* Contact List */}
-      <div className="flex-1 overflow-y-auto mt-3">
+      <div ref={sidebarRef} className="flex-1 overflow-y-auto mt-3">
         {loading ? (
           Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex items-center p-4 mx-3 mb-1">
@@ -227,11 +229,11 @@ export default function ContactList() {
           <div className="p-8 text-center">No contacts found.</div>
         ) : (
           contacts.map((contact) => {
+            const isSelected = selectedContactIds.includes(contact._id!.toString());
             return (
               <div
                 key={contact._id!.toString()}
-                // onClick={() => handleOpenChat(contact)}
-                className={"mx-3 mb-1 rounded-lg group flex items-center p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-[#2E2F2F] transition-colors"}
+                className={"mx-3"}
               >
                 {/* Avatar */}
                 <ContactAvatar
@@ -239,16 +241,16 @@ export default function ContactList() {
                   title={contact.name || formatPhone(String(contact.phones[0])) || "Unknown"}
                   subtitle={formatAndJoinPhones(contact.phones)}
                   size="xl"
+                  isSelectionMode={isSelectionMode}
+                  isSelected={isSelected}
+                  onClick={() =>
+                    isSelectionMode
+                      ? toggleContactSelection(contact._id!.toString())
+                      : goToContact(contact._id!.toString())
+                  }
+                  rightMenu={<ContactMenu contact={contact} onDelete={handleDelete} />}
                 />
 
-                {/* Right Side */}
-                <div className="flex-1 flex flex-col items-end">
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="w-5 h-5" />
-                    {/* Simple circle with unread count */}
-                    <ContactMenu contact={contact} />
-                  </div>
-                </div>
               </div>
             );
           })

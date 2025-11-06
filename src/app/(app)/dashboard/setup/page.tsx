@@ -12,7 +12,6 @@ import {
   ExternalLink,
   Facebook, 
   CheckCircle, 
-  Phone,
   MessageSquare, 
   ArrowRight, 
   ArrowLeft,
@@ -20,7 +19,6 @@ import {
   Loader2,
   CreditCard,
   Check,
-  Bell,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -47,7 +45,7 @@ export default function WhatsAppSetupPage() {
   const router = useRouter();
   const { launchWhatsAppSignup, facebookConnected, isSaving, isLoading: savingStatus } = useWhatsAppSignup();
   const { status, refresh, error, isLoading: isVerifying, manualVerification} = useBusinessVerification();
-  const { isLoading: isLoading_sendMessage, sendMessage } = useSendWhatsappMessage();
+  const { isLoading: isLoading_sendMessage, sendMessageByPhone } = useSendWhatsappMessage();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [businessVerified, setBusinessVerified] = useState(false);
@@ -77,7 +75,7 @@ export default function WhatsAppSetupPage() {
   );
 
   const onSubmit = async (data: SendMessageForm) => {
-    await sendMessage(
+    await sendMessageByPhone(
       data.to,
       data.message,
       () => {

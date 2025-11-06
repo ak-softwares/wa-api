@@ -1,86 +1,138 @@
-import { User2, Users2 } from "lucide-react";
+import { User2, Users2, Check } from "lucide-react";
 
 interface ContactAvatarProps {
   imageUrl?: string;
   title?: string;
   subtitle?: string;
-  isGroup?: boolean
+  isGroup?: boolean;
+  isSelected?: boolean;
+  isSelectionMode?: boolean;
   size?: "sm" | "md" | "lg" | "xl";
+  onClick?: () => void;
+  rightMenu?: React.ReactNode;
 }
 
-export default function ContactAvatar({ 
-  imageUrl, 
-  title, 
-  subtitle, // "click here for contact info",
-  isGroup = false, 
+export default function ContactAvatar({
+  imageUrl,
+  title,
+  subtitle,
+  isGroup = false,
+  isSelected = false,
+  isSelectionMode = false,
   size = "md",
+  onClick,
+  rightMenu,
 }: ContactAvatarProps) {
   const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.style.display = "none"; // hide broken image
+    e.currentTarget.style.display = "none";
   };
 
-  // Size configurations with proper scaling
   const sizeConfig = {
     sm: {
       avatar: "h-8 w-8",
       icon: "h-3 w-3",
       text: "text-xs",
       gap: "gap-2",
-      subtitle: "text-xs"
+      subtitle: "text-xs",
+      check: "h-3 w-3",
     },
     md: {
       avatar: "h-10 w-10",
       icon: "h-4 w-4",
       text: "text-md",
       gap: "gap-3",
-      subtitle: "text-sm"
+      subtitle: "text-sm",
+      check: "h-4 w-4",
     },
     lg: {
       avatar: "h-11 w-11",
       icon: "h-4 w-4",
       text: "text-sm",
       gap: "gap-3",
-      subtitle: "text-sm"
+      subtitle: "text-sm",
+      check: "h-4 w-4",
     },
     xl: {
       avatar: "h-12 w-12",
       icon: "h-5 w-5",
       text: "text-sm",
-      gap: "gap-3",
-      subtitle: "text-sm"
-    }
+      gap: "gap-5",
+      subtitle: "text-sm",
+      check: "h-4.5 w-4.5",
+    },
   };
 
   const config = sizeConfig[size];
 
   return (
-    <div className={`col-span-12 sm:col-span-5 flex items-center -mt-1 -mb-1 ${config.gap}`}>
-      <div className={`${config.avatar} rounded-full flex items-center justify-center bg-gray-200 dark:bg-[#242626] overflow-hidden
-        ${
-          imageUrl ?  "" : "border soldid white"
-        }
-      `}>
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={title || "Unknown"}
-            className={`${config.avatar} rounded-full object-cover`}
-            onError={handleError}
-          />
-        ) : (
-          isGroup 
-            ? <img src={"/assets/icons/users.svg"} className="w-12 h-12 dark:invert opacity-40" alt={"users"} />
-            : <img src={"/assets/icons/user.svg"} className="w-12 h-12 dark:invert opacity-40" alt={"user"} />
-        )}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className={`font-medium ${config.text} truncate text-left`}>{title || "Unknown"}</div>
-        {subtitle && (
-          <div className={`truncate ${config.subtitle} text-gray-400`}>
-            {subtitle.length > 30 ? subtitle.slice(0, 30) + "..." : subtitle}
+    <div
+      onClick={onClick}
+      className={`
+        px-3 rounded-lg group flex items-center py-4 cursor-pointer 
+        hover:bg-gray-100 dark:hover:bg-[#2E2F2F] transition-colors
+        w-full ${config.gap}  select-none justify-between
+      `}
+    >
+      {/* Left Group: Selection Checkbox + Avatar + Text Content */}
+      <div className="flex items-center flex-1 min-w-0">
+        {/* Selection Checkbox */}
+        <div
+          className={`flex items-center justify-center
+            ${isSelectionMode ? "w-6 mr-2" : "w-0"}
+            transition-all duration-200
+          `}
+        >
+          {isSelectionMode && (
+            <div
+              className={`flex items-center justify-center rounded border
+                ${isSelected ? "bg-green-500 border-green-500" : "border-gray-400"}
+                ${config.check}
+              `}
+            >
+              {isSelected && <Check className={`${config.check} text-white shrink-0`} />}
+            </div>
+          )}
+        </div>
+
+        {/* Avatar */}
+        <div
+          className={`${config.avatar} rounded-full flex items-center justify-center overflow-hidden shrink-0
+            bg-gray-200 dark:bg-[#242626]
+          `}
+        >
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={title || "Unknown"}
+              className={`${config.avatar} rounded-full object-cover`}
+              onError={handleError}
+            />
+          ) : isGroup ? (
+            <Users2 className={`${config.icon} text-gray-400`} />
+          ) : (
+            <User2 className={`${config.icon} text-gray-400`} />
+          )}
+        </div>
+
+        {/* Text Content */}
+        <div className="min-w-0 flex-1 flex flex-col justify-center ml-3">
+          <div className={`font-medium ${config.text} truncate text-left leading-tight`}>
+            {title || "Unknown"}
           </div>
-        )}
+          {subtitle && (
+            <div className={`truncate ${config.subtitle} text-gray-400 leading-tight mt-0.5`}>
+              {subtitle}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Right Side (optional) */}
+      {!isSelectionMode && rightMenu && (
+        <div className="flex items-center justify-end shrink-0">
+          {rightMenu}
+        </div>
+      )}
     </div>
   );
 }

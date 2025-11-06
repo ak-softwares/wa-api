@@ -59,3 +59,8 @@ export function safeDecrypt(encryptedText: string): string | null {
   }
 }
 
+// Used for verifying token equality (HMAC-SHA256)
+export function hmacHash(value: string) {
+  const hmac = crypto.createHmac("sha256", secretKey);
+  return hmac.update(value).digest("hex");
+}

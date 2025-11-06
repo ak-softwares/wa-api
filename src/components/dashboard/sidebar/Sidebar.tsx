@@ -1,25 +1,13 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useState } from "react"
-import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { 
-  BookTemplate, BookOpen,        
-  Brain, Cpu,                
-  Megaphone, Volume2,    
-} from "lucide-react"
-import { ThemeToggle } from "@/components/global/header/themeToggle"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import IconButton from "@/components/common/IconButton"
+import { useRouter } from "next/navigation"
 
 export default function Sidebar() {
   const pathname = usePathname()
-  const [activeTooltip, setActiveTooltip] = useState<string | null>(null)
+  const router = useRouter();
   
   const topLinks = [
     { href: "/dashboard/chats", label: "Chats", icon: { active: "/assets/icons/chat-active.svg", inactive: "/assets/icons/chat.svg" }, size: "w-6 h-6" },
@@ -29,7 +17,7 @@ export default function Sidebar() {
 
 
   const middleLinks = [
-    { href: "/dashboard/ai-agent", label: "AI Agent", icon: { active: "/assets/icons/ai-agent.svg", inactive: "/assets/icons/ai-agent.svg" }, size: "w-6 h-6" },
+    { href: "/dashboard/ai-agent", label: "AI Chat", icon: { active: "/assets/icons/ai-agent.svg", inactive: "/assets/icons/ai-agent.svg" }, size: "w-6 h-6" },
     // { href: "/dashboard/campaigns", label: "Campaigns", icon: { active: Volume2, inactive: Megaphone }, size: "w-6 h-6" },
   ]
 
@@ -43,39 +31,14 @@ export default function Sidebar() {
     const IconSrc = pathname === href ? icon.active : icon.inactive
 
     return (
-      <div
-        key={href}
-        className="flex justify-center"
-        onMouseEnter={() => setActiveTooltip(label)}
-        onMouseLeave={() => setActiveTooltip(null)}
-      >
-
-        {/* Tooltip */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              {/* Your trigger element */}
-              <Link href={href}>
-                <div
-                  className={`w-10 h-10 flex items-center justify-center rounded-full
-                    ${pathname === href
-                      ? "bg-gray-200 dark:bg-[#252727]" 
-                      : "hover:dark:bg-[#252727] hover:bg-gray-200"}`}
-                >
-                  <img 
-                    src={IconSrc} 
-                    className={`${size} dark:invert opacity-70 ${pathname === href ? "dark:opacity-100" : ""}`} 
-                    alt={label} 
-                  />
-                </div>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>{label}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
+      <IconButton
+        onClick={() => router.push(href)}
+        label={label}
+        IconSrc={IconSrc}
+        isActive={pathname === href}
+        size={size}
+        tooltipSide="right"
+      />
     )
   }
 

@@ -5,19 +5,8 @@ import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization");
-    const token = authHeader?.startsWith("Bearer ")
-      ? authHeader.split(" ")[1]
-      : null;
 
-    if (!token) {
-      return NextResponse.json(
-        { success: false, message: "Missing Bearer token" },
-        { status: 401 }
-      );
-    }
-
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const { phone_number_id, permanent_token } = waAccount;
