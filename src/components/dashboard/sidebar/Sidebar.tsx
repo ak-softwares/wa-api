@@ -15,9 +15,8 @@ export default function Sidebar() {
     { href: "/dashboard/templates", label: "Templates", icon: { active: "/assets/icons/template.svg", inactive: "/assets/icons/template.svg" }, size: "w-6 h-6" },
   ]
 
-
   const middleLinks = [
-    { href: "/dashboard/ai-agent", label: "AI Chat", icon: { active: "/assets/icons/ai-agent.svg", inactive: "/assets/icons/ai-agent.svg" }, size: "w-6 h-6" },
+    { href: "/dashboard/ai", label: "AI Chat", icon: { active: "/assets/icons/ai.svg", inactive: "/assets/icons/ai.svg" }, size: "w-6 h-6" },
     // { href: "/dashboard/campaigns", label: "Campaigns", icon: { active: Volume2, inactive: Megaphone }, size: "w-6 h-6" },
   ]
 

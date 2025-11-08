@@ -82,7 +82,7 @@ export default function ChatList() {
     }
   };
 
-    // Select all contacts
+  // Select all chats
   const selectAllChats = () => {
     setSelectedChatIds(chats.map(chat => chat._id!.toString()));
   };

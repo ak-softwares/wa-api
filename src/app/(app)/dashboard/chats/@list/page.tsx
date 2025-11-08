@@ -1,6 +1,6 @@
 "use client";
 
-import ChatList from "@/components/dashboard/chats/chatList";
+import ChatList from "@/components/dashboard/chats/ChatList";
 import { ChatsProvider } from "@/hooks/chat/ChatsContext";
 
 export default function ChatPage({

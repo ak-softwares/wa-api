@@ -3,10 +3,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { ApiResponse } from "@/types/apiResponse";
 import { toast } from "@/components/ui/sonner";
-import { ITemplate } from "@/types/Template";
+import { Template } from "@/types/Template";
 
 export function useTemplates() {
-  const [templates, setTemplates] = useState<ITemplate[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [page, setPage] = useState(1);
   const [perPage] = useState(10);
   const [loading, setLoading] = useState(false);

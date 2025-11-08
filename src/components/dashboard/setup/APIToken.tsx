@@ -104,7 +104,7 @@ export default function APIToken() {
               <p className="font-semibold flex items-center gap-2"><Info className="h-4 w-4" />n8n HTTP Request</p>
               <div className="bg-muted p-3 rounded-md font-mono text-xs space-y-1">
                 <p>Method: POST</p>
-                <p>URL: {`${baseUrl}/api/send-message`}</p>
+                <p>URL: {`${baseUrl}/api/whatsapp/send-message`}</p>
                 <p>Authorization: Bearer {config.apiToken || "YOUR_TOKEN"}</p>
                 <p>Content-Type: application/json</p>
                 <pre>
