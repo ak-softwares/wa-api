@@ -81,7 +81,6 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
   useEffect(() => {
     const container = containerRef?.current;
     if (!container) return;
-
     const handleScroll = () => {
       if (-container.scrollTop + container.clientHeight + 50 >= container.scrollHeight) {
         if (!loading && !loadingMore && hasMore) {

@@ -4,22 +4,27 @@ import { useEffect, useState, useCallback } from "react";
 import { ApiResponse } from "@/types/apiResponse";
 import { toast } from "@/components/ui/sonner";
 import { IChat } from "@/types/Chat";
+import { useChatStore } from "@/store/chatStore";
 
 interface UseChatsProps {
   sidebarRef?: React.RefObject<HTMLDivElement | null>;
-  phone?: string;
+  phone?: string | null;
 }
 
-export function useChats({ sidebarRef, phone }: UseChatsProps) {
+export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
   const [chats, setChats] = useState<IChat[]>([]);
+  const [totalChats, setTotalChats] = useState(0);
   const [page, setPage] = useState(1);
   const [perPage] = useState(10);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [refreshFlag, setRefreshFlag] = useState(0);
-  const [activeChat, setActiveChat] = useState<IChat | null>(null);
-  const [query, setQuery] = useState(""); // 🔍 search query state
+  const [query, setQuery] = useState("");
+
+
+  const selectedChat = useChatStore((s) => s.selectedChat);
+  const setSelectedChat = useChatStore((s) => s.setSelectedChat);
 
   const fetchChats = useCallback(
     async (pageToFetch: number) => {
@@ -32,7 +37,7 @@ export function useChats({ sidebarRef, phone }: UseChatsProps) {
         if (query) {
           // 🔍 Searching
           url = `/api/whatsapp/chats?q=${encodeURIComponent(query)}&page=${pageToFetch}&per_page=${perPage}`;
-        } else if (phone && activeChat == null) {
+        } else if (phone && selectedChat == null) {
           // 📱 fetch by phone (ensure temp chat is included)
           url = `/api/whatsapp/chats?page=${pageToFetch}&per_page=${perPage}&phone=${phone}`;
         } else {
@@ -46,9 +51,9 @@ export function useChats({ sidebarRef, phone }: UseChatsProps) {
         if (json.success && json.data && Array.isArray(json.data)) {
           setChats(prev => (pageToFetch === 1 ? json.data : [...prev, ...json.data]));
           setHasMore(pageToFetch < (json.pagination?.totalPages || 1));
-
-          if (phone && activeChat == null) {
-            setActiveChat(json.data[0]);
+          setTotalChats(json.pagination?.total || 0);
+          if (phone && selectedChat == null) {
+            setSelectedChat(json.data[0]);
           }
         } else {
           setChats(prev => (pageToFetch === 1 ? [] : prev));
@@ -85,7 +90,7 @@ export function useChats({ sidebarRef, phone }: UseChatsProps) {
   }, [sidebarRef, loading, loadingMore, hasMore]);
 
   useEffect(() => {
-    const chatId = activeChat?._id;
+    const chatId = selectedChat?._id;
     if (!chatId) return;
 
     // Instantly update UI
@@ -96,7 +101,7 @@ export function useChats({ sidebarRef, phone }: UseChatsProps) {
     );
 
     // Update database if unread messages exist
-    if ((activeChat?.unreadCount ?? 0) > 0) {
+    if ((selectedChat?.unreadCount ?? 0) > 0) {
       (async () => {
         try {
           await fetch(`/api/whatsapp/chats/${chatId}/mark-read`, {
@@ -109,7 +114,7 @@ export function useChats({ sidebarRef, phone }: UseChatsProps) {
         }
       })();
     }
-  }, [activeChat]);
+  }, [selectedChat]);
 
 
   const refreshChats = () => {
@@ -134,9 +139,8 @@ export function useChats({ sidebarRef, phone }: UseChatsProps) {
     loadingMore,
     hasMore,
     refreshChats,
-    searchChats, // 🔍 expose search method
-    activeChat,
-    setActiveChat,
+    searchChats,
     sidebarRef,
+    totalChats,
   };
 }

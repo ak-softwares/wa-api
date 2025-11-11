@@ -1,11 +1,10 @@
 // components/chat/ContactDetails.tsx
 "use client";
 
-import { useChatsContext } from "@/hooks/chat/ChatsContext";
-import ContactAvatar from "../contacts/ContactAvatar";
 import { Button } from "@/components/ui/button";
-import { X, Phone, Video, Star, Ban, Trash2 } from "lucide-react";
+import { Star, Ban, Trash2 } from "lucide-react";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
+import { useChatStore } from "@/store/chatStore";
 
 interface ContactDetailsProps {
   isOpen: boolean;
@@ -13,23 +12,23 @@ interface ContactDetailsProps {
 }
 
 export default function ContactDetails({ isOpen, onClose }: ContactDetailsProps) {
-  const { activeChat } = useChatsContext();
-
-  if (!isOpen || !activeChat) return null;
+  const selectedChat = useChatStore((s) => s.selectedChat);
+  
+  if (!isOpen || !selectedChat) return null;
 
   const formatPhone = (number: string, defaultCountry: CountryCode = "IN") => {
     const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
     return phoneNumber ? phoneNumber.formatInternational() : number;
   };
 
-  const isBroadcast = activeChat.type === "broadcast";
-  const partner = activeChat.participants?.[0];
+  const isBroadcast = selectedChat.type === "broadcast";
+  const partner = selectedChat.participants?.[0];
   const displayName = isBroadcast
-    ? activeChat.chatName || "Broadcast"
+    ? selectedChat.chatName || "Broadcast"
     : partner?.name || formatPhone(String(partner?.number)) || "Unknown";
 
   const displayImage = isBroadcast
-    ? activeChat.chatImage
+    ? selectedChat.chatImage
     : partner?.imageUrl;
 
   const phoneNumber = isBroadcast ? "" : partner?.number;
@@ -60,7 +59,7 @@ export default function ContactDetails({ isOpen, onClose }: ContactDetailsProps)
             {displayImage ? (
               <img
                 src={displayImage}
-                alt={activeChat.chatImage || "Unknown"}
+                alt={selectedChat.chatImage || "Unknown"}
                 className={`h-25 w-25 rounded-full object-cover`}
               />
             ) : (

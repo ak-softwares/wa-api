@@ -69,10 +69,12 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex flex-col h-full p-6 space-y-8">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Profile</h1>
+      <div className="p-5 flex items-center justify-between">
+        <h1 className="text-xl font-semibold">
+          Profile <span className="text-gray-500 text-sm"></span>
+        </h1>
       </div>
 
       {/* Profile Content */}

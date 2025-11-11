@@ -53,6 +53,11 @@ export default function SettingssPage() {
               subtitle="Manage your profile settings"
           />
           <MenuTile
+              icon={<img src="/assets/icons/key.svg" className="w-6 h-6 dark:invert" alt="User" />}
+              label="API Key"
+              subtitle="Generate api key here"
+          />
+          <MenuTile
               icon={theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
               label="Theme"
               subtitle="Click to change theme"

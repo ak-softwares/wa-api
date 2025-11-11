@@ -1,4 +1,3 @@
-// components/chat/MessageBox.tsx (updated)
 "use client";
 
 import { Input } from "@/components/ui/input";
@@ -6,38 +5,33 @@ import { useEffect, useRef, useState } from "react";
 import { formatTime } from "@/utiles/formatTime/formatTime";
 import { useMessages } from "@/hooks/chat/useMessages";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSearchParams, useRouter } from "next/navigation";
-import ContactAvatar from "@/components/dashboard/contacts/ContactAvatar";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
-import ContactDetails from "@/components/dashboard/chats/ContactDetails";
 import { useTheme } from "next-themes"; // if using next-themes
 import { ChatParticipant } from "@/types/Chat";
-import { useChats } from "@/hooks/chat/useChats";
 import IconButton from "@/components/common/IconButton";
+import { useChatStore } from "@/store/chatStore";
+import DefaultChatPage from "@/components/dashboard/chats/defaultChatPage";
+import { User2, Users2 } from "lucide-react";
+import ContactDetails from "@/components/dashboard/chats/ContactDetails";
+import MessagesMenu from "@/components/dashboard/messages/MessagesMenu";
+import MessageBubble from "@/components/common/MessageBubble";
+import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
+import { useRouter } from "next/navigation";
 
-interface Props {
-  params: { id: string };
-}
-
-export default function MessagePage({ params }: Props) {
-  const { id: chatId } = params;
-  const { chats, activeChat, setActiveChat } = useChats({phone: "+919876543210"});
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [showContactDetails, setShowContactDetails] = useState(false);
-
-  // ✅ Correct destructuring
-  const { messages, onSend, loading, loadingMore, hasMore } = useMessages({ containerRef, chatId });
-  
-  const [message, setMessage] = useState("");
-
+export default function MessagePage() {
   const { theme } = useTheme(); // or use your theme context
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const selectedChat = useChatStore((s) => s.selectedChat);
+  const setSelectedChat = useChatStore((s) => s.setSelectedChat);
+  const router = useRouter();
 
-  const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
-    const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-    return phoneNumber ? phoneNumber.formatInternational() : number;
-  }
+  const chatId = selectedChat?._id?.toString() ?? "";
+
+  const [message, setMessage] = useState("");
+  const [showContactDetails, setShowContactDetails] = useState(false);
+  const { messages, onSend, loading, loadingMore, hasMore } = useMessages({ containerRef, chatId });
+  const { deleteChat, deleteChatsBulk, deleting } = useDeleteChats();
+
 
   const messageSend = () => {
     if (message.trim()) {
@@ -47,42 +41,51 @@ export default function MessagePage({ params }: Props) {
   };
 
   const backFromChat = () => {
-    setActiveChat(null);
+    setSelectedChat(null);
     setShowContactDetails(false);
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("phone");
-    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   const handleAvatarClick = () => {
     setShowContactDetails(true);
   };
 
+  const handleDelete = async () => {
+    if (!chatId) return;
+    const success = await deleteChat(chatId);
+    if (success) {
+      // onDelete?.(chatId); // ✅ refresh or remove from UI
+      router.refresh(); // 🔄 re-fetches data for the current route
+    }
+  };
+
   // Close contact details when active chat changes
   useEffect(() => {
     setShowContactDetails(false);
-  }, [activeChat]);
+  }, [selectedChat]);
 
-  // ✅ Empty state if no active chat
-  if (!activeChat) {
-    return (
-      null
-    );
+  
+  const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
+    const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
+    return phoneNumber ? phoneNumber.formatInternational() : number;
+  }
+
+  if(!selectedChat){
+    return <DefaultChatPage />
   }
 
   // ✅ Determine chat type and details
-  const isBroadcast = activeChat.type === "broadcast";
-  const partner = activeChat.participants?.[0];
+  const isBroadcast = selectedChat!.type === "broadcast";
+  const partner = selectedChat!.participants?.[0];
   const displayName = isBroadcast
-    ? activeChat.chatName || "Broadcast"
+    ? selectedChat!.chatName || "Broadcast"
     : partner?.name || formatPhone(String(partner?.number)) || "Unknown";
 
   const displayImage = isBroadcast
-    ? activeChat.chatImage
+    ? selectedChat.chatImage
     : partner?.imageUrl;
 
   return (
-    <div className="flex flex-col min-h-screen flex-1">
+    <div className="flex flex-col h-full">
       {/* Main chat area with contact details */}
       <div className="flex flex-1 overflow-hidden">
         {/* Chat area */}
@@ -100,13 +103,35 @@ export default function MessagePage({ params }: Props) {
               </Button> */}
               {/* Clickable avatar */}
               <button onClick={handleAvatarClick} className="flex items-center">
-                <ContactAvatar
-                  imageUrl={displayImage}
-                  title={displayName}
-                  // subtitle={isBroadcast ? "Broadcast list" : "last seen today at 11:17 am"}
-                  size="md"
-                  isGroup={isBroadcast}
-                />
+                {/* Avatar */}
+                <div
+                  className={"h-10 w-10 rounded-full flex items-center justify-center overflow-hidden shrink-0 bg-gray-200 dark:bg-[#242626]"}
+                >
+                  {displayImage ? (
+                    <img
+                      src={displayImage}
+                      alt={displayName || "Unknown"}
+                      className={"h-10 w-10 rounded-full object-cover"}
+                    />
+                  ) : isBroadcast ? (
+                    <Users2 className={"h-4 w-4 text-gray-400"} />
+                  ) : (
+                    <User2 className={"h-4 w-4 text-gray-400"} />
+                  )}
+                </div>
+
+                {/* Text Content */}
+                <div className="min-w-0 flex-1 flex flex-col justify-center ml-3">
+                  <div className={"font-medium text-md truncate text-left leading-tight"}>
+                    {displayName || "Unknown"}
+                  </div>
+                  {/* {subtitle && (
+                    <div className={`truncate ${config.subtitle} text-gray-400 leading-tight mt-0.5`}>
+                       // subtitle={isBroadcast ? "Broadcast list" : "last seen today at 11:17 am"}
+                    </div>
+                  )} */}
+                </div>
+
               </button>
             </div>
             <div className="flex items-center gap-2">
@@ -115,15 +140,15 @@ export default function MessagePage({ params }: Props) {
                 label={"Search"}
                 IconSrc={"/assets/icons/search.svg"}
               />
-              <IconButton
-                // onClick={clearSelection}
-                label={"More option"}
-                IconSrc={"/assets/icons/more-vertical.svg"}
+              <MessagesMenu
+                onContactDetails={handleAvatarClick}
+                onCloseChat={backFromChat}
+                onDeleteChat={handleDelete}
               />
             </div>
           </div>
 
-          <div 
+          <div
             className="flex flex-col flex-1 overflow-hidden bg-[#FAF7F4] dark:bg-[#161717]"
             style={{
               backgroundImage: "url('/assets/whatsapp/message-bg.png')",
@@ -138,7 +163,7 @@ export default function MessagePage({ params }: Props) {
                   }
                 : {
                     backgroundBlendMode: "difference", // or "soft-light" for light mode
-                    backgroundColor: "rgba(255, 255, 255, 0.1)", // subtle white overlay
+                    backgroundColor: "rgba(250, 247, 244, 0.07)", // subtle white overlay
                   }
               )
             }}
@@ -179,33 +204,8 @@ export default function MessagePage({ params }: Props) {
                           </div>
                       );
                   })
-                  : messages.map((m) => {
-                      const isMine = !activeChat.participants.some(
-                        (p: ChatParticipant) => p.number === m.from
-                      );
-                      return (
-                        <div
-                          key={m._id!.toString()}
-                          className={`flex ${
-                            isMine ? "justify-end" : "justify-start"
-                          }`}
-                        >
-                          <div
-                            className={`max-w-xs lg:max-w-md rounded-lg px-3 py-2 font-segoe text-[14.2px] ${
-                              isMine
-                                ? "bg-green-100 dark:bg-[#144D37] rounded-tr-none"
-                                : "bg-white dark:bg-[#2E2F2F] rounded-tl-none"
-                            }`}
-                          >
-                            <p className="break-words">{m.message}
-                              <span className="text-[11px] text-gray-400 float-right ml-2 mt-2">
-                                {" "} {m.tag} {formatTime(m.createdAt)}
-                              </span>
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
+                  : messages.map((m) => (<MessageBubble key={m._id?.toString()} message={m} />))
+                  }
               </div>
 
               {/* Loader when fetching more (scroll up) */}
@@ -216,7 +216,7 @@ export default function MessagePage({ params }: Props) {
                       const messageLength = [3, 2, 4, 1, 3][i % 5];
                       
                       return (
-                          <div key={i} className={`flex ${isMine ? "justify-end" : "justify-start"} p-2 animate-pulse`}>
+                          <div key={i} className={`flex ${isMine ? "justify-end" : "justify-start"} py-2 animate-pulse`}>
                           <div className={`max-w-xs lg:max-w-md rounded-lg p-3 ${
                               isMine 
                               ? "bg-green-100 dark:bg-[#144D37] rounded-br-none w-3/6" 
@@ -312,10 +312,10 @@ export default function MessagePage({ params }: Props) {
         </div>
 
         {/* Contact Details Panel */}
-        {/* <ContactDetails 
+        <ContactDetails
           isOpen={showContactDetails} 
           onClose={() => setShowContactDetails(false)} 
-        /> */}
+        />
       </div>
     </div>
   );
