@@ -33,6 +33,7 @@ export default function SettingssPage() {
     const handleSignOut = () => {
         signOut({ callbackUrl: "/auth/login" });
     };
+    
     return (
       <div className="flex flex-col h-full">
         {/* Header */}

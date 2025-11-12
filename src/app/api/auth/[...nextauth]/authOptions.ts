@@ -102,19 +102,20 @@ export const authOptions: NextAuthOptions = {
             return true; // ✅ allow sign in
         },
 
-        async session({ session, user }) {
-            if (user) {
-                session.user.id = user.id?.toString();
-                session.user.email = user.email;
-            }
-            return session;
-        },
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id?.toString();
                 token.email = user.email;
             }
             return token;
+        },
+
+        async session({ session, token }) {
+            if (token) {
+                session.user.id = token.id as string;
+                session.user.email = token.email as string;
+            }
+            return session;
         }
     },
     pages: {

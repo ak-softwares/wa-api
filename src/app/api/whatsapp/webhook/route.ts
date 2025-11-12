@@ -117,6 +117,11 @@ export async function POST(req: NextRequest) {
           await pusher.trigger(`chat-${chat._id}`, "new-message", {
             message: newMessage,
           });
+          
+          // ✅ trigger message for specific user (for listener)
+          await pusher.trigger(`user-${user.id}`, "new-message", {
+            message: newMessage,
+          });
         }
       }
     }

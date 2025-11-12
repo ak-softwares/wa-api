@@ -1,7 +1,7 @@
 "use client";
 
+import PusherListener from "@/components/common/PusherListener";
 import Sidebar from "@/components/dashboard/sidebar/Sidebar";
-import Topbar from "@/components/dashboard/topbar/Topbar";
 import { usePusherGlobalNotifications } from "@/hooks/notification/usePusherMessages";
 
 export default function DashboardLayout({
@@ -24,6 +24,7 @@ export default function DashboardLayout({
         {/* Dynamic Page Content */}
         <main className="flex-1 overflow-y-auto">
           {children}
+          <PusherListener /> {/* ✅ always active after login */}
         </main>
       </div>
     </div>

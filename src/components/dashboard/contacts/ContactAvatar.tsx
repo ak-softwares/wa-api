@@ -104,7 +104,7 @@ export default function ContactAvatar({
         {/* Avatar */}
         <div
           className={`${config.avatar} rounded-full flex items-center justify-center overflow-hidden shrink-0
-            bg-gray-200 dark:bg-[#242626]
+            bg-gray-200 dark:bg-[#242626]  min-w-0
           `}
         >
           {imageUrl ? (
@@ -122,13 +122,13 @@ export default function ContactAvatar({
         </div>
 
         {/* Text Content */}
-        <div className="min-w-0 flex-1 flex flex-col justify-center ml-3">
+        <div className="min-w-0 flex-1 flex flex-col justify-center ml-3 min-w-0">
           <div className={`font-medium ${config.text} truncate text-left leading-tight`}>
             {title || "Unknown"}
           </div>
           {subtitle && (
-            <div className={`truncate ${config.subtitle} text-gray-400 leading-tight mt-0.5`}>
-              {subtitle}
+            <div className={`truncate ${config.subtitle} text-gray-400 leading-tight mt-0.5 break-words`}>
+              {subtitle.length > 40 ? subtitle.slice(0, 40) + "..." : subtitle}
             </div>
           )}
         </div>
