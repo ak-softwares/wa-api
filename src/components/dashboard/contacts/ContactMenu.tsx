@@ -75,13 +75,21 @@ export default function ContactMenu({ contact, onDelete }: ContactMenuProps) {
             onClick={handleChatClick}
             className="flex items-center gap-2 hover:dark:bg-[#343636]"
           >
-            <MessageCircle className="w-4 h-4" />
+            <img
+              src={"/assets/icons/chat-add.svg"}
+              className="w-5 h-5 dark:invert"
+              alt={"more options"}
+            />
             Chat
           </DropdownMenuItem>
 
           {/* Edit Placeholder */}
           <DropdownMenuItem className="hover:dark:bg-[#343636] flex items-center gap-2">
-            <Trash className="w-4 h-4" />
+            <img
+              src={"/assets/icons/edit.svg"}
+              className="w-5 h-5 dark:invert"
+              alt={"more options"}
+            />
             Edit
           </DropdownMenuItem>
 
@@ -91,7 +99,11 @@ export default function ContactMenu({ contact, onDelete }: ContactMenuProps) {
             disabled={deleting}
             className="text-red-600 dark:text-red-400 hover:text-red-600 hover:dark:bg-[#343636] flex items-center gap-2"
           >
-            <Trash className="w-4 h-4" />
+            <img
+              src={"/assets/icons/delete.svg"}
+              className="w-5 h-5 dark:invert"
+              alt={"more options"}
+            />
             {deleting ? "Deleting..." : "Delete"}
           </DropdownMenuItem>
         </DropdownMenuContent>

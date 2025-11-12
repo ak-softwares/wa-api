@@ -16,12 +16,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Moon, Sun } from "lucide-react";
+import { useSettingsStore } from "@/store/settingsStore";
 
 export default function SettingssPage() {
     const [openLogout, setOpenLogout] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [isSearching, setIsSearching] = useState(false);
     const { theme, setTheme } = useTheme();
+    const { setSelectedSettingsMenu } = useSettingsStore();
+    
 
     const handleClearSearch = () => {
         setSearchTerm("");
@@ -56,6 +59,7 @@ export default function SettingssPage() {
               icon={<img src="/assets/icons/key.svg" className="w-6 h-6 dark:invert" alt="User" />}
               label="API Key"
               subtitle="Generate api key here"
+              onClick={() => setSelectedSettingsMenu("api-key")}
           />
           <MenuTile
               icon={theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
