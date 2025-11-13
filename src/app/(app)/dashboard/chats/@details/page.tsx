@@ -21,11 +21,11 @@ import { useRouter } from "next/navigation";
 export default function MessagePage() {
   const { theme } = useTheme(); // or use your theme context
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const selectedChat = useChatStore((s) => s.selectedChat);
-  const setSelectedChat = useChatStore((s) => s.setSelectedChat);
+  const activeChat = useChatStore((s) => s.activeChat);
+  const setActiveChat = useChatStore((s) => s.setActiveChat);
   const router = useRouter();
 
-  const chatId = selectedChat?._id?.toString() ?? "";
+  const chatId = activeChat?._id?.toString() ?? "";
 
   const [message, setMessage] = useState("");
   const [showContactDetails, setShowContactDetails] = useState(false);
@@ -41,7 +41,7 @@ export default function MessagePage() {
   };
 
   const backFromChat = () => {
-    setSelectedChat(null);
+    setActiveChat(null);
     setShowContactDetails(false);
   };
 
@@ -61,7 +61,7 @@ export default function MessagePage() {
   // Close contact details when active chat changes
   useEffect(() => {
     setShowContactDetails(false);
-  }, [selectedChat]);
+  }, [activeChat]);
 
   
   const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
@@ -69,19 +69,19 @@ export default function MessagePage() {
     return phoneNumber ? phoneNumber.formatInternational() : number;
   }
 
-  if(!selectedChat){
+  if(!activeChat){
     return <DefaultChatPage />
   }
 
   // ✅ Determine chat type and details
-  const isBroadcast = selectedChat!.type === "broadcast";
-  const partner = selectedChat!.participants?.[0];
+  const isBroadcast = activeChat!.type === "broadcast";
+  const partner = activeChat!.participants?.[0];
   const displayName = isBroadcast
-    ? selectedChat!.chatName || "Broadcast"
+    ? activeChat!.chatName || "Broadcast"
     : partner?.name || formatPhone(String(partner?.number)) || "Unknown";
 
   const displayImage = isBroadcast
-    ? selectedChat.chatImage
+    ? activeChat.chatImage
     : partner?.imageUrl;
 
   return (

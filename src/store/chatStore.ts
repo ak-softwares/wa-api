@@ -1,12 +1,23 @@
 import { create } from "zustand";
-import { IChat } from "@/types/Chat";
+import { Chat } from "@/types/Chat";
+import { Message } from "@/types/Message";
 
 interface ChatStore {
-  selectedChat: IChat | null;
-  setSelectedChat: (chat: IChat | null) => void;
+  // 🟢 Current active chat (opened in chat window)
+  activeChat: Chat | null;
+  setActiveChat: (chat: Chat | null) => void;
+
+  // 🆕 Latest incoming message + chat (from Pusher)
+  newMessage: Message | null;
+  newChat: Chat | null;
+  setNewMessageData: (message: Message | null, chat: Chat | null) => void;
 }
 
 export const useChatStore = create<ChatStore>((set) => ({
-  selectedChat: null,
-  setSelectedChat: (chat) => set({ selectedChat: chat }),
+  activeChat: null,
+  setActiveChat: (chat) => set({ activeChat: chat }),
+
+  newMessage: null,
+  newChat: null,
+  setNewMessageData: (message, chat) => set({ newMessage: message, newChat: chat }),
 }));

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { ApiResponse } from "@/types/apiResponse";
 import { toast } from "@/components/ui/sonner";
-import { IChat } from "@/types/Chat";
+import { Chat } from "@/types/Chat";
 import { useChatStore } from "@/store/chatStore";
 
 interface UseChatsProps {
@@ -12,7 +12,7 @@ interface UseChatsProps {
 }
 
 export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
-  const [chats, setChats] = useState<IChat[]>([]);
+  const [chats, setChats] = useState<Chat[]>([]);
   const [totalChats, setTotalChats] = useState(0);
   const [page, setPage] = useState(1);
   const [perPage] = useState(10);
@@ -22,9 +22,44 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
   const [refreshFlag, setRefreshFlag] = useState(0);
   const [query, setQuery] = useState("");
 
+  const { activeChat, setActiveChat, newMessage, newChat, setNewMessageData } = useChatStore();
+  // const activeChat = useChatStore((s) => s.activeChat);
+  // const setActiveChat = useChatStore((s) => s.setActiveChat);
 
-  const selectedChat = useChatStore((s) => s.selectedChat);
-  const setSelectedChat = useChatStore((s) => s.setSelectedChat);
+  useEffect(() => {
+    if (!newMessage || !newChat) return;
+
+    setChats((prev) => {
+      const existingChatIndex = prev.findIndex((c) => c._id === newChat._id);
+      const updatedChats = [...prev];
+
+      if (existingChatIndex !== -1) {
+        const updatedChat = {
+          ...updatedChats[existingChatIndex],
+          lastMessage: newMessage.message,
+          updatedAt: newMessage.createdAt,
+          unreadCount:
+            activeChat && activeChat._id === newChat._id
+              ? 0
+              : (updatedChats[existingChatIndex].unreadCount || 0) + 1,
+        };
+        updatedChats.splice(existingChatIndex, 1);
+        updatedChats.unshift(updatedChat);
+      } else {
+        updatedChats.unshift(newChat);
+      }
+
+      return updatedChats;
+    });
+
+    // If active chat is same, you can append message directly
+    if (activeChat && newChat._id === activeChat._id) {
+      // appendMessage(newMessage);
+    }
+
+    // Reset after processing
+    setNewMessageData(null, null);
+  }, [newMessage, newChat, activeChat, setNewMessageData]);
 
   const fetchChats = useCallback(
     async (pageToFetch: number) => {
@@ -37,7 +72,7 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
         if (query) {
           // 🔍 Searching
           url = `/api/whatsapp/chats?q=${encodeURIComponent(query)}&page=${pageToFetch}&per_page=${perPage}`;
-        } else if (phone && selectedChat == null) {
+        } else if (phone && activeChat == null) {
           // 📱 fetch by phone (ensure temp chat is included)
           url = `/api/whatsapp/chats?page=${pageToFetch}&per_page=${perPage}&phone=${phone}`;
         } else {
@@ -52,8 +87,8 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
           setChats(prev => (pageToFetch === 1 ? json.data : [...prev, ...json.data]));
           setHasMore(pageToFetch < (json.pagination?.totalPages || 1));
           setTotalChats(json.pagination?.total || 0);
-          if (phone && selectedChat == null) {
-            setSelectedChat(json.data[0]);
+          if (phone && activeChat == null) {
+            setActiveChat(json.data[0]);
           }
         } else {
           setChats(prev => (pageToFetch === 1 ? [] : prev));
@@ -90,7 +125,7 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
   }, [sidebarRef, loading, loadingMore, hasMore]);
 
   useEffect(() => {
-    const chatId = selectedChat?._id;
+    const chatId = activeChat?._id;
     if (!chatId) return;
 
     // Instantly update UI
@@ -101,7 +136,7 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
     );
 
     // Update database if unread messages exist
-    if ((selectedChat?.unreadCount ?? 0) > 0) {
+    if ((activeChat?.unreadCount ?? 0) > 0) {
       (async () => {
         try {
           await fetch(`/api/whatsapp/chats/${chatId}/mark-read`, {
@@ -114,7 +149,7 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
         }
       })();
     }
-  }, [selectedChat]);
+  }, [activeChat]);
 
 
   const refreshChats = () => {

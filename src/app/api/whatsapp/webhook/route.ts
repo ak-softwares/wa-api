@@ -120,6 +120,7 @@ export async function POST(req: NextRequest) {
           
           // ✅ trigger message for specific user (for listener)
           await pusher.trigger(`user-${user.id}`, "new-message", {
+            chat: chat, // ✅ include the full chat object
             message: newMessage,
           });
         }

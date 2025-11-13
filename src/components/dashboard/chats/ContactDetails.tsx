@@ -12,7 +12,7 @@ interface ContactDetailsProps {
 }
 
 export default function ContactDetails({ isOpen, onClose }: ContactDetailsProps) {
-  const selectedChat = useChatStore((s) => s.selectedChat);
+  const selectedChat = useChatStore((s) => s.activeChat);
   
   if (!isOpen || !selectedChat) return null;
 

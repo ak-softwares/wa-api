@@ -12,7 +12,7 @@ interface MessageBubbleProps {
 }
 
 export default function MessageBubble({ message }: MessageBubbleProps) {
-  const selectedChat = useChatStore((s) => s.selectedChat);
+  const selectedChat = useChatStore((s) => s.activeChat);
   const [hovered, setHovered] = useState(false);
 
   const isMine = !selectedChat?.participants?.some(

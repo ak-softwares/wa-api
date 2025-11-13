@@ -5,11 +5,11 @@ import Pusher from "pusher-js";
 import { toast } from "@/components/ui/sonner";
 import { useRouter } from "next/navigation";
 import { Message } from "@/types/Message";
-import { Chat, ChatParticipant } from "@/types/Chat";
 import { MessageStatus } from "@/types/MessageStatus";
 import { useSendWhatsappMessage } from "@/hooks/whatsapp/useSendWhatsappMessage";
 import { ApiResponse } from "@/types/apiResponse";
 import { Types } from "mongoose";
+import { useChatStore } from "@/store/chatStore";
 
 interface UseMessagesProps {
   containerRef?: React.RefObject<HTMLDivElement | null>;
@@ -26,6 +26,23 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
   const [refreshFlag, setRefreshFlag] = useState(0);
   const router = useRouter();
   const { sendMessage } = useSendWhatsappMessage();
+  const { newMessage, newChat, setNewMessageData } = useChatStore();
+
+  // 🔹 When a new message arrives via Pusher → append it if chat matches
+  useEffect(() => {
+    if (!newMessage || !newChat) return;
+
+    if (chatId && newChat._id!.toString() === chatId) {
+      setMessages((prev) => {
+        // avoid duplicates
+        const exists = prev.some((m) => m._id === newMessage._id);
+        return exists ? prev : [...prev, newMessage];
+      });
+    }
+
+    // optional: clear message after handling
+    setNewMessageData(null, null);
+  }, [newMessage, newChat, chatId, setNewMessageData]);
 
   const fetchMessages = useCallback(
     async (pageToFetch: number) => {

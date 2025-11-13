@@ -27,8 +27,8 @@ export default function ChatList({
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const { deleteChatsBulk } = useDeleteChats();
   
-  const selectedChat = useChatStore((s) => s.selectedChat);
-  const setSelectedChat = useChatStore((s) => s.setSelectedChat);
+  const activeChat = useChatStore((s) => s.activeChat);
+  const setActiveChat = useChatStore((s) => s.setActiveChat);
   
   const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
     const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
@@ -36,13 +36,13 @@ export default function ChatList({
   }
 
   const handleOpenChat = async (chat: any) => {
-    setSelectedChat(chat)
+    setActiveChat(chat)
   };
 
   const handleDeleteChat = (chatId: string) => {
     setChats((prev) => prev.filter(chat => String(chat._id) !== chatId));
-    if(String(selectedChat?._id) === chatId) {
-      setSelectedChat(null);
+    if(String(activeChat?._id) === chatId) {
+      setActiveChat(null);
     }
   };
 
@@ -144,7 +144,7 @@ export default function ChatList({
             const isSelected = selectedChatIds.includes(chat._id!.toString());
             const isBroadcast = chat.type === "broadcast";
             const partner = chat.participants[0];
-            const isActive = chat._id === selectedChat?._id
+            const isActive = chat._id === activeChat?._id
             const displayName = isBroadcast
               ? chat.chatName || "Broadcast"
               : partner?.name || formatPhone(String(partner?.number)) || "Unknown";
