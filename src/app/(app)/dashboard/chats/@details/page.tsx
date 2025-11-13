@@ -34,11 +34,11 @@ export default function MessagePage() {
   useEffect(() => {
     if (!chatId) return;
 
-    fetch(`/api/chats/${chatId}/opened`, { method: "POST" });
+    fetch(`/api/whatsapp/chats/${chatId}/opened`, { method: "POST" });
 
     // ✅ When leaving the chat
     return () => {
-      fetch(`/api/chats/${chatId}/closed`, { method: "POST" });
+      fetch(`/api/whatsapp/chats/${chatId}/closed`, { method: "POST" });
     };
   }, [chatId]);
 
