@@ -9,6 +9,7 @@ import { pusher } from "@/lib/pusher";
 import { getAIReply, sendMessage } from "@/lib/ai/aiService";
 import { sendToAIAgent } from "@/lib/ai/webhookService";
 import { WaAccount } from "@/types/WaAccount";
+import { isChatOpen } from "@/lib/activeChats";
 
 const WA_VERIFY_TOKEN = process.env.WA_VERIFY_TOKEN; // secret token
 
@@ -106,18 +107,16 @@ export async function POST(req: NextRequest) {
           // Update chat meta data
           chat.lastMessage = messageText;
           chat.lastMessageAt = new Date();
-          chat.unreadCount = (chat.unreadCount || 0) + 1;
+          if (!isChatOpen(user._id.toString(), chat._id.toString())) {
+            // Only increase unread count if the chat isn't currently open for this user
+            chat.unreadCount = (chat.unreadCount || 0) + 1;
+          }
           const saveChatPromise = chat.save();
 
           // Wait for both write ops
           const newMessage = await newMessagePromise;
           await saveChatPromise;
 
-          // Pusher trigger per message
-          await pusher.trigger(`chat-${chat._id}`, "new-message", {
-            message: newMessage,
-          });
-          
           // ✅ trigger message for specific user (for listener)
           await pusher.trigger(`user-${user.id}`, "new-message", {
             chat: chat, // ✅ include the full chat object

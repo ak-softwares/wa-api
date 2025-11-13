@@ -2,12 +2,10 @@
 
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
-import { formatTime } from "@/utiles/formatTime/formatTime";
 import { useMessages } from "@/hooks/chat/useMessages";
 import { Skeleton } from "@/components/ui/skeleton";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { useTheme } from "next-themes"; // if using next-themes
-import { ChatParticipant } from "@/types/Chat";
 import IconButton from "@/components/common/IconButton";
 import { useChatStore } from "@/store/chatStore";
 import DefaultChatPage from "@/components/dashboard/chats/defaultChatPage";
@@ -32,6 +30,17 @@ export default function MessagePage() {
   const { messages, onSend, loading, loadingMore, hasMore } = useMessages({ containerRef, chatId });
   const { deleteChat, deleteChatsBulk, deleting } = useDeleteChats();
 
+  // ✅ Reset unread count when chat is opened
+  useEffect(() => {
+    if (!chatId) return;
+
+    fetch(`/api/chats/${chatId}/opened`, { method: "POST" });
+
+    // ✅ When leaving the chat
+    return () => {
+      fetch(`/api/chats/${chatId}/closed`, { method: "POST" });
+    };
+  }, [chatId]);
 
   const messageSend = () => {
     if (message.trim()) {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import Pusher from "pusher-js";
 import { toast } from "@/components/ui/sonner";
 import { useRouter } from "next/navigation";
 import { Message } from "@/types/Message";
@@ -36,7 +35,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
       setMessages((prev) => {
         // avoid duplicates
         const exists = prev.some((m) => m._id === newMessage._id);
-        return exists ? prev : [...prev, newMessage];
+        return exists ? prev : [newMessage, ...prev];
       });
     }
 
@@ -109,35 +108,6 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
     container.addEventListener("scroll", handleScroll);
     return () => container.removeEventListener("scroll", handleScroll);
   }, [containerRef, loading, loadingMore, hasMore]);
-
-  // pusher
-  useEffect(() => {
-
-    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-    });
-
-    const channel = pusher.subscribe(`chat-${chatId}`);
-    channel.bind("new-message", (data: any) => {
-      toast.message(data.message.from, {
-        description: data.message.message,
-        duration: 5000,
-        action: {
-          label: "View",
-          onClick: () =>
-            router.push(`/dashboard/messages?phone=${data.message.from}`),
-        },
-      });
-
-      setMessages((prev) => [data.message, ...prev]);
-    });
-
-    return () => {
-      pusher.unsubscribe(`chat-${chatId}`);
-      pusher.disconnect();
-    };
-  }, [chatId, router]);
-
 
   const onSend = async (text: string) => {
     if (!text.trim()) return;
