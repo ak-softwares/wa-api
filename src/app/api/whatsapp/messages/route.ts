@@ -100,8 +100,8 @@ export async function POST(req: NextRequest) {
       sentMessage = newMessage;
       success = true;
     } else if (chat.type === "single") {
-      const to = participants?.[0]?.phoneNumber;
-      const { newMessage, waMessageId } = await sendWhatsAppMessage({
+      const to = participants?.[0]?.number;
+      const { newMessage, waMessageId, errorResponse: sendMsgError } = await sendWhatsAppMessage({
         userId: user._id.toString(),
         chatId: chat._id,
         phone_number_id,
@@ -109,6 +109,7 @@ export async function POST(req: NextRequest) {
         to,
         message: inputMessage,
       });
+      if (sendMsgError) return sendMsgError; // 🚫 Handles all auth, DB, and token errors
       sentMessage = newMessage;
       success = !!waMessageId;
     }

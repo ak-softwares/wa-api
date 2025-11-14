@@ -60,6 +60,43 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
     },
   ];
 
+    // ✅ Format message text
+  const formatMessageText = (text: string) => {
+ 
+    // Match URLs (handles long query params, %5F etc.)
+    const urlRegex = /(https?:\/\/[^\s"']+)/g;
+    const phoneRegex = /(\+?\d[\d\s-]{8,}\d)/g;
+    const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+    const boldRegex = /\*([^*]+)\*/g;
+
+    let formatted = text
+      // ✅ Convert full URLs to links
+      .replace(
+        urlRegex,
+        (url) => {
+          return `<a href="${1}" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline break-all">${url}</a>`;
+        }
+      )
+
+      // ✅ Convert phone numbers (e.g., +91 92583 44427 → WhatsApp link)
+      .replace(
+        phoneRegex,
+        (num) =>
+          `<a href="https://wa.me/${num.replace(/\D/g, "")}" target="_blank" class="text-blue-600">${num}</a>`
+      )
+      // Convert emails to mailto popup
+      .replace(
+        emailRegex,
+        (email) =>
+          `<a href="mailto:${email}" class="text-blue-600">${email}</a>`
+      )
+      // Convert *bold* to <b>
+      .replace(boldRegex, "<b>$1</b>");
+
+    return formatted;
+  };
+
+
   return (
     <div
       className={`flex ${isMine ? "justify-end" : "justify-start"}`}
@@ -74,7 +111,11 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         }`}
       >
         <p className="break-words">
-          {message.message}
+          {/* ✅ Message content with formatting */}
+          <p
+            className="break-words"
+            dangerouslySetInnerHTML={{ __html: formatMessageText(message.message) }}
+          />
           <span className="text-[11px] text-gray-400 float-right ml-2 mt-2">
             {message.tag ? `${message.tag} ` : ""}
             {formatTime(message.createdAt)}

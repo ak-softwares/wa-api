@@ -141,7 +141,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
         },
         (errorMsg) => {
             // 🔔 Show toast on error
-            // toast.error(errorMsg || "Failed to send message");
+            toast.error(errorMsg || "Failed to send message");
             setMessages((prev) =>
                 prev.map((msg) =>
                 msg._id === tempId ? { ...msg, status: MessageStatus.Failed } : msg

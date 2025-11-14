@@ -3,6 +3,8 @@ import { Message } from "@/models/Message";
 import { MessageStatus } from "@/types/MessageStatus";
 import { MessageType } from "@/types/MessageType";
 import { ChatParticipant } from "@/types/Chat";
+import { ApiResponse } from "@/types/apiResponse";
+import { NextResponse } from "next/server";
 
 interface SendMessageOptions {
   userId: string;
@@ -47,8 +49,9 @@ export async function sendWhatsAppMessage({
     waMessageId = fbResponse.data?.messages?.[0]?.id;
     status = waMessageId ? MessageStatus.Sent : MessageStatus.Failed;
   } catch (err: any) {
-    // Fail silently, status = Failed
-    // console.error("Send WA message error:", err?.response?.data || err.message);
+    // console.error(err?.response?.data?.error?.message);
+    const response: ApiResponse = { success: false, message: err?.response?.data?.error?.message };
+    return { errorResponse: NextResponse.json(response, { status: 403 }) };
   }
 
   // Save message in DB

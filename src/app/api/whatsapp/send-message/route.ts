@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const { waMessageId } = await sendWhatsAppMessage({
+    const { waMessageId, errorResponse: sendMsgError } = await sendWhatsAppMessage({
       userId: user._id.toString(),
       chatId: chat._id,
       phone_number_id,
@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
       to,
       message,
     });
+    if (sendMsgError) return sendMsgError;
 
     chat.lastMessage = message;
     chat.lastMessageAt = new Date();
