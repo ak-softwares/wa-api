@@ -69,29 +69,31 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
     const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
     const boldRegex = /\*([^*]+)\*/g;
 
-    let formatted = text
+    let formatted = text 
       // ✅ Convert full URLs to links
       .replace(
         urlRegex,
         (url) => {
-          return `<a href="${1}" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline break-all">${url}</a>`;
+          return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="dark:text-[#21C063] text-blue-600 underline break-all">${url}</a>`;
         }
-      )
+      );
 
-      // ✅ Convert phone numbers (e.g., +91 92583 44427 → WhatsApp link)
-      .replace(
-        phoneRegex,
-        (num) =>
-          `<a href="https://wa.me/${num.replace(/\D/g, "")}" target="_blank" class="text-blue-600">${num}</a>`
-      )
-      // Convert emails to mailto popup
-      .replace(
-        emailRegex,
-        (email) =>
-          `<a href="mailto:${email}" class="text-blue-600">${email}</a>`
-      )
-      // Convert *bold* to <b>
-      .replace(boldRegex, "<b>$1</b>");
+      // 2️⃣ Now apply phone/email/bold only OUTSIDE <a ...>...</a>
+      formatted = formatted.replace(/(<a[^>]*>.*?<\/a>)|([^<]+)/g, (match, link, textPart) => {
+        // If this part is a link → do NOT touch it
+        if (link) return link;
+
+        // If it's normal text → apply phone/email/bold
+        return textPart
+          // ✅ Convert phone numbers (e.g., +91 92583 44427 → WhatsApp link)
+          .replace(phoneRegex, (num: string) =>
+            `<b><a href="https://wa.me/${num.replace(/\D/g, "")}" target="_blank" class="dark:text-[#21C063] text-blue-600">${num}</a></b>`
+          )
+          .replace(emailRegex, (email: string) =>
+            `<a href="mailto:${email}" class="dark:text-[#21C063] text-blue-600">${email}</a>`
+          )
+          .replace(boldRegex, "<b>$1</b>");
+      });
 
     return formatted;
   };
