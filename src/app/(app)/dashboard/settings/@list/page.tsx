@@ -90,7 +90,7 @@ export default function SettingssPage() {
                   onClick={() => {
                   handleSignOut();
                   }}
-                  className="bg-red-500 hover:bg-red-600"
+                  className="bg-red-500 hover:bg-red-600 text-white"
               >
                   Logout
               </AlertDialogAction>

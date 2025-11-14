@@ -4,6 +4,7 @@ import { Chat } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { sendBroadcastMessage, sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
 import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { Message as IMessage } from "@/types/Message";
 
 export async function GET(req: NextRequest) {
   try {
@@ -83,7 +84,7 @@ export async function POST(req: NextRequest) {
     }
 
     const participants = chat.participants || [];
-    let sentMessage: any = null;
+    let sentMessage: IMessage | null = null;
     let success = false;
 
     // ✅ Handle different chat types
@@ -115,7 +116,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ✅ Update chat with last message
-    chat.lastMessage = sentMessage;
+    chat.lastMessage = sentMessage?.message;
     chat.lastMessageAt = new Date();
     await chat.save();
 

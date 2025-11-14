@@ -175,7 +175,6 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
     hasMore,
     refreshChats,
     searchChats,
-    sidebarRef,
     totalChats,
   };
 }

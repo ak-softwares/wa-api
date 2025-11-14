@@ -1,19 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongoose";
+import { IUser } from "@/types/User";
 import { User } from "@/models/User";
 import { Chat } from "@/models/Chat";
+import { IWaAccount } from "@/types/WaAccount";
 import { Message } from "@/models/Message";
 import { MessageStatus } from "@/types/MessageStatus";
 import { MessageType } from "@/types/MessageType";
 import { pusher } from "@/lib/pusher";
-import { getAIReply, sendMessage } from "@/lib/ai/aiService";
+import { getAIReply } from "@/lib/ai/aiService";
 import { sendToAIAgent } from "@/lib/ai/webhookService";
 import { WaAccount } from "@/types/WaAccount";
 import { isChatOpen } from "@/lib/activeChats";
+import { sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
 
 const WA_VERIFY_TOKEN = process.env.WA_VERIFY_TOKEN; // secret token
 
-// GET for webhook verification (required by WhatsApp)
+// --------------------------------------------------------
+// GET (Webhook verification)
+// --------------------------------------------------------
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const mode = searchParams.get("hub.mode");
@@ -27,7 +32,9 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ success: false, message: "Verification failed" }, { status: 403 });
 }
 
-// POST to receive incoming WhatsApp messages
+// --------------------------------------------------------
+// POST (Receive incoming WhatsApp messages)
+// --------------------------------------------------------
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -45,9 +52,9 @@ export async function POST(req: NextRequest) {
         if (!phone_number_id || messages.length === 0) continue;
 
         // Find user only once per entry
-        const user = await User.findOne({ "waAccounts.phone_number_id": phone_number_id });
+        const user: IUser | null = await User.findOne({ "waAccounts.phone_number_id": phone_number_id });
         if (!user) continue;
-        const wa = user.waAccounts?.find((acc: WaAccount) => acc.phone_number_id === phone_number_id);
+        const wa: IWaAccount | null = user.waAccounts?.find((acc: WaAccount) => acc.phone_number_id === phone_number_id) ?? null;
         if (!wa) continue;
 
         // Local cache for chats to reduce DB calls
@@ -97,10 +104,17 @@ export async function POST(req: NextRequest) {
               webhookUrl: wa.aiAgent.webhookUrl,
               payload: msg, // only single message payload
             });
-          } else if (wa.aiConfig?.isActive) {
-            const aiReply = await getAIReply(wa.aiConfig.prompt, chat, phone_number_id);
+          } else if (wa.aiChat?.isActive) {
+            const aiReply = await getAIReply(wa.aiChat?.prompt ?? "", chat, phone_number_id);
             if (aiReply) {
-              await sendMessage(user, chat, from, aiReply);
+              const { newMessage, waMessageId, errorResponse: sendMsgError } = await sendWhatsAppMessage({
+                userId: user._id.toString(),
+                chatId: chat._id,
+                phone_number_id,
+                permanent_token: wa.permanent_token,
+                to: from,
+                message: aiReply,
+              });
             }
           }
 
@@ -118,7 +132,7 @@ export async function POST(req: NextRequest) {
           await saveChatPromise;
 
           // ✅ trigger message for specific user (for listener)
-          await pusher.trigger(`user-${user.id}`, "new-message", {
+          await pusher.trigger(`user-${user._id.toString()}`, "new-message", {
             chat: chat, // ✅ include the full chat object
             message: newMessage,
           });

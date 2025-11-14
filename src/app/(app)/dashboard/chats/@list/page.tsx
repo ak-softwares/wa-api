@@ -7,7 +7,7 @@ import ContactAvatar from "@/components/dashboard/contacts/ContactAvatar";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import ChatsMenu from "@/components/dashboard/contacts/ChatsMenu";
 import SearchBar from "@/components/common/SearchBar";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import IconButton from "@/components/common/IconButton";
 import { toast } from "@/components/ui/sonner";
 import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
@@ -21,7 +21,8 @@ export default function ChatList({
   searchParams: { phone?: string };
 }) {
   const phone = searchParams.phone || undefined;
-  const { chats, totalChats, setChats, loading, loadingMore, hasMore, sidebarRef, searchChats } = useChats({ phone });
+  const sidebarRef = useRef<HTMLDivElement | null>(null);
+  const { chats, totalChats, setChats, loading, loadingMore, hasMore, searchChats } = useChats({ sidebarRef, phone });
 
   const [selectedChatIds, setSelectedChatIds] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
