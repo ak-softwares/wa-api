@@ -6,6 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useChatStore } from "@/store/chatStore";
 import { toast } from "../ui/sonner";
+import { MESSAGE_TAGS } from "@/utiles/enums/messageTags";
+
 
 export default function PusherListener() {
   const router = useRouter();
@@ -28,11 +30,13 @@ export default function PusherListener() {
 
       setNewMessageData(msg, chat);
 
+      // 🛑 Skip notification for AI messages
+      if (msg?.tag === MESSAGE_TAGS.AI_CHAT || msg?.tag === MESSAGE_TAGS.AI_AGENT) {
+        return;
+      }
+      
       // ✅ Detect chat page properly even during client-side navigation
-      const isOnChatPage =
-        pathname === "/dashboard/chats" ||
-        pathname.startsWith("/dashboard/chats/");
-
+      const isOnChatPage = pathname === "/dashboard/chats" || pathname.startsWith("/dashboard/chats/");
       // 🚫 Skip toast if on chat page or currently viewing the same chat
       // if (isOnChatPage || (activeChat && chat._id === activeChat._id)) return;
       if (isOnChatPage) return;

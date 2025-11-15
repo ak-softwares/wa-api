@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Chat } from "@/models/Chat";
 import { sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const { waMessageId, errorResponse: sendMsgError } = await sendWhatsAppMessage({
+    const { newMessage, waMessageId, errorResponse: sendMsgError } = await sendWhatsAppMessage({
       userId: user._id.toString(),
       chatId: chat._id,
       phone_number_id,
@@ -51,6 +52,13 @@ export async function POST(req: NextRequest) {
     chat.lastMessage = message;
     chat.lastMessageAt = new Date();
     await chat.save();
+
+    await sendPusherNotification({
+      userId: user._id.toString(),
+      event: "new-message",
+      chat,
+      message: newMessage,
+    });
 
     return NextResponse.json(
       {

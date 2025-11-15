@@ -13,6 +13,7 @@ import { sendToAIAgent } from "@/lib/ai/webhookService";
 import { WaAccount } from "@/types/WaAccount";
 import { isChatOpen } from "@/lib/activeChats";
 import { sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
+import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
 
 const WA_VERIFY_TOKEN = process.env.WA_VERIFY_TOKEN; // secret token
 
@@ -115,7 +116,7 @@ export async function POST(req: NextRequest) {
               user_name: sender_name
             });
             if (aiReply) {
-              const { newMessage, waMessageId, errorResponse: sendMsgError } = await sendWhatsAppMessage({
+              const { newMessage: aiMessage, waMessageId, errorResponse: sendMsgError } = await sendWhatsAppMessage({
                 userId: user._id.toString(),
                 chatId: chat._id,
                 phone_number_id,
@@ -124,6 +125,15 @@ export async function POST(req: NextRequest) {
                 message: aiReply,
                 tag: "aichat"
               });
+              if(waMessageId){
+                // ✅ trigger message for specific user (for listener)
+                await sendPusherNotification({
+                  userId: user._id.toString(),
+                  event: "new-message",
+                  chat,
+                  message: aiMessage,
+                });
+              }
             }
           }
 
@@ -139,10 +149,11 @@ export async function POST(req: NextRequest) {
           // Wait for both write ops
           const newMessage = await newMessagePromise;
           await saveChatPromise;
-
-          // ✅ trigger message for specific user (for listener)
-          await pusher.trigger(`user-${user._id.toString()}`, "new-message", {
-            chat: chat, // ✅ include the full chat object
+          
+          await sendPusherNotification({
+            userId: user._id.toString(),
+            event: "new-message",
+            chat,
             message: newMessage,
           });
         }
