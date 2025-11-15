@@ -5,6 +5,7 @@ import { IAIAgent } from "@/types/AIAgent";
 
 export const AIAgentSchema = new Schema<IAIAgent>(
   {
+    prompt: { type: String },
     webhookUrl: {
       type: String,
       required: false,

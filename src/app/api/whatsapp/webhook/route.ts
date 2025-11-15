@@ -104,6 +104,8 @@ export async function POST(req: NextRequest) {
             await sendToAIAgent({
               webhookUrl: wa.aiAgent.webhookUrl,
               payload: change, // only single message payload
+              prompt: wa.aiAgent.prompt,
+              user_name: sender_name
             });
           } else if (wa.aiChat?.isActive) {
             const aiReply = await getAIReply({

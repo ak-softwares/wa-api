@@ -12,11 +12,13 @@ import { IAIAgent } from '@/types/AIAgent';
 import IconButton from '@/components/common/IconButton';
 import { useAiStore } from '@/store/aiStore';
 import APITokenSection from '../settings/ApiTokenSection';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function AIAgentPage() {
   const [aiAgent, setAiAgent] = useState<IAIAgent>({
     webhookUrl: '',
     isActive: false,
+    prompt: '',     // ✅ added
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -85,7 +87,7 @@ export default function AIAgentPage() {
       const res = await fetch('/api/ai/ai-agent', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...aiAgent, isActive: newStatus }),
+        body: JSON.stringify({ ...aiAgent, isActive: newStatus, prompt: aiAgent.prompt}),
       });
 
       const data = await res.json();
@@ -174,6 +176,37 @@ export default function AIAgentPage() {
         <div className="flex-2 flex flex-col">
           <div className="px-6 overflow-y-auto mb-8">
             <div className="max-w-4xl mx-auto">
+              
+              {/* Prompt Input */}
+              <div className="mb-6">
+                <Label htmlFor="ai-agent-prompt" className="text-sm mb-2 block text-gray-900 dark:text-white">
+                  System Prompt
+                </Label>
+                <div className="relative">
+                  <Textarea
+                    id="ai-agent-prompt"
+                    placeholder="You are an automation agent. Follow webhook instructions..."
+                    value={aiAgent.prompt}
+                    onChange={(e) =>
+                      setAiAgent((prev) => ({
+                        ...prev,
+                        prompt: e.target.value
+                      }))
+                    }
+                    rows={12}
+                    className="font-mono text-sm border-2 border-gray-300 dark:border-[#3a3b3b] rounded-lg 
+                    focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884] bg-white dark:bg-[#2E2F2F] 
+                    text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  />
+
+                  {/* Character Counter */}
+                  <div className="absolute bottom-3 right-3 text-xs text-gray-500 dark:text-gray-400 
+                  bg-white dark:bg-[#2E2F2F] px-2 py-1 rounded border border-gray-200 dark:border-[#3a3b3b]">
+                    {aiAgent.prompt?.length} characters
+                  </div>
+                </div>
+              </div>
+
               {/* Webhook Input */}
               <div className="mb-6">
                 <Label htmlFor="webhookUrl" className="text-sm mb-2 block text-gray-900 dark:text-white">
@@ -195,6 +228,7 @@ export default function AIAgentPage() {
                   <p className="text-xs text-red-500 mt-1">Please enter a valid URL</p>
                 )}
               </div>
+
               {/* Action Buttons */}
               <div className="flex gap-2 justify-end">
                 <Button
@@ -214,6 +248,7 @@ export default function AIAgentPage() {
                   <span>{isTesting ? 'Testing...' : 'Test Webhook'}</span>
                 </Button>
               </div>
+
             </div>
           </div>
 

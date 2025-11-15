@@ -118,10 +118,28 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
             className="break-words"
             dangerouslySetInnerHTML={{ __html: formatMessageText(message.message) }}
           />
-          <span className="text-[11px] text-gray-400 float-right ml-2 mt-2">
-            {message.tag ? `${message.tag} ` : ""}
+          <span className="text-[11px] text-gray-400 float-right ml-2 mt-2 flex items-center gap-1">
+            {/* Tag Icon */}
+            {message.tag === "broadcast" && (
+              <img
+                src="/assets/icons/broadcast-icon.svg"
+                className="w-4 h-4 dark:invert opacity-60"
+                alt="broadcast"
+              />
+            )}
+
+            {(message.tag === "aichat" || message.tag === "aiagent") && (
+              <img
+                src="/assets/icons/ai-icon.svg"
+                className="w-4 h-4 dark:invert opacity-60"
+                alt="ai tag"
+              />
+            )}
+
+            {/* Time */}
             {formatTime(message.createdAt)}
           </span>
+
         </p>
 
         <div

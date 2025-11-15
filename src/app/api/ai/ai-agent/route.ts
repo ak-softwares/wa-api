@@ -11,6 +11,7 @@ export async function GET() {
     // Default fallback if config doesn't exist yet
     const aiAgentConfig = waAccount.aiAgent || {
       webhookUrl: "",
+      prompt: "",
       isActive: false,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -38,12 +39,13 @@ export async function PATCH(req: Request) {
     const { user, waAccount, errorResponse } = await getDefaultWaAccount();
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    const { webhookUrl, isActive } = await req.json();
+    const { webhookUrl, isActive, prompt } = await req.json();
 
     // Update or initialize aiAgent configuration
     const now = new Date();
 
     waAccount.aiAgent = {
+      prompt: prompt || waAccount.aiAgent?.prompt || "",
       webhookUrl: webhookUrl || waAccount.aiAgent?.webhookUrl || "",
       isActive: typeof isActive === "boolean" ? isActive : waAccount.aiAgent?.isActive || false,
       createdAt: waAccount.aiAgent?.createdAt || now,
