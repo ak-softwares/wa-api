@@ -69,42 +69,37 @@ export const testSendToAIAgent = async (webhookUrl: string) => {
 
 // Sample WhatsApp/Facebook message payload
 const rawPayload = {
-  id: "0",
-  changes: [
-    {
-      value: {
-        messaging_product: "whatsapp",
-        metadata: {
-          display_phone_number: "123456789",
-          phone_number_id: "PHONE_NUMBER_ID",
-        },
-        contacts: [
-          {
-            profile: {
-              name: "Mike Johnson",
-            },
-            wa_id: "5511777777777",
-          },
-        ],
-        messages: [
-          {
-            from: "5511777777777",
-            id: "wamid.HBgNNTUxMTc3Nzc3Nzc3NwUCABIYFDNBMTk1MkI5M0U4QjZBRTAxRjJDAA==",
-            timestamp: "1700000002",
-            type: "text",
-            text: {
-              body: "Forwarded from Facebook: Check out this amazing offer!",
-            },
-            context: {
-              from: "facebook_page_12345",
-              id: "mid.$cAABaBvxSJhRThFzrVbUjUuUuUuUuU",
-              forwarded: true,
-              frequently_forwarded: false,
-            },
-          },
-        ],
-      },
-      field: "messages",
+  value: {
+    messaging_product: "whatsapp",
+    metadata: {
+      display_phone_number: "123456789",
+      phone_number_id: "PHONE_NUMBER_ID",
     },
-  ],
+    contacts: [
+      {
+        profile: {
+          name: "Mike Johnson",
+        },
+        wa_id: "5511777777777",
+      },
+    ],
+    messages: [
+      {
+        from: "5511777777777",
+        id: "wamid.HBgNNTUxMTc3Nzc3Nzc3NwUCABIYFDNBMTk1MkI5M0U4QjZBRTAxRjJDAA==",
+        timestamp: "1700000002",
+        type: "text",
+        text: {
+          body: "Forwarded from Facebook: Check out this amazing offer!",
+        },
+        context: {
+          from: "facebook_page_12345",
+          id: "mid.$cAABaBvxSJhRThFzrVbUjUuUuUuUuU",
+          forwarded: true,
+          frequently_forwarded: false,
+        },
+      },
+    ],
+  },
+  field: "messages",
 };

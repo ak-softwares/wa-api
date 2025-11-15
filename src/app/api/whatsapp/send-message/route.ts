@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const { phone_number_id, permanent_token } = waAccount;
 
     // Parse request
-    const { to, message } = await req.json();
+    const { to, message, tag } = await req.json();
     if (!to || !message) {
       return NextResponse.json(
         { success: false, message: "Missing number or message" },
@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
       permanent_token,
       to,
       message,
+      tag,
     });
     if (sendMsgError) return sendMsgError;
 

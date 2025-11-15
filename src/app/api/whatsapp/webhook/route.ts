@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
 
       for (const change of changes) {
         const value = change.value;
+        const sender_name = value?.contacts?.[0]?.profile?.name || "";
         const phone_number_id = value?.metadata?.phone_number_id;
         const messages = value?.messages ?? [];
         if (!phone_number_id || messages.length === 0) continue;
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
                 userId: user._id,
                 waAccountId: wa._id,
                 participants: { $elemMatch: { number: from } },
-                type: { $ne: "broadcast" },
+                type: { $ne: "broadcast" }, // exclude broadcast
               })) ||
               (await Chat.create({
                 userId: user._id,
@@ -102,10 +103,15 @@ export async function POST(req: NextRequest) {
           if (wa.aiAgent?.isActive && wa.aiAgent?.webhookUrl) {
             await sendToAIAgent({
               webhookUrl: wa.aiAgent.webhookUrl,
-              payload: msg, // only single message payload
+              payload: change, // only single message payload
             });
           } else if (wa.aiChat?.isActive) {
-            const aiReply = await getAIReply(wa.aiChat?.prompt ?? "", chat, phone_number_id);
+            const aiReply = await getAIReply({
+              prompt: wa.aiChat?.prompt ?? "",
+              chat,
+              phone_number_id,
+              user_name: sender_name
+            });
             if (aiReply) {
               const { newMessage, waMessageId, errorResponse: sendMsgError } = await sendWhatsAppMessage({
                 userId: user._id.toString(),
@@ -114,6 +120,7 @@ export async function POST(req: NextRequest) {
                 permanent_token: wa.permanent_token,
                 to: from,
                 message: aiReply,
+                tag: "aichat"
               });
             }
           }
