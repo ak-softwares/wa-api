@@ -7,9 +7,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
-import { ApiResponse } from "@/types/apiResponse";
-import { toast } from "@/components/ui/sonner";
 import { Trash } from "lucide-react";
 import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
 

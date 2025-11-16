@@ -34,6 +34,7 @@ export default function AiPage() {
           label="AI Chat"
           subtitle="Talk with your AI assistant"
           onClick={() => setSelectedAiMenu("ai-chat")}
+          selected={selectedAiMenu === "ai-chat"}
         />
 
         <MenuTile
@@ -47,6 +48,7 @@ export default function AiPage() {
           label="AI Agent"
           subtitle="Automate tasks using AI agents"
           onClick={() => setSelectedAiMenu("ai-agent")}
+          selected={selectedAiMenu === "ai-agent"}
         />
       </div>
     </div>

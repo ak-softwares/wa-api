@@ -100,6 +100,26 @@ export async function POST(req: NextRequest) {
             type: MessageType.Text,
           });
 
+          // Update chat meta data
+          chat.lastMessage = messageText;
+          chat.lastMessageAt = new Date();
+          if (!isChatOpen(user._id.toString(), chat._id.toString())) {
+            // Only increase unread count if the chat isn't currently open for this user
+            chat.unreadCount = (chat.unreadCount || 0) + 1;
+          }
+          const saveChatPromise = chat.save();
+
+          // Wait for both write ops
+          const newMessage = await newMessagePromise;
+          await saveChatPromise;
+          
+          await sendPusherNotification({
+            userId: user._id.toString(),
+            event: "new-message",
+            chat,
+            message: newMessage,
+          });
+          
           // AI handling logic
           if (wa.aiAgent?.isActive && wa.aiAgent?.webhookUrl) {
             await sendToAIAgent({
@@ -136,26 +156,6 @@ export async function POST(req: NextRequest) {
               }
             }
           }
-
-          // Update chat meta data
-          chat.lastMessage = messageText;
-          chat.lastMessageAt = new Date();
-          if (!isChatOpen(user._id.toString(), chat._id.toString())) {
-            // Only increase unread count if the chat isn't currently open for this user
-            chat.unreadCount = (chat.unreadCount || 0) + 1;
-          }
-          const saveChatPromise = chat.save();
-
-          // Wait for both write ops
-          const newMessage = await newMessagePromise;
-          await saveChatPromise;
-          
-          await sendPusherNotification({
-            userId: user._id.toString(),
-            event: "new-message",
-            chat,
-            message: newMessage,
-          });
         }
       }
     }
