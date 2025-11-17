@@ -128,7 +128,7 @@ export default function ProfilePage() {
                 control={control}
                 render={({ field }) => (
                   <ShadcnPhoneInput
-                    value={String(field.value || "")}  
+                    value={field.value || ""}  
                     onChange={(val: string) => field.onChange(val || "")}
                   />
                 )}

@@ -38,7 +38,7 @@ function ShadcnPhoneInput({ value, onChange }: { value: string; onChange: (phone
         })
         .catch(() => setCountryCode("in")); // fallback on error
     }
-  }, [value]);
+  }, []);
 
   return (
     <div className="w-full relative">
