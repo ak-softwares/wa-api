@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "@/components/ui/sonner";
 import { useRouter } from "next/navigation";
-import { Message } from "@/types/Message";
+import { Context, Message } from "@/types/Message";
 import { MessageStatus } from "@/types/MessageStatus";
 import { useSendWhatsappMessage } from "@/hooks/whatsapp/useSendWhatsappMessage";
 import { ApiResponse } from "@/types/apiResponse";
@@ -23,7 +23,6 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [refreshFlag, setRefreshFlag] = useState(0);
-  const router = useRouter();
   const { sendMessage } = useSendWhatsappMessage();
   const { newMessage, newChat, setNewMessageData } = useChatStore();
 
@@ -109,7 +108,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
     return () => container.removeEventListener("scroll", handleScroll);
   }, [containerRef, loading, loadingMore, hasMore]);
 
-  const onSend = async (text: string) => {
+  const onSend = async ({ text, context }: { text: string; context?: Context }) => {
     if (!text.trim()) return;
     const tempId = new Types.ObjectId();
 
@@ -123,6 +122,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
         status: MessageStatus.Sent,
         participants: [], // ✅ required
         type: "text" as any,
+        context,
         createdAt: new Date(),
         updatedAt: new Date(),
     };
@@ -132,11 +132,13 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
     await sendMessage(
         chatId,
         text.trim(),
-        () => {
+        context,
+        (realMessage) => {
+            // 🔥 Replace temp with real message
             setMessages((prev) =>
-                prev.map((msg) =>
-                msg._id === tempId ? { ...msg, status: MessageStatus.Sent } : msg
-                )
+              prev.map((msg) =>
+                msg._id === tempId ? realMessage : msg
+              )
             );
         },
         (errorMsg) => {
@@ -160,6 +162,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
 
   return {
     messages,
+    setMessages,
     onSend,
     loading,
     loadingMore,

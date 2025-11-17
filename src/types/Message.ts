@@ -4,6 +4,15 @@ import { MessageStatus } from "@/types/MessageStatus";
 import { MessageType } from "@/types/MessageType";
 import { ChatParticipant } from "@/types/Chat";
 
+export interface IContext {
+  id: string;
+  from?: string;
+  message?: string;
+}
+
+// ✅ alias interface as a type — so you can use whichever you prefer
+export type Context = IContext;
+
 export interface IMessage {
   _id?: Types.ObjectId;
   userId: Types.ObjectId;
@@ -14,6 +23,7 @@ export interface IMessage {
   waMessageId?: string;
   status?: MessageStatus;
   type?: MessageType;
+  context?: Context;
   tag?: string;
   participants: ChatParticipant[];
   createdAt?: Date;

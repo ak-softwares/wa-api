@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ApiResponse } from "@/types/apiResponse";
+import { Context, Message } from "@/types/Message";
 
 export function useSendWhatsappMessage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -10,7 +11,8 @@ export function useSendWhatsappMessage() {
   const sendMessage = async (
     chatId: string,
     message: string,
-    onSuccess?: () => void,
+    context?: Context,
+    onSuccess?: (realMessage: Message) => void,
     onError?: (errorMsg: string) => void
   ): Promise<ApiResponse> => {
     try {
@@ -18,13 +20,13 @@ export function useSendWhatsappMessage() {
       const res = await fetch("/api/whatsapp/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chatId, message }),
+        body: JSON.stringify({ chatId, message, context }),
       });
 
       const data: ApiResponse = await res.json();
 
       if (data.success) {
-        if (onSuccess) onSuccess();
+        if (onSuccess) onSuccess(data.data); // 👈 send real message back
       } else {
         if (onError) onError(data.message);
       }

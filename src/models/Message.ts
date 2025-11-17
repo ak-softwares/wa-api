@@ -1,9 +1,19 @@
 // /models/Message.ts
 import mongoose, { Schema, models } from "mongoose";
-import { IMessage } from "@/types/Message";
+import { IMessage, IContext } from "@/types/Message";
 import { MessageStatus } from "@/types/MessageStatus";
 import { MessageType } from "@/types/MessageType";
 import { ChatParticipantSchema } from "@/models/Chat";
+
+// ---- Context Sub-Schema ----
+const ContextSchema = new Schema<IContext>(
+  {
+    id: { type: String, required: true },
+    from: { type: String },
+    message: { type: String }
+  },
+  { _id: false } // ❗ important: prevents auto _id for subdocument
+);
 
 const MessageSchema = new Schema<IMessage>(
   {
@@ -23,11 +33,11 @@ const MessageSchema = new Schema<IMessage>(
       enum: Object.values(MessageType),
       default: MessageType.Text,
     },
+    context: { type: ContextSchema, default: null },
     tag: { type: String },
     participants: { type: [ChatParticipantSchema], required: true },
   },
   { timestamps: true }
 );
 
-export const Message =
-  models.Message || mongoose.model<IMessage>("Message", MessageSchema);
+export const Message = models.Message || mongoose.model<IMessage>("Message", MessageSchema);

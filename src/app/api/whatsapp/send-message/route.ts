@@ -3,6 +3,15 @@ import { Chat } from "@/models/Chat";
 import { sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
+import { Context } from "@/types/Message";
+
+interface SendMessageRequest {
+  to: string;
+  message: string;
+  tag: string;
+  context?: Context;
+}
+
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,7 +22,7 @@ export async function POST(req: NextRequest) {
     const { phone_number_id, permanent_token } = waAccount;
 
     // Parse request
-    const { to, message, tag } = await req.json();
+    const { to, message, tag, context }: SendMessageRequest = await req.json();
     if (!to || !message) {
       return NextResponse.json(
         { success: false, message: "Missing number or message" },
@@ -46,6 +55,7 @@ export async function POST(req: NextRequest) {
       to,
       message,
       tag,
+      context,
     });
     if (sendMsgError) return sendMsgError;
 

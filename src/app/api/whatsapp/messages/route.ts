@@ -4,7 +4,7 @@ import { Chat } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { sendBroadcastMessage, sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
 import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
-import { Message as IMessage } from "@/types/Message";
+import { Context, Message as IMessage } from "@/types/Message";
 
 export async function GET(req: NextRequest) {
   try {
@@ -57,6 +57,12 @@ export async function GET(req: NextRequest) {
   }
 }
 
+interface SendMessageRequest {
+  chatId: string;
+  message: string;
+  context?: Context;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { user, waAccount, errorResponse } = await getDefaultWaAccount();
@@ -65,7 +71,7 @@ export async function POST(req: NextRequest) {
     const { phone_number_id, permanent_token } = waAccount;
 
     // Parse request body
-    const { chatId, message: inputMessage } = await req.json();
+    const { chatId, message: inputMessage, context }: SendMessageRequest = await req.json();
     if (!chatId || !inputMessage) {
       const response: ApiResponse = {
         success: false,
@@ -109,6 +115,7 @@ export async function POST(req: NextRequest) {
         permanent_token,
         to,
         message: inputMessage,
+        context
       });
       if (sendMsgError) return sendMsgError; // 🚫 Handles all auth, DB, and token errors
       sentMessage = newMessage;

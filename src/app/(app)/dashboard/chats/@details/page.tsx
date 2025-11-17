@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
-import { useMessages } from "@/hooks/chat/useMessages";
+import { useMessages } from "@/hooks/message/useMessages";
 import { Skeleton } from "@/components/ui/skeleton";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { useTheme } from "next-themes"; // if using next-themes
@@ -15,9 +15,11 @@ import MessagesMenu from "@/components/dashboard/messages/MessagesMenu";
 import MessageBubble from "@/components/common/MessageBubble";
 import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
 import { useRouter } from "next/navigation";
+import { Message } from "@/types/Message";
 
 export default function MessagePage() {
   const { theme } = useTheme(); // or use your theme context
+  const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const activeChat = useChatStore((s) => s.activeChat);
   const setActiveChat = useChatStore((s) => s.setActiveChat);
@@ -26,8 +28,9 @@ export default function MessagePage() {
   const chatId = activeChat?._id?.toString() ?? "";
 
   const [message, setMessage] = useState("");
+  const [messageContext, setMessageContext] = useState<Message | null>(null);
   const [showContactDetails, setShowContactDetails] = useState(false);
-  const { messages, onSend, loading, loadingMore, hasMore } = useMessages({ containerRef, chatId });
+  const { messages, setMessages, onSend, loading, loadingMore, hasMore } = useMessages({ containerRef, chatId });
   const { deleteChat, deleteChatsBulk, deleting } = useDeleteChats();
 
   // ✅ Reset unread count when chat is opened
@@ -44,13 +47,35 @@ export default function MessagePage() {
 
   const messageSend = () => {
     if (message.trim()) {
-      onSend(message);
+        const payload: any = { text: message };
+
+      // Only add context if messageContext exists
+      if (messageContext) {
+        payload.context = {
+          id: messageContext.waMessageId,
+          from: messageContext.from,
+          message: messageContext.message,
+        };
+      }
+
+      onSend(payload);
       setMessage("");
+      setMessageContext(null);
     }
   };
 
+  const onReply = (message: Message) => {
+    setMessageContext(message);
+  }
+
+  useEffect(() => {
+    // Whenever reply context changes → focus input after UI is updated
+    inputRef.current?.focus();
+  }, [messageContext]);
+
   const backFromChat = () => {
     setActiveChat(null);
+    setMessageContext(null);
     setShowContactDetails(false);
   };
 
@@ -65,6 +90,10 @@ export default function MessagePage() {
       // onDelete?.(chatId); // ✅ refresh or remove from UI
       router.refresh(); // 🔄 re-fetches data for the current route
     }
+  };
+
+  const handleDeleteMessage = (MessageId: string) => {
+    setMessages((prev) => prev.filter(message => String(message._id) !== MessageId));
   };
 
   // Close contact details when active chat changes
@@ -213,7 +242,13 @@ export default function MessagePage() {
                           </div>
                       );
                   })
-                  : messages.map((m) => (<MessageBubble key={m._id?.toString()} message={m} />))
+                  : messages.map((m) => (
+                    <MessageBubble 
+                      key={m._id?.toString()}
+                      message={m}
+                      onDelete={handleDeleteMessage}
+                      onReply={() => onReply(m)}
+                    />))
                   }
               </div>
 
@@ -254,8 +289,30 @@ export default function MessagePage() {
             </div>
             {/* Input box */}
             <div className="bg-transparent p-4">
+              {/* PREFIX buttons (left side inside input) */}
+              {messageContext && (
+                <div className="p-2 dark:bg-[#2E2F2F] bg-white rounded-t-xl">
+                  <div className="px-4 py-2 bg-gray-100 dark:bg-[#1f1f1f] rounded-md border-l-4 dark:border-blue-400 border-blue-600 flex justify-between items-start">
+                    <div>
+                      <p className="dark:text-blue-300 text-blue-600 font-semibold text-sm">
+                        {activeChat.participants[0]?.name ?? "User"}
+                      </p>
+                      <p className="text-gray-700 dark:text-gray-300 text-sm line-clamp-1">
+                        {messageContext.message}
+                      </p>
+                    </div>
+
+                    {/* Close button */}
+                    <button
+                      onClick={() => setMessageContext(null)}
+                      className="dark:text-gray-400 text-gray-600 hover:text-black dark:hover:text-white text-2xl px-2"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="relative flex items-center">
-                {/* PREFIX buttons (left side inside input) */}
                 <div className="absolute left-1.5 flex gap-2 items-center">
                   <IconButton
                     // onClick={clearSelection}
@@ -269,22 +326,24 @@ export default function MessagePage() {
                   />
                 </div>
                 <Input
+                  ref={inputRef}   // 👈 attach ref
                   placeholder="Type a message"
-                  className="
+                  className={`
                     flex-1
                     px-25
-                    mr-2 rounded-full bg-white 
+                    bg-white
+                    ${messageContext ? "rounded-t-none rounded-b-3xl" : "rounded-full"}
                     dark:bg-[#2E2F2F]
                     h-12
-                    border border-gray-200 dark:border-[#3a3b3b]
-                    focus:ring-0
-                    focus:ring-transparent
-                    focus:border-none
-                    focus:outline-none
+                    border-none
+                    !focus:ring-0 !focus-visible:ring-0 !ring-0
+                    !focus:border-transparent 
+                    !active:border-transparent !hover:border-transparent 
+                    !outline-none !focus:outline-none
                     placeholder:text-base placeholder:text-gray-400
                     dark:text-white
                     !text-base
-                  "
+                  `}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={(e) => {

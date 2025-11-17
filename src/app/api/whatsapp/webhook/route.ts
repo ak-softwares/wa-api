@@ -7,13 +7,13 @@ import { IWaAccount } from "@/types/WaAccount";
 import { Message } from "@/models/Message";
 import { MessageStatus } from "@/types/MessageStatus";
 import { MessageType } from "@/types/MessageType";
-import { pusher } from "@/lib/pusher";
 import { getAIReply } from "@/lib/ai/aiService";
 import { sendToAIAgent } from "@/lib/ai/webhookService";
 import { WaAccount } from "@/types/WaAccount";
 import { isChatOpen } from "@/lib/activeChats";
 import { sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
 import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
+import { Context } from "@/types/Message";
 
 const WA_VERIFY_TOKEN = process.env.WA_VERIFY_TOKEN; // secret token
 
@@ -61,9 +61,10 @@ export async function POST(req: NextRequest) {
 
         // Local cache for chats to reduce DB calls
         const chatCache = new Map<string, any>();
-
+        
         for (const msg of messages) {
           const from = msg.from;
+          const context: Context | null = msg.context || null;
           const messageText = msg.text?.body || "";
           const waMessageId = msg.id;
           if (!from) continue;
@@ -87,6 +88,18 @@ export async function POST(req: NextRequest) {
 
             chatCache.set(from, chat);
           }
+          
+          // If message contains context → find original message
+          if (context?.id) {
+            const contextMessage = await Message.findOne({
+              chatId: chat._id,
+              waMessageId: context.id,
+            });
+            if (contextMessage) {
+              // Add a custom field safely
+              context.message = contextMessage.message;
+            }
+          }
 
           // Save incoming message and update chat
           const newMessagePromise = Message.create({
@@ -98,6 +111,7 @@ export async function POST(req: NextRequest) {
             waMessageId,
             status: MessageStatus.Received,
             type: MessageType.Text,
+            context
           });
 
           // Update chat meta data

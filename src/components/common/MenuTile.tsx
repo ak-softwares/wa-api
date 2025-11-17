@@ -31,9 +31,9 @@ export default function MenuTile({
     <div
       onClick={onClick}
       className={`
-        flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer
+        flex items-center gap-3 px-2 py-3 rounded-xl cursor-pointer
         hover:bg-gray-50 dark:hover:bg-[#2E2F2F]
-        ${selected ? "border-l-4 border-green-500 bg-gray-50 dark:bg-[#2E2F2F]" : ""}
+        ${selected ? "border-l-4 border-green-500 bg-gray-50 dark:bg-[#2E2F2F]" : "border-l-4 border-transparent"}
       `}
     >
       <div className={`${cfg.box} flex items-center justify-center rounded-full`}>

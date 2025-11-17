@@ -23,7 +23,7 @@ export default function SettingssPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isSearching, setIsSearching] = useState(false);
     const { theme, setTheme } = useTheme();
-    const { setSelectedSettingsMenu } = useSettingsStore();
+    const { selectedSettingsMenu, setSelectedSettingsMenu } = useSettingsStore();
     
 
     const handleClearSearch = () => {
@@ -55,12 +55,15 @@ export default function SettingssPage() {
               icon={<img src="/assets/icons/setting.svg" className="w-6 h-6 dark:invert" alt="User" />}
               label="Profile"
               subtitle="Manage your profile settings"
+              onClick={() => setSelectedSettingsMenu("profile")}
+              selected={selectedSettingsMenu === "profile"}
           />
           <MenuTile
               icon={<img src="/assets/icons/key.svg" className="w-6 h-6 dark:invert" alt="User" />}
               label="API Key"
               subtitle="Generate api key here"
               onClick={() => setSelectedSettingsMenu("api-key")}
+              selected={selectedSettingsMenu === "api-key"}
           />
           <MenuTile
               icon={theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}

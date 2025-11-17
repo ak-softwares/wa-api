@@ -5,6 +5,7 @@ import { MessageType } from "@/types/MessageType";
 import { ChatParticipant } from "@/types/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { NextResponse } from "next/server";
+import { Context } from "@/types/Message";
 
 interface SendMessageOptions {
   userId: string;
@@ -13,6 +14,7 @@ interface SendMessageOptions {
   permanent_token: string;
   to: string;
   message: string;
+  context?: Context
   tag?: string;
 }
 
@@ -26,6 +28,7 @@ export async function sendWhatsAppMessage({
   permanent_token,
   to,
   message,
+  context,
   tag,
 }: SendMessageOptions) {
   const url = `https://graph.facebook.com/v23.0/${phone_number_id}/messages`;
@@ -36,6 +39,7 @@ export async function sendWhatsAppMessage({
 
   let waMessageId: string | undefined;
   let status: MessageStatus = MessageStatus.Failed;
+  const contextId: string | undefined = context?.id;
 
   try {
     const payload = {
@@ -43,8 +47,11 @@ export async function sendWhatsAppMessage({
       to,
       type: "text",
       text: { body: message },
+      ...(contextId && {
+        context: { message_id: contextId }
+      })
     };
-
+    
     const fbResponse = await axios.post(url, payload, { headers });
     waMessageId = fbResponse.data?.messages?.[0]?.id;
     status = waMessageId ? MessageStatus.Sent : MessageStatus.Failed;
@@ -65,6 +72,7 @@ export async function sendWhatsAppMessage({
       status,
       type: MessageType.Text,
       tag,
+      context
   });
 
   return { newMessage, waMessageId, status };
