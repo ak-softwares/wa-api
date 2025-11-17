@@ -4,8 +4,7 @@ import { useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { toast } from "sonner"
+import { toast } from "@/components/ui/sonner"
 import { useForm, Controller } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -25,7 +24,6 @@ export default function ProfilePage() {
       name: "",
       email: "",
       phone: "",
-      company: "",
     },
   })
 
@@ -39,7 +37,6 @@ export default function ProfilePage() {
           setValue("name", data.data.name || "")
           setValue("email", data.data.email || "")
           setValue("phone", String(data.data.phone || ""))
-          setValue("company", data.data.company || "")
         }
       } catch {
         // toast.error("Error", { description: "Failed to load profile" })
@@ -78,19 +75,18 @@ export default function ProfilePage() {
       </div>
 
       {/* Profile Content */}
-      <div className="flex flex-col items-center space-y-8">
-        {/* Profile Picture Section */}
-        <div className="flex flex-col items-center space-y-4">
-          <Avatar className="w-24 h-24 border-2 border-gray-200">
-            <AvatarImage src="/profile.png" alt="Profile Picture" />
-            <AvatarFallback className="text-lg">A</AvatarFallback>
-          </Avatar>
-          <div className="text-center">
-            <Button variant="outline" className="mb-2">
-              Add profile photo
-            </Button>
-            <p className="text-sm text-gray-500">Click to change your profile picture</p>
+      <div className="flex flex-col items-center space-y-2 p-4">
+        <div className="px-6 py-2 flex flex-col items-center text-center">
+          <div className="rounded-full flex items-center justify-center bg-gray-200 dark:bg-[#242626] overflow-hidden
+            border soldid white">
+            <img src={"/assets/icons/user.svg"} className="w-25 h-25 dark:invert opacity-40" alt={"user"} />
           </div>
+            <div className="text-center">
+              <Button variant="outline" className="mt-4 mb-2">
+                Add profile photo
+              </Button>
+              <p className="text-sm text-gray-500">Click to change your profile picture</p>
+            </div>
         </div>
 
         {/* Profile Form */}
@@ -109,16 +105,17 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* About Field */}
+          {/* Email Field */}
           <div className="space-y-3">
-            <Label htmlFor="about" className="text-sm font-medium">About</Label>
+            <Label htmlFor="name" className="text-sm font-medium">Email</Label>
             <div className="space-y-2">
               <Input 
-                id="about" 
-                placeholder="Hey there! I am using WhatsApp."
+                id="email" 
+                {...register("email")} 
+                placeholder="Enter your email"
                 className="w-full"
               />
-              <p className="text-sm text-gray-500">This is not your username or pin. This name will be visible to your WhatsApp contacts.</p>
+              {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
             </div>
           </div>
 
@@ -131,7 +128,7 @@ export default function ProfilePage() {
                 control={control}
                 render={({ field }) => (
                   <ShadcnPhoneInput
-                    value={field.value || ""}  
+                    value={String(field.value || "")}  
                     onChange={(val: string) => field.onChange(val || "")}
                   />
                 )}
@@ -142,10 +139,7 @@ export default function ProfilePage() {
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-3 pt-4">
-            <Button type="button" variant="outline">
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="w-full">
               {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
           </div>

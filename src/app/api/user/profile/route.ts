@@ -4,34 +4,27 @@ import { connectDB } from "@/lib/mongoose";
 import { User } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { authOptions } from "../../auth/[...nextauth]/authOptions";
+import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
 // GET profile
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const { user, errorResponse } = await fetchAuthenticatedUser();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    if (!session?.user?.email) {
-      const response: ApiResponse = { success: false, message: "Unauthorized" };
-      return NextResponse.json(response, { status: 401 });
-    }
-
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email }).select(
-      "name email phone company"
-    );
-
-    if (!user) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User not found",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
+    // ✅ Pick only required fields
+    const filteredUser = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      company: user.company,
+    };
 
     const response: ApiResponse = {
       success: true,
       message: "Profile fetched successfully",
-      data: user,
+      data: filteredUser,
     };
     return NextResponse.json(response, { status: 200 });
   } catch (err: any) {
@@ -46,29 +39,25 @@ export async function GET() {
 // UPDATE profile
 export async function PUT(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.email) {
-      const response: ApiResponse = { success: false, message: "Unauthorized" };
-      return NextResponse.json(response, { status: 401 });
-    }
+    const { user, errorResponse } = await fetchAuthenticatedUser();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const { name, email, phone, company } = await req.json();
 
     if (!name || !email || !phone) {
       const response: ApiResponse = {
         success: false,
-        message: "All fields are required",
+        message: "Name, email, and phone are required",
       };
       return NextResponse.json(response, { status: 400 });
     }
-
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email });
     
     // ✅ Check if email already exists in another account
     if (email !== user.email) {
-      const existingUser = await User.findOne({ email });
+      const existingUser = await User.findOne({ 
+        email,
+        _id: { $ne: user._id }   // 👈 exclude current user's own record 
+      });
       if (existingUser) {
         const response: ApiResponse = {
           success: false,
@@ -80,7 +69,10 @@ export async function PUT(req: Request) {
 
     // ✅ Check if phone is being changed & ensure it's unique
     if (phone !== user.phone) {
-      const existingUser = await User.findOne({ phone });
+      const existingUser = await User.findOne({ 
+        phone,
+        _id: { $ne: user._id }   // 👈 exclude current user's own record
+      });
       if (existingUser) {
         const response: ApiResponse = {
           success: false,
@@ -88,14 +80,6 @@ export async function PUT(req: Request) {
         };
         return NextResponse.json(response, { status: 400 });
       }
-    }
-
-    if (!user) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User not found",
-      };
-      return NextResponse.json(response, { status: 404 });
     }
 
     user.name = name;
@@ -121,28 +105,16 @@ export async function PUT(req: Request) {
 // DELETE profile
 export async function DELETE() {
   try {
-    const session = await getServerSession(authOptions);
+    const { user, errorResponse } = await fetchAuthenticatedUser();
+    if (errorResponse) return errorResponse; // 🚫 Handles auth, DB, and token errors
 
-    if (!session?.user?.email) {
-      const response: ApiResponse = { success: false, message: "Unauthorized" };
-      return NextResponse.json(response, { status: 401 });
-    }
-
-    await connectDB();
-    const user = await User.findOneAndDelete({ email: session.user.email });
-
-    if (!user) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User not found",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-
+    await User.findByIdAndDelete(user._id);
+    
     const response: ApiResponse = {
       success: true,
       message: "Account deleted successfully",
     };
+
     return NextResponse.json(response, { status: 200 });
   } catch (err: any) {
     const response: ApiResponse = {

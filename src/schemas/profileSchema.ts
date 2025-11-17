@@ -17,5 +17,4 @@ export const profileSchema = z.object({
     .regex(/^\d+$/, "Phone number must contain only digits"),
     // .transform((val) => Number(val)), // 🔑 converts string → number
 
-  company: z.string().optional(),
 });
