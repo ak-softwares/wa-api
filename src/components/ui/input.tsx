@@ -22,23 +22,28 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   )
 }
 
-function ShadcnPhoneInput({ value, onChange }: { value: string; onChange: (phone: string) => void }) {
+function ShadcnPhoneInput({ value, onChange, stopCountryCode }: 
+  { value: string; onChange: (phone: string) => void; stopCountryCode?: boolean }) {
 
-  const [countryCode, setCountryCode] = useState("us"); // fallback
+  const [countryCode, setCountryCode] = useState("us");
 
+  // 🟩 Auto detect only when:
+  //    - No phone
+  //    - stopCountryCode is FALSE
   useEffect(() => {
-    // ✅ Only auto-detect if no phone yet
-    if (!value) {
+    if (!value && !stopCountryCode) {
       fetch("https://ipapi.co/json/")
         .then((res) => res.json())
         .then((data) => {
-          if (data?.country_code) {
+          if (data?.country_code && !stopCountryCode) {
             setCountryCode(data.country_code.toLowerCase());
           }
         })
-        .catch(() => setCountryCode("in")); // fallback on error
+        .catch(() => {
+          if (!stopCountryCode) setCountryCode("in");
+        });
     }
-  }, []);
+  }, [value, stopCountryCode]);
 
   return (
     <div className="w-full relative">

@@ -130,6 +130,7 @@ export default function ProfilePage() {
                   <ShadcnPhoneInput
                     value={field.value || ""}  
                     onChange={(val: string) => field.onChange(val || "")}
+                    stopCountryCode={!!field.value}
                   />
                 )}
               />
