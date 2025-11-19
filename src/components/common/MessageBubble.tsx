@@ -4,10 +4,12 @@ import { formatTime } from "@/utiles/formatTime/formatTime";
 import { Message } from "@/types/Message";
 import { useChatStore } from "@/store/chatStore";
 import { ChatParticipant } from "@/types/Chat";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MessageMenu from "../dashboard/messages/MessageMenu";
 import { useDeleteMessages } from "@/hooks/message/useDeleteMessages";
 import { toast } from "../ui/sonner";
+import { MessageStatus } from "@/types/MessageStatus";
+import { useOpenChat } from "@/hooks/chat/useOpenChat";
 
 interface MessageBubbleProps {
   message: Message;
@@ -19,6 +21,7 @@ export default function MessageBubble({ message, onDelete, onReply }: MessageBub
   const activeChat = useChatStore((s) => s.activeChat);
   const [hovered, setHovered] = useState(false);
   const { deleteMessage, deleteMessagesBulk, deleting } = useDeleteMessages();
+  const { openChatByContact } = useOpenChat();
 
   const isMine = !activeChat?.participants?.some(
     (p: ChatParticipant) => p.number === message.from
@@ -29,7 +32,19 @@ export default function MessageBubble({ message, onDelete, onReply }: MessageBub
     !!activeChat?.participants?.length &&
     message.context.from !== activeChat.participants[0].number;
 
+  
+  useEffect(() => {
+    const handler = (e: any) => {
+      const el = e.target.closest(".chat-number");
+      if (el) {
+        const phone = el.getAttribute("data-phone");
+        openChatByContact(phone);
+      }
+    };
 
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, []);
 
   if (!activeChat) return null;
 
@@ -125,9 +140,11 @@ export default function MessageBubble({ message, onDelete, onReply }: MessageBub
         // If it's normal text → apply phone/email/bold
         return textPart
           // ✅ Convert phone numbers (e.g., +91 92583 44427 → WhatsApp link)
-          .replace(phoneRegex, (num: string) =>
-            `<b><a href="https://wa.me/${num.replace(/\D/g, "")}" target="_blank" class="dark:text-[#21C063] text-blue-600">${num}</a></b>`
-          )
+          .replace(phoneRegex, (num: string) => {
+            const clean = num.replace(/\D/g, "");
+            return `<b class="chat-number" data-phone="${clean}" style="color:#21C063;cursor:pointer">${num}</b>`;
+          })
+          
           .replace(emailRegex, (email: string) =>
             `<a href="mailto:${email}" class="dark:text-[#21C063] text-blue-600">${email}</a>`
           )
@@ -219,8 +236,43 @@ export default function MessageBubble({ message, onDelete, onReply }: MessageBub
 
             {/* Time */}
             {formatTime(message.createdAt)}
-          </span>
 
+            {(message.status === MessageStatus.Pending) && (
+              <img
+                src="/assets/icons/msg-time.svg"
+                className="w-4 h-4 dark:invert opacity-60"
+                alt="ai tag"
+              />
+            )}
+            {(message.status === MessageStatus.Failed) && (
+              <img
+                src="/assets/icons/warning.svg"
+                className="w-4 h-4 dark:invert opacity-60"
+                alt="ai tag"
+              />
+            )}
+            {(message.status === MessageStatus.Sent) && (
+              <img
+                src="/assets/icons/status-dblcheck.svg"  //status-check.svg
+                className="w-4 h-4 dark:invert opacity-60"
+                alt="ai tag"
+              />
+            )}
+            {(message.status === MessageStatus.Delivered) && (
+              <img
+                src="/assets/icons/status-dblcheck.svg"
+                className="w-4 h-4 dark:invert opacity-60"
+                alt="ai tag"
+              />
+            )}
+            {(message.status === MessageStatus.Read) && (
+              <img
+                src="/assets/icons/status-dblcheck-1.svg"
+                className="w-4 h-4 dark:invert opacity-60"
+                alt="ai tag"
+              />
+            )}
+          </span>
         </p>
 
         <div

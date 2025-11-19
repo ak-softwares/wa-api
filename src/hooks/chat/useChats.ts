@@ -27,24 +27,28 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
   // const setActiveChat = useChatStore((s) => s.setActiveChat);
 
   useEffect(() => {
-    if (!newMessage || !newChat) return;
+    if (!newChat) return;
 
     setChats((prev) => {
       const existingChatIndex = prev.findIndex((c) => c._id === newChat._id);
       const updatedChats = [...prev];
 
       if (existingChatIndex !== -1) {
-        const updatedChat = {
-          ...updatedChats[existingChatIndex],
-          lastMessage: newMessage.message,
-          updatedAt: newMessage.createdAt,
-          unreadCount:
-            activeChat && activeChat._id === newChat._id
-              ? 0
-              : (updatedChats[existingChatIndex].unreadCount || 0) + 1,
-        };
-        updatedChats.splice(existingChatIndex, 1);
-        updatedChats.unshift(updatedChat);
+        // Update chat only when message exists
+        if (newMessage) {
+          const updatedChat = {
+            ...updatedChats[existingChatIndex],
+            lastMessage: newMessage.message,
+            updatedAt: newMessage.createdAt,
+            unreadCount:
+              activeChat && activeChat._id === newChat._id
+                ? 0
+                : (updatedChats[existingChatIndex].unreadCount || 0) + 1,
+          };
+
+          updatedChats.splice(existingChatIndex, 1);
+          updatedChats.unshift(updatedChat);
+        }
       } else {
         updatedChats.unshift(newChat);
       }

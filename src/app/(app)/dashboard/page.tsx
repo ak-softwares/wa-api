@@ -7,7 +7,7 @@ import DashboardPage from "@/components/dashboard/dashboard/Dashboard"
 export default function Dashboard() {
 
   return (
-    <main className="flex-1 p-6 overflow-y-auto">
+    <main className="flex-1 p-6 overflow-y-auto dark:bg-[#161717]">
       <div className="grid grid-cols-10 gap-6 h-full">
         {/* Left side (70%) */}
         <div className="col-span-7 space-y-6">

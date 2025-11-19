@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,19 +10,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { toast } from "@/components/ui/sonner";
+import { useLogoutDialog } from "./useLogoutDialog";
 
-export default function DeleteAccount() {
-  const router = useRouter();
+export function useDeleteAccountDialog() {
+  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const handleSignOut = () => {
-    signOut({ callbackUrl: "/auth/login" });
-  };
+  const { logout } = useLogoutDialog();
 
   const handleDelete = async () => {
     try {
@@ -37,7 +31,7 @@ export default function DeleteAccount() {
 
       if (data.success) {
         toast.success(data.message);
-        handleSignOut();
+        logout();
       } else {
         toast.error(data.message || "Failed to delete account");
       }
@@ -48,19 +42,13 @@ export default function DeleteAccount() {
     }
   };
 
-  return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="destructive" className="w-full">
-          Delete Account
-        </Button>
-      </AlertDialogTrigger>
+  const Dialog = (
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. Your account and all associated data
-            will be permanently deleted.
+            This action cannot be undone. Your account and all related data will be permanently deleted.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -76,4 +64,9 @@ export default function DeleteAccount() {
       </AlertDialogContent>
     </AlertDialog>
   );
+
+  return {
+    openDeleteDialog: () => setOpen(true),
+    DeleteAccountDialog: Dialog,
+  };
 }

@@ -1,33 +1,18 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
-import { getServerSession } from "next-auth";
 import { ApiResponse } from "@/types/apiResponse";
-import { authOptions } from "../[...nextauth]/authOptions"; 
+import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.email) {
-      const response: ApiResponse = { success: false, message: "Unauthorized" };
-      return NextResponse.json(response, { status: 401 });
-    }
+    const { user, errorResponse } = await fetchAuthenticatedUser();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const { oldPassword, newPassword } = await req.json();
 
     if (!oldPassword || !newPassword) {
       const response: ApiResponse = { success: false, message: "All fields required" };
       return NextResponse.json(response, { status: 400 });
-    }
-
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email });
-
-    if (!user) {
-      const response: ApiResponse = { success: false, message: "User not found" };
-      return NextResponse.json(response, { status: 404 });
     }
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);

@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { connectDB } from "@/lib/mongoose";
 import { User } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
-import { authOptions } from "../../auth/[...nextauth]/authOptions";
 import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
 // GET profile

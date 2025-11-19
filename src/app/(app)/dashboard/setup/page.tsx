@@ -61,7 +61,7 @@ export default function WhatsAppSetupPage() {
   const isLastStep = currentStep === steps.length;
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 dark:bg-[#161717]">
       <div className="max-w-3xl mx-auto">
         {/* Page Header */}
         <div className="text-center mb-8">

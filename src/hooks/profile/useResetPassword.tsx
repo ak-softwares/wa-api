@@ -1,21 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner"
-import { signOut } from "next-auth/react";
+import { toast } from "@/components/ui/sonner";
+import { useLogoutDialog } from "./useLogoutDialog";
 
-export default function ResetPasswordDialog() {
+export function useResetPasswordDialog() {
+  const [open, setOpen] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const handleSignOut = () => {
-    signOut({ callbackUrl: "/auth/login" });
-  };
+  const { logout } = useLogoutDialog();
 
   const handleResetPassword = async () => {
     setLoading(true);
@@ -27,37 +33,35 @@ export default function ResetPasswordDialog() {
       });
 
       const result = await res.json();
+
       if (!res.ok) {
         toast.error(result.message || "Failed to reset password");
       } else {
         toast.success("Password reset successful! Please login again.");
-        handleSignOut();
+        logout();
       }
-    } catch (err) {
-      toast.error("Unexpected error, try again.");
     } finally {
       setLoading(false);
+      setOpen(false);
+      setOldPassword("");
+      setNewPassword("");
     }
   };
 
-  return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="outline" className="w-full">Reset Password</Button>
-      </AlertDialogTrigger>
+  const ResetDialog = (
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Reset Password</AlertDialogTitle>
           <AlertDialogDescription>
-            Enter your current password and your new password below.
+            Enter your current and new password.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="oldPassword">Old Password</Label>
+            <Label>Old Password</Label>
             <Input
-              id="oldPassword"
               type="password"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
@@ -65,9 +69,8 @@ export default function ResetPasswordDialog() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="newPassword">New Password</Label>
+            <Label>New Password</Label>
             <Input
-              id="newPassword"
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -78,14 +81,15 @@ export default function ResetPasswordDialog() {
         <AlertDialogFooter>
           <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
           <AlertDialogAction
+            disabled={loading || !oldPassword || !newPassword}
             onClick={handleResetPassword}
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-            {loading ? "Updating..." : "Update Password"}
+            {loading ? "Updating..." : "Update"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
+
+  return { openResetDialog: () => setOpen(true), ResetDialog };
 }

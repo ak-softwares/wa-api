@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { useDeleteContacts } from "@/hooks/contact/useDeleteContacts";
 import { IContact } from "@/types/Contact";
+import { useOpenChat } from "@/hooks/chat/useOpenChat";
 
 interface ContactMenuProps {
   contact: IContact;
@@ -23,6 +24,7 @@ export default function ContactMenu({ contact, onDelete }: ContactMenuProps) {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { deleteContact, deleting } = useDeleteContacts();
+  const { openChatByContact } = useOpenChat();
 
   const handleDelete = async () => {
     if (!contact._id) return;
@@ -35,8 +37,10 @@ export default function ContactMenu({ contact, onDelete }: ContactMenuProps) {
 
   const handleChatClick = () => {
     if (contact.phones.length === 1) {
-      // Direct navigation if only one phone
-      router.push(`/dashboard/chats?phone=${contact.phones[0]}`);
+      const phone = contact?.phones?.[0];
+      if (!phone) return;
+      openChatByContact(phone);
+      router.push("/dashboard/chats");
     } else {
       // Open dialog for multiple phones
       setIsDialogOpen(true);
@@ -44,8 +48,11 @@ export default function ContactMenu({ contact, onDelete }: ContactMenuProps) {
   };
 
   const handlePhoneSelect = (phone: string) => {
+    console.log('asfdjskdf')
+    if (!phone) return;
+    openChatByContact(phone);
     setIsDialogOpen(false);
-    router.push(`/dashboard/chats?phone=${phone}`);
+    router.push("/dashboard/chats");
   };
 
   return (
@@ -121,21 +128,33 @@ export default function ContactMenu({ contact, onDelete }: ContactMenuProps) {
 
           <div className="space-y-3 py-4">
             {contact.phones.map((phone, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer"
-                onClick={() => handlePhoneSelect(phone)}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-full">
-                    <Phone className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <span className="font-medium">{phone}</span>
+            <div
+              key={index}
+              className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();  // important
+                handlePhoneSelect(phone);
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-full">
+                  <Phone className="w-4 h-4 text-blue-600" />
                 </div>
-                <Button variant="ghost" size="sm">
-                  Chat
-                </Button>
+                <span className="font-medium">{phone}</span>
               </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();  // important
+                  handlePhoneSelect(phone);
+                }}
+              >
+                Chat
+              </Button>
+            </div>
+
             ))}
           </div>
         </DialogContent>

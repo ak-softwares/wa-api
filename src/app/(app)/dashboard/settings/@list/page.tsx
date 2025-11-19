@@ -5,27 +5,17 @@ import SearchBar from "@/components/common/SearchBar";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useState } from "react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Moon, Sun } from "lucide-react";
 import { useSettingsStore } from "@/store/settingsStore";
+import { useLogoutDialog } from "@/hooks/profile/useLogoutDialog";
 
 export default function SettingssPage() {
-    const [openLogout, setOpenLogout] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [isSearching, setIsSearching] = useState(false);
     const { theme, setTheme } = useTheme();
     const { selectedSettingsMenu, setSelectedSettingsMenu } = useSettingsStore();
+    const { openLogoutDialog, LogoutDialog } = useLogoutDialog();
     
-
     const handleClearSearch = () => {
         setSearchTerm("");
     };
@@ -77,29 +67,10 @@ export default function SettingssPage() {
               />}
               label="Logout"
               size="md"
-              onClick={() => setOpenLogout(true)}
+              onClick={openLogoutDialog}
           />
-          <AlertDialog open={openLogout} onOpenChange={setOpenLogout}>
-          <AlertDialogContent className="dark:bg-[#1f1f1f]">
-              <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                  You will be signed out of your account.
-              </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                  onClick={() => {
-                  handleSignOut();
-                  }}
-                  className="bg-red-500 hover:bg-red-600 text-white"
-              >
-                  Logout
-              </AlertDialogAction>
-              </AlertDialogFooter>
-          </AlertDialogContent>
-          </AlertDialog>
+          {/* Logout Dialog Component */}
+          {LogoutDialog}
         </div>
       </div>
     );

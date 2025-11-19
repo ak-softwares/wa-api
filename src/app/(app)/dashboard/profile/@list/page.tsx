@@ -10,6 +10,7 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { profileSchema } from "@/schemas/profileSchema"
 import { ShadcnPhoneInput } from "@/components/ui/input"
+import ProfileMenu from "@/components/dashboard/profile/ProfileMenu"
 
 export default function ProfilePage() {
   const {
@@ -72,6 +73,9 @@ export default function ProfilePage() {
         <h1 className="text-xl font-semibold">
           Profile <span className="text-gray-500 text-sm"></span>
         </h1>
+        <div className="flex items-center gap-2">
+          <ProfileMenu />
+        </div>
       </div>
 
       {/* Profile Content */}

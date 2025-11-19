@@ -119,7 +119,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
         to: "",
         from: "me",
         message: text,
-        status: MessageStatus.Sent,
+        status: MessageStatus.Pending,
         participants: [], // ✅ required
         type: "text" as any,
         context,

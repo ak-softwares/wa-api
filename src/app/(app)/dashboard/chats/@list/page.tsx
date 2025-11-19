@@ -5,7 +5,7 @@ import { formatTime } from "@/utiles/formatTime/formatTime";
 import ChatMenu from "@/components/dashboard/chats/ChatMenu";
 import ContactAvatar from "@/components/dashboard/contacts/ContactAvatar";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
-import ChatsMenu from "@/components/dashboard/contacts/ChatsMenu";
+import ChatsMenu from "@/components/dashboard/chats/ChatsMenu";
 import SearchBar from "@/components/common/SearchBar";
 import { useState, useRef } from "react";
 import IconButton from "@/components/common/IconButton";
@@ -14,6 +14,7 @@ import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
 import SelectedChatMenu from "@/components/dashboard/chats/SelectedChatsMenu";
 import { useChatStore } from "@/store/chatStore";
 import { useChats } from "@/hooks/chat/useChats";
+import NewChatPopup from "@/components/dashboard/chats/AppChatPopup";
 
 export default function ChatList({
   searchParams,
@@ -27,9 +28,9 @@ export default function ChatList({
   const [selectedChatIds, setSelectedChatIds] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const { deleteChatsBulk } = useDeleteChats();
-  
-  const activeChat = useChatStore((s) => s.activeChat);
-  const setActiveChat = useChatStore((s) => s.setActiveChat);
+  const [isNewChatOpen, setIsNewChatOpen] = useState(false);
+
+  const { activeChat, setActiveChat } = useChatStore();
   
   const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
     const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
@@ -95,7 +96,18 @@ export default function ChatList({
       <div className="p-5 flex items-center justify-between">
         <h1 className="text-xl font-semibold">Chat <span className="text-gray-500 text-sm">({totalChats})</span></h1>
         <div className="flex items-center gap-2">
+          <IconButton
+            onClick={() => setIsNewChatOpen(true)}
+            label={"Add chat"}
+            IconSrc={"/assets/icons/chat-add.svg"}
+          />
           <ChatsMenu onSelectChats={() => setIsSelectionMode(true)} />
+          {/* New Chat Popup */}
+          <NewChatPopup
+            isOpen={isNewChatOpen}
+            onClose={() => setIsNewChatOpen(false)}
+            phone={phone ?? ""} // Your phone prop
+          />
         </div>
       </div>
 
