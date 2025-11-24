@@ -18,6 +18,7 @@ export interface IWaAccount {
   aiChat?: IAIChat;
   aiAgent?: IAIAgent;
   phone_number?: string;
+  blockedNumbers?: string[];
   createdAt?: Date;
   updatedAt?: Date;
 }

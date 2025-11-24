@@ -40,7 +40,7 @@ export function useSendWhatsappMessage() {
     }
   };
 
-    // ⚡ Send WhatsApp message
+  // ⚡ Send WhatsApp message
   const sendMessageByPhone = async (
     to: string,
     message: string,
@@ -62,7 +62,8 @@ export function useSendWhatsappMessage() {
       } else {
         if (onError) onError(data.message);
       }
-      return { success: true, message: "Success", data };
+      // 🔥 Return EXACT response from backend
+      return data;
     } catch (error: any) {
       const errorMsg = "Something went wrong while sending the message";
       if (onError) onError(errorMsg);

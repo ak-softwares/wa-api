@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Chat } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { ChatParticipant } from "@/types/Chat";
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,10 +24,10 @@ export async function POST(req: NextRequest) {
     const chat = await Chat.create({
       userId: user._id,
       waAccountId: waAccount._id,
-      participants: participants.map((p: any) => ({
-        number: String(p.number),
-        name: p.name ?? "",
-        imageUrl: p.imageUrl ?? "",
+      participants: participants.map((participant: ChatParticipant) => ({
+        number: participant.number,
+        name: participant.name ?? "",
+        imageUrl: participant.imageUrl ?? "",
       })),
       type: "broadcast",
       chatName: chatName || `Broadcast - ${new Date().toLocaleDateString()}`,
@@ -40,8 +41,6 @@ export async function POST(req: NextRequest) {
     };
     return NextResponse.json(response, { status: 201 });
   } catch (error: any) {
-    console.error("Error creating broadcast chat:", error);
-
     const response: ApiResponse = {
       success: false,
       message: error.message || "Internal Server Error",

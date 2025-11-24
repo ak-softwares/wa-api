@@ -5,58 +5,125 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Trash } from "lucide-react";
 import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
+import MenuItemsList from "@/components/common/MenuItemList";
+import { Chat, ChatParticipant } from "@/types/Chat";
+import { useFavourite } from "@/hooks/chat/useFavourite";
+import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 
 interface ChatMenuProps {
-  chatId: string;
+  chat: Chat;
   onDelete?: (chatId: string) => void; // new callback
+  onUpdateFavourite?: (chatId: string, isFavourite: boolean) => void; // added
 }
 
-export default function ChatMenu({ chatId, onDelete }: ChatMenuProps) {
+export default function ChatMenu({ chat, onDelete, onUpdateFavourite }: ChatMenuProps) {
 
-  const { deleteChat, deleteChatsBulk, deleting } = useDeleteChats();
+  const { deleteChat } = useDeleteChats();
+  const { toggleFavourite } = useFavourite();
+  const { isBlocked, confirmBlock, confirmUnblock, ConfirmDialog } = useBlockedContacts();
+
+  const isBroadcast = chat?.type === "broadcast";
+  const participant: ChatParticipant = chat.participants[0]; // assuming one-on-one chat
+
+  const handleToggleFavourite = async () => {
+    const updatedState = await toggleFavourite(chat._id!.toString());
+    if (updatedState !== null) {
+      // Optional: update UI state or refresh
+      onUpdateFavourite?.(chat._id!.toString(), updatedState);
+    }
+  };
 
   const handleDelete = async () => {
-    if (!chatId) return;
-    const success = await deleteChat(chatId);
+    if (!chat) return;
+    const success = await deleteChat(chat._id!.toString());
     if (success) {
-      onDelete?.(chatId); // ✅ refresh or remove from UI
+      onDelete?.(chat._id!.toString()); // ✅ refresh or remove from UI
     }
   };
       
+  const topItems = [
+    chat.isFavourite
+      ? { 
+          icon: "/assets/icons/favourite-remove.svg", 
+          label: "Remove from favourites",
+          action: () => handleToggleFavourite()
+        }
+      : { 
+          icon: "/assets/icons/favourite.svg", 
+          label: "Add to favourites",
+          action: () => handleToggleFavourite()
+        }
+  ];
+
+  // Build bottomItems safely, never adding null
+
+  const bottomItems: any[] = [];
+
+  // ⭐ Add Block/Unblock only if participant exists (not broadcast)
+  if (!isBroadcast) {
+    bottomItems.push(
+      isBlocked(participant)
+        ? {
+            icon: "/assets/icons/block.svg",
+            label: "Unblock",
+            danger: false,
+            action: () => confirmUnblock(participant),
+          }
+        : {
+            icon: "/assets/icons/block.svg",
+            label: "Block",
+            danger: true,
+            action: () => confirmBlock(participant),
+          }
+    );
+  }
+
+  // ⭐ Always add Delete Chat
+  bottomItems.push({
+    icon: "/assets/icons/delete.svg",
+    label: "Delete chat",
+    action: handleDelete,
+    danger: true,
+  });
+
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <span
-        onClick={(e) => e.stopPropagation()} // ✅ stop click from reaching parent 
-        className="rounded-full cursor-pointer flex items-center justify-center">
-        {/* Reserve space always */}
-        <span className="h-6 flex items-center justify-center">
-          <ChevronDown
-            className="hidden group-hover:flex h-6 w-6 text-gray-400"
-            strokeWidth={2}
-          />
-        </span>
-        </span>
-      </DropdownMenuTrigger>
+    <>
+      <ConfirmDialog />
 
-        {/* <DropdownMenuItem onClick={() => {}}>
-          Archive chat
-        </DropdownMenuItem> */}
-
-      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()} className="dark:bg-[#161717]">
-        <DropdownMenuItem 
-          onClick={handleDelete} 
-          disabled={deleting} 
-          className="text-red-600 dark:text-red-400 hover:text-red-600 hover:dark:bg-[#343636]"
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <span
+          onClick={(e) => e.stopPropagation()} // ✅ stop click from reaching parent 
+          className="rounded-full cursor-pointer flex items-center justify-center">
+          {/* Reserve space always */}
+          <span className="h-6 flex items-center justify-center">
+            <ChevronDown
+              className="hidden group-hover:flex h-6 w-6 text-gray-400"
+              strokeWidth={2}
+            />
+          </span>
+          </span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          onClick={(e) => e.stopPropagation()}
+          className="dark:bg-[#161717] min-w-[220px] rounded-xl p-2"
         >
-          <Trash className="w-4 h-4" />
-          {deleting ? "Deleting..." : "Delete chat"}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          {/* 🔹 Top Section */}
+          <MenuItemsList items={topItems} />
+
+          {/* 🔸 Separator */}
+          {bottomItems.length > 0 && <DropdownMenuSeparator className="dark:bg-[#2A2A2A] my-1" />}
+
+          {/* 🔻 Bottom Section */}
+          <MenuItemsList items={bottomItems} />
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
+
   );
 }

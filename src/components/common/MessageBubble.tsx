@@ -10,6 +10,8 @@ import { useDeleteMessages } from "@/hooks/message/useDeleteMessages";
 import { toast } from "../ui/sonner";
 import { MessageStatus } from "@/types/MessageStatus";
 import { useOpenChat } from "@/hooks/chat/useOpenChat";
+import ForwardMessagePopup from "../dashboard/messages/ForwardMessagePopup";
+import ForwardMessagePopupToPhone from "../dashboard/messages/ForwardMessagePopupPhone";
 
 interface MessageBubbleProps {
   message: Message;
@@ -22,6 +24,7 @@ export default function MessageBubble({ message, onDelete, onReply }: MessageBub
   const [hovered, setHovered] = useState(false);
   const { deleteMessage, deleteMessagesBulk, deleting } = useDeleteMessages();
   const { openChatByContact } = useOpenChat();
+  const [isForwardMessageOpen, setIsForwardMessageOpen] = useState(false);
 
   const isMine = !activeChat?.participants?.some(
     (p: ChatParticipant) => p.number === message.from
@@ -71,7 +74,7 @@ export default function MessageBubble({ message, onDelete, onReply }: MessageBub
   };
 
   const forwardMessage = () => {
-
+    setIsForwardMessageOpen(true);
   };
 
 
@@ -142,9 +145,9 @@ export default function MessageBubble({ message, onDelete, onReply }: MessageBub
           // ✅ Convert phone numbers (e.g., +91 92583 44427 → WhatsApp link)
           .replace(phoneRegex, (num: string) => {
             const clean = num.replace(/\D/g, "");
-            return `<b class="chat-number" data-phone="${clean}" style="color:#21C063;cursor:pointer">${num}</b>`;
+            return `<b class="chat-number text-walink" data-phone="${clean}" style="cursor:pointer">${num}</b>`;
           })
-          
+
           .replace(emailRegex, (email: string) =>
             `<a href="mailto:${email}" class="dark:text-[#21C063] text-blue-600">${email}</a>`
           )
@@ -281,6 +284,12 @@ export default function MessageBubble({ message, onDelete, onReply }: MessageBub
           }`}
         >
           <MessageMenu isMine={isMine} items={menuItems} />
+          {/* New Chat Popup */}
+          <ForwardMessagePopup
+            isOpen={isForwardMessageOpen}
+            onClose={() => setIsForwardMessageOpen(false)}
+            message={message}
+          />
         </div>
       </div>
     </div>

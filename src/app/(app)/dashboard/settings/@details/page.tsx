@@ -1,6 +1,7 @@
 "use client";
 
 import APITokenPage from "@/components/dashboard/settings/APITokenPage";
+import BlockedContactsPage from "@/components/dashboard/settings/BlockedContactsPage";
 import DefaultSettingsPage from "@/components/dashboard/settings/DefaultSettingsPage";
 import { useSettingsStore } from "@/store/settingsStore";
 
@@ -9,8 +10,6 @@ export default function SettingsDetailPage() {
 
   if(selectedSettingsMenu == "api-key"){
     return <APITokenPage />
-  } else if(selectedSettingsMenu == "ai-agent"){
-    // return <AIAgentPage />
   } else{
     return <DefaultSettingsPage />
   }

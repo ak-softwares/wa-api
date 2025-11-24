@@ -8,6 +8,7 @@ interface ContactAvatarProps {
   isSelected?: boolean;
   isSelectionMode?: boolean;
   isActive?: boolean; // ✅ new
+  isDisabled?: boolean;
   size?: "sm" | "md" | "lg" | "xl";
   onClick?: () => void;
   rightMenu?: React.ReactNode;
@@ -21,6 +22,7 @@ export default function ContactAvatar({
   isSelected = false,
   isSelectionMode = false,
   isActive = false, // ✅ default false
+  isDisabled = false,
   size = "md",
   onClick,
   rightMenu,
@@ -31,9 +33,9 @@ export default function ContactAvatar({
 
   const sizeConfig = {
     sm: {
-      avatar: "h-8 w-8",
+      avatar: "h-9 w-9",
       icon: "h-3 w-3",
-      text: "text-xs",
+      text: "text-sm",
       gap: "gap-2",
       subtitle: "text-xs",
       check: "h-3 w-3",
@@ -41,7 +43,7 @@ export default function ContactAvatar({
     md: {
       avatar: "h-10 w-10",
       icon: "h-4 w-4",
-      text: "text-md",
+      text: "text-sm",
       gap: "gap-3",
       subtitle: "text-sm",
       check: "h-4 w-4",
@@ -68,7 +70,7 @@ export default function ContactAvatar({
 
   return (
     <div
-      onClick={onClick}
+      onClick={!isDisabled ? onClick : undefined}
       className={`
         px-3 rounded-lg group flex items-center py-4 cursor-pointer w-full select-none justify-between
         transition-colors duration-200
@@ -78,6 +80,7 @@ export default function ContactAvatar({
           : "hover:bg-gray-100 dark:hover:bg-[#2E2F2F]"
         }
         ${isActive ? "border-l-4 border-green-500 pl-[calc(0.75rem-4px)]" : ""}
+        ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}
       `}
     >
       {/* Left Group: Selection Checkbox + Avatar + Text Content */}

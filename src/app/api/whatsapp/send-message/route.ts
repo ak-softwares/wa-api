@@ -12,7 +12,6 @@ interface SendMessageRequest {
   context?: Context;
 }
 
-
 export async function POST(req: NextRequest) {
   try {
 
@@ -72,11 +71,14 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        success: true,
+        success: !!waMessageId,
         message: waMessageId
           ? "Message sent successfully"
-          : "Failed to send",
-        data: waMessageId,
+          : "Failed to send message",
+        data: {
+          waMessageId: waMessageId || undefined,
+          chat,
+        },
       },
       { status: waMessageId ? 200 : 400 }
     );

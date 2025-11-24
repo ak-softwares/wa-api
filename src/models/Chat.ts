@@ -24,6 +24,7 @@ const ChatSchema = new Schema<IChat>(
     },
     chatName: { type: String, trim: true },
     chatImage: { type: String, trim: true },
+    isFavourite: { type: Boolean, default: false },
     lastMessage: { type: String, trim: true },
     lastMessageAt: { type: Date },
     unreadCount: { type: Number, default: 0 },

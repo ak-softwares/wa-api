@@ -5,6 +5,7 @@ import { ApiResponse } from "@/types/apiResponse";
 import { toast } from "@/components/ui/sonner";
 import { Chat } from "@/types/Chat";
 import { useChatStore } from "@/store/chatStore";
+import { ChatFilterType } from "@/utiles/enums/chatFilters";
 
 interface UseChatsProps {
   sidebarRef?: React.RefObject<HTMLDivElement | null>;
@@ -21,10 +22,8 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
   const [hasMore, setHasMore] = useState(true);
   const [refreshFlag, setRefreshFlag] = useState(0);
   const [query, setQuery] = useState("");
-
+  const [filter, setFilter] = useState<ChatFilterType>("all");
   const { activeChat, setActiveChat, newMessage, newChat, setNewMessageData } = useChatStore();
-  // const activeChat = useChatStore((s) => s.activeChat);
-  // const setActiveChat = useChatStore((s) => s.setActiveChat);
 
   useEffect(() => {
     if (!newChat) return;
@@ -81,7 +80,7 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
           url = `/api/whatsapp/chats?page=${pageToFetch}&per_page=${perPage}&phone=${phone}`;
         } else {
           // 📦 regular fetch
-          url = `/api/whatsapp/chats?page=${pageToFetch}&per_page=${perPage}`;
+          url = `/api/whatsapp/chats?page=${pageToFetch}&per_page=${perPage}&filter=${filter}`;
         }
 
         const res = await fetch(url);
@@ -105,12 +104,12 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
         pageToFetch === 1 ? setLoading(false) : setLoadingMore(false);
       }
     },
-    [perPage, query, phone]
+    [perPage, query, phone, filter]
   );
 
   useEffect(() => {
     fetchChats(page);
-  }, [page, query, refreshFlag, fetchChats]);
+  }, [page, query, filter, refreshFlag, fetchChats]);
 
   useEffect(() => {
     const container = sidebarRef?.current;
@@ -180,5 +179,7 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
     refreshChats,
     searchChats,
     totalChats,
+    filter,
+    setFilter,
   };
 }

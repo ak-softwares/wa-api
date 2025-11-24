@@ -27,6 +27,10 @@ export const WaAccountSchema = new Schema<IWaAccount>(
     code_verification_status: String,
     is_phone_number_registered: Boolean,
     is_app_subscribed: Boolean,
+    blockedNumbers: {
+      type: [String],
+      default: [],
+    },
     aiChat: { type: AIChatSchema },
     aiAgent: { type: AIAgentSchema },
   },

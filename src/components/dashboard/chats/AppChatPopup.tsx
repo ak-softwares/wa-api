@@ -9,9 +9,6 @@ import IconButton from "@/components/common/IconButton";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { Contact } from "@/types/Contact";
 import { useChatStore } from "@/store/chatStore";
-import { Chat } from "@/types/Chat";
-import { Types } from "mongoose";
-import { toast } from "@/components/ui/sonner";
 import { useOpenChat } from "@/hooks/chat/useOpenChat";
 
 interface NewChatPopupProps {

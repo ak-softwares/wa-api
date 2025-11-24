@@ -1,4 +1,3 @@
-// /models/Contact.ts
 import mongoose, { Schema, models } from "mongoose";
 import { IContact } from "@/types/Contact";
 

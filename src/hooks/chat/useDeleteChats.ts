@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { ApiResponse } from "@/types/apiResponse";
 import { toast } from "@/components/ui/sonner";
+import { useChatStore } from "@/store/chatStore";
 
 export function useDeleteChats(onDeleted?: () => void) {
   const [deleting, setDeleting] = useState(false);
-
+  const { activeChat, setActiveChat } = useChatStore();
+  
   // ✅ Single Chat Delete
   const deleteChat = async (chatId: string) => {
     setDeleting(true);
@@ -19,6 +21,10 @@ export function useDeleteChats(onDeleted?: () => void) {
 
       if (json.success) {
         toast.success(`Chat deleted successfully`);
+        // 🔥 If deleted chat is the active chat → reset activeChat
+        if (activeChat?._id?.toString() === chatId) {
+          setActiveChat(null);
+        }
         onDeleted?.();
         return true;
       } else {

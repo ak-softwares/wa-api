@@ -15,6 +15,9 @@ import SelectedChatMenu from "@/components/dashboard/chats/SelectedChatsMenu";
 import { useChatStore } from "@/store/chatStore";
 import { useChats } from "@/hooks/chat/useChats";
 import NewChatPopup from "@/components/dashboard/chats/AppChatPopup";
+import MakeBroadcastPopup from "@/components/dashboard/chats/MakeBroadcastPopup";
+import { ChatFilterType } from "@/utiles/enums/chatFilters";
+import { Chat } from "@/types/Chat";
 
 export default function ChatList({
   searchParams,
@@ -23,15 +26,22 @@ export default function ChatList({
 }) {
   const phone = searchParams.phone || undefined;
   const sidebarRef = useRef<HTMLDivElement | null>(null);
-  const { chats, totalChats, setChats, loading, loadingMore, hasMore, searchChats } = useChats({ sidebarRef, phone });
+  const { chats, totalChats, setChats, loading, loadingMore, hasMore, searchChats, filter, setFilter } = useChats({ sidebarRef, phone });
 
   const [selectedChatIds, setSelectedChatIds] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const { deleteChatsBulk } = useDeleteChats();
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
-
+  const [isMakeBroadcastOpen, setIsMakeBroadcastOpen] = useState(false);
   const { activeChat, setActiveChat } = useChatStore();
-  
+
+  const FILTERS: { key: ChatFilterType; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "unread", label: "Unread" },
+    { key: "favourite", label: "Favourite" },
+    { key: "broadcast", label: "Broadcasts" },
+  ];
+
   const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
     const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
     return phoneNumber ? phoneNumber.formatInternational() : number;
@@ -45,6 +55,21 @@ export default function ChatList({
     setChats((prev) => prev.filter(chat => String(chat._id) !== chatId));
     if(String(activeChat?._id) === chatId) {
       setActiveChat(null);
+    }
+  };
+
+  const handleUpdateChat = (chatId: string, isFavourite: boolean) => {
+    setChats((prev) =>
+      prev.map((chat) =>
+        String(chat._id) === chatId
+          ? { ...chat, isFavourite } // update favourite state
+          : chat
+      )
+    );
+
+    // If active chat is same, update its favourite as well
+    if (String(activeChat?._id) === chatId) {
+      setActiveChat({  ...(activeChat as Chat), isFavourite, });
     }
   };
 
@@ -81,15 +106,14 @@ export default function ChatList({
   };
 
   // Toggle contact selection
-  const toggleContactSelection = (contactId: string) => {
+  const toggleContactSelection = (chatId: string) => {
     setSelectedChatIds(prev => 
-      prev.includes(contactId) 
-        ? prev.filter(id => id !== contactId)
-        : [...prev, contactId]
+      prev.includes(chatId) 
+        ? prev.filter(id => id !== chatId)
+        : [...prev, chatId]
     );
   };
-
-
+  
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -101,12 +125,19 @@ export default function ChatList({
             label={"Add chat"}
             IconSrc={"/assets/icons/chat-add.svg"}
           />
-          <ChatsMenu onSelectChats={() => setIsSelectionMode(true)} />
+          <ChatsMenu 
+            onSelectChats={() => setIsSelectionMode(true)} 
+            onMakeBroadcast={() => setIsMakeBroadcastOpen(true)} 
+          />
           {/* New Chat Popup */}
           <NewChatPopup
             isOpen={isNewChatOpen}
             onClose={() => setIsNewChatOpen(false)}
             phone={phone ?? ""} // Your phone prop
+          />
+          <MakeBroadcastPopup
+            isOpen= {isMakeBroadcastOpen}
+            onClose={() => setIsMakeBroadcastOpen(false)}
           />
         </div>
       </div>
@@ -136,6 +167,29 @@ export default function ChatList({
           placeholder="Search contacts..."
           onSearch={searchChats}
       />
+
+      {/* Filter Chips (Unified Style) */}
+      <div className="flex gap-2 px-6 mt-2 overflow-x-auto no-scrollbar">
+        {FILTERS.map((item) => (
+          <button
+            key={item.key}
+            onClick={() => setFilter(item.key)}
+            className={`
+              px-3 py-1 rounded-full text-sm font-semibold
+              border-[0.1px] dark:border-gray-700 border-gray-300 transition
+              dark:text-gray-300 text-gray-700
+              ${
+                filter === item.key
+                  ? "dark:bg-[#11432F] bg-green-500 text-white border-transparent"
+                  : ""
+              }
+            `}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
 
       {/* Chat List */}
       <div ref={sidebarRef} className="flex-1 overflow-y-auto mt-3">
@@ -204,7 +258,11 @@ export default function ChatList({
                             {(chat?.unreadCount ?? 0) > 99 ? "99+" : chat.unreadCount}
                           </div>
                         )}
-                        <ChatMenu chatId={chat._id!.toString()} onDelete={handleDeleteChat} />
+                        <ChatMenu
+                          chat={chat} 
+                          onDelete={handleDeleteChat}
+                          onUpdateFavourite={handleUpdateChat}
+                        />
                       </div>
                     </div>
                   }

@@ -18,6 +18,7 @@ export interface IChat {
   type: "single" | "broadcast";
   chatName?: string;
   chatImage?: string;
+  isFavourite?: boolean
   lastMessage?: string;
   lastMessageAt?: Date;
   unreadCount?: number;

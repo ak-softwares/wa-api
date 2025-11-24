@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const phone = searchParams.get("phone");
     const searchQuery = searchParams.get("q") || "";
+    const filter = searchParams.get("filter") || "all";
     const perPage = Math.min(parseInt(searchParams.get("per_page") || "10"), 100);
     const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
     const skip = (page - 1) * perPage;
@@ -80,10 +81,27 @@ export async function GET(req: NextRequest) {
       chats = searchResult?.data || [];
       totalChats = searchResult?.metadata?.[0]?.total || 0;
     } else {
+      const matchConditions: any = {
+        userId: user._id,
+        waAccountId: waAccount._id,
+      };
+
+      if (filter === "unread") {
+        matchConditions.unreadCount = { $gt: 0 };
+      }
+
+      if (filter === "favourite") {
+        matchConditions.isFavourite = true;
+      }
+
+      if (filter === "broadcast") {
+        matchConditions.type = "broadcast";
+      }
+
       // 🔹 Regular paginated query
       [chats, totalChats] = await Promise.all([
         Chat.aggregate([
-          { $match: { userId: user._id, waAccountId: waAccount._id } },
+          { $match: matchConditions },
           {
             $addFields: {
               sortDate: { $ifNull: ["$lastMessageAt", "$createdAt"] }, // 👈 fallback

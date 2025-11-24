@@ -120,3 +120,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+.text-walink {
+  color: #0063FE; /* Light mode color */
+}
+
+.dark .text-walink {
+  color: #1fa857; /* Dark mode color */
+}

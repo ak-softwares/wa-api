@@ -2,29 +2,42 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Trash, MessageCircle, Phone } from "lucide-react";
+import { ChevronDown, Phone } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useDeleteContacts } from "@/hooks/contact/useDeleteContacts";
-import { IContact } from "@/types/Contact";
+import { Contact } from "@/types/Contact";
 import { useOpenChat } from "@/hooks/chat/useOpenChat";
+import MenuItemsList from "@/components/common/MenuItemList";
+import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
+import { ChatParticipant } from "@/types/Chat";
 
 interface ContactMenuProps {
-  contact: IContact;
+  contact: Contact;
   onDelete?: (contactId: string) => void;
+  onEdit?: () => void;
 }
 
-export default function ContactMenu({ contact, onDelete }: ContactMenuProps) {
+export default function ContactMenu({ contact, onDelete, onEdit }: ContactMenuProps) {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { deleteContact, deleting } = useDeleteContacts();
   const { openChatByContact } = useOpenChat();
+  const { isBlocked, confirmBlock, confirmUnblock, ConfirmDialog } = useBlockedContacts();
+
+  // Convert Contact → ChatParticipant shape
+  const participant: ChatParticipant = {
+    number: contact.phones[0],
+    name: contact.name ?? undefined,
+    imageUrl: contact.imageUrl ?? undefined,
+  };
 
   const handleDelete = async () => {
     if (!contact._id) return;
@@ -48,15 +61,43 @@ export default function ContactMenu({ contact, onDelete }: ContactMenuProps) {
   };
 
   const handlePhoneSelect = (phone: string) => {
-    console.log('asfdjskdf')
     if (!phone) return;
     openChatByContact(phone);
     setIsDialogOpen(false);
     router.push("/dashboard/chats");
   };
 
+  // ⭐ Dynamic Block / Unblock item (same logic as ChatMenu)
+  const blockItem = isBlocked(participant)
+    ? {
+        icon: "/assets/icons/block.svg",
+        label: "Unblock",
+        danger: false,
+        action: () => confirmUnblock(participant),
+      }
+    : {
+        icon: "/assets/icons/block.svg",
+        label: "Block",
+        danger: true,
+        action: () => confirmBlock(participant),
+      };
+
+  const topItems = [
+    { icon: "/assets/icons/chat-add.svg", label: "Chat", action: handleChatClick },
+    { icon: "/assets/icons/edit.svg", label: "Edit", action: onEdit }
+  ];
+
+
+  const bottomItems = [
+    blockItem,
+    { icon: "/assets/icons/delete.svg", label: "Delete contact", action: handleDelete, danger: true },
+  ];
+
   return (
     <>
+      {/* 🔥 Required for block/unblock confirmation */}
+      <ConfirmDialog />
+      
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <span
@@ -77,42 +118,14 @@ export default function ContactMenu({ contact, onDelete }: ContactMenuProps) {
           onClick={(e) => e.stopPropagation()}
           className="dark:bg-[#161717]"
         >
-          {/* Chat Item */}
-          <DropdownMenuItem
-            onClick={handleChatClick}
-            className="flex items-center gap-2 hover:dark:bg-[#343636]"
-          >
-            <img
-              src={"/assets/icons/chat-add.svg"}
-              className="w-5 h-5 dark:invert"
-              alt={"more options"}
-            />
-            Chat
-          </DropdownMenuItem>
+        {/* 🔹 Top Section */}
+        <MenuItemsList items={topItems} />
 
-          {/* Edit Placeholder */}
-          <DropdownMenuItem className="hover:dark:bg-[#343636] flex items-center gap-2">
-            <img
-              src={"/assets/icons/edit.svg"}
-              className="w-5 h-5 dark:invert"
-              alt={"more options"}
-            />
-            Edit
-          </DropdownMenuItem>
+        {/* 🔸 Separator */}
+        {bottomItems.length > 0 && <DropdownMenuSeparator className="dark:bg-[#2A2A2A] my-1" />}
 
-          {/* Delete Item */}
-          <DropdownMenuItem
-            onClick={handleDelete}
-            disabled={deleting}
-            className="text-red-600 dark:text-red-400 hover:text-red-600 hover:dark:bg-[#343636] flex items-center gap-2"
-          >
-            <img
-              src={"/assets/icons/delete.svg"}
-              className="w-5 h-5 dark:invert"
-              alt={"more options"}
-            />
-            {deleting ? "Deleting..." : "Delete"}
-          </DropdownMenuItem>
+        {/* 🔻 Bottom Section */}
+        <MenuItemsList items={bottomItems} />
         </DropdownMenuContent>
       </DropdownMenu>
 

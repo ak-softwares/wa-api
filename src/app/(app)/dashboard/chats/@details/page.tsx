@@ -16,13 +16,14 @@ import MessageBubble from "@/components/common/MessageBubble";
 import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
 import { useRouter } from "next/navigation";
 import { Message } from "@/types/Message";
+import { Chat } from "@/types/Chat";
+import { useFavourite } from "@/hooks/chat/useFavourite";
 
 export default function MessagePage() {
   const { theme } = useTheme(); // or use your theme context
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const activeChat = useChatStore((s) => s.activeChat);
-  const setActiveChat = useChatStore((s) => s.setActiveChat);
+  const {activeChat, setActiveChat} = useChatStore();
   const router = useRouter();
 
   const chatId = activeChat?._id?.toString() ?? "";
@@ -31,7 +32,8 @@ export default function MessagePage() {
   const [messageContext, setMessageContext] = useState<Message | null>(null);
   const [showContactDetails, setShowContactDetails] = useState(false);
   const { messages, setMessages, onSend, loading, loadingMore, hasMore } = useMessages({ containerRef, chatId });
-  const { deleteChat, deleteChatsBulk, deleting } = useDeleteChats();
+  const { deleteChat } = useDeleteChats();
+  const { toggleFavourite, loading: favouriteLoading } = useFavourite();
 
   // ✅ Reset unread count when chat is opened
   useEffect(() => {
@@ -92,6 +94,24 @@ export default function MessagePage() {
     }
   };
 
+  const handleUpdateChat = async (chatId: string, updates: Partial<Chat> = {}) => {
+    // If the update includes isFavourite, call the API
+    if ("isFavourite" in updates) {
+      const newFavouriteState = await toggleFavourite(chatId);
+      if (newFavouriteState !== null) {
+        updates.isFavourite = newFavouriteState; // update with server response
+      } else {
+        return; // exit if API failed
+      }
+    }
+
+    // Update active chat if it matches
+    if (activeChat && String(activeChat._id) === chatId) {
+      setActiveChat({ ...activeChat, ...updates });
+    }
+  };
+
+
   const handleDeleteMessage = (MessageId: string) => {
     setMessages((prev) => prev.filter(message => String(message._id) !== MessageId));
   };
@@ -122,6 +142,11 @@ export default function MessagePage() {
     ? activeChat.chatImage
     : partner?.imageUrl;
 
+  // 👇 Add subtitle logic here
+  const subtitle = isBroadcast
+    ? `${activeChat.participants?.length || 0} members` // e.g. "29 members"
+    : null;
+    
   return (
     <div className="flex flex-col h-full">
       {/* Main chat area with contact details */}
@@ -159,17 +184,17 @@ export default function MessagePage() {
                 </div>
 
                 {/* Text Content */}
-                <div className="min-w-0 flex-1 flex flex-col justify-center ml-3">
-                  <div className={"font-medium text-md truncate text-left leading-tight"}>
+               <div className="min-w-0 flex-1 flex flex-col justify-center items-start ml-3">
+                  <div className="font-medium text-md truncate text-left leading-tight">
                     {displayName || "Unknown"}
                   </div>
-                  {/* {subtitle && (
-                    <div className={`truncate ${config.subtitle} text-gray-400 leading-tight mt-0.5`}>
-                       // subtitle={isBroadcast ? "Broadcast list" : "last seen today at 11:17 am"}
-                    </div>
-                  )} */}
-                </div>
 
+                  {subtitle && (
+                    <div className="truncate text-gray-400 text-sm leading-tight mt-0.5 text-left">
+                      {subtitle}
+                    </div>
+                  )}
+                </div>
               </button>
             </div>
             <div className="flex items-center gap-2">
@@ -182,6 +207,8 @@ export default function MessagePage() {
                 onContactDetails={handleAvatarClick}
                 onCloseChat={backFromChat}
                 onDeleteChat={handleDelete}
+                isFavourite={activeChat.isFavourite}
+                onToggleFavourite={() => handleUpdateChat(activeChat._id!.toString(), { isFavourite: !activeChat.isFavourite })}
               />
             </div>
           </div>

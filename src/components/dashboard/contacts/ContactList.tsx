@@ -13,35 +13,43 @@ import IconButton from "@/components/common/IconButton";
 import SearchBar from "@/components/common/SearchBar";
 import SelectedContactsMenu from "./SelectedContactsMenu";
 import { useDeleteContacts } from "@/hooks/contact/useDeleteContacts";
-
-
-interface SelectedContact {
-  number: string;
-}
+import { useBroadcast } from "@/hooks/chat/useBroadcast";
+import { Contact } from "@/types/Contact";
+import { useAddContact } from "@/hooks/contact/useAddContact";
+import { useEditContact } from "@/hooks/contact/useEditContact";
 
 export default function ContactList() {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
 
   const { contacts, setContacts, loading, loadingMore, hasMore, refreshContacts, searchContacts, totalContacts } = useContacts({ sidebarRef });
-  const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
+  const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [isBroadcastDialogOpen, setIsBroadcastDialogOpen] = useState(false);
-  const [broadcastName, setBroadcastName] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { openBroadcastDialog, BroadcastDialog } = useBroadcast();
   const router = useRouter();
-  const { deleteContact, deleteContactsBulk, deleting } = useDeleteContacts();
+  const { deleteContactsBulk } = useDeleteContacts();
+  const { openAddContactDialog, AddContactDialog } = useAddContact();
+  const { openEditContactDialog, EditContactDialog } = useEditContact();
+
+
+  const handleEditContact = (contact: Contact) => {
+    openEditContactDialog(contact);
+  };
+
+  const handleMakeBroadcast = async () => {
+    openBroadcastDialog(selectedContacts)
+  }
 
   const handleDeleteSelected = async () => {
-    if (!selectedContactIds || selectedContactIds.length === 0) {
+    if (!selectedContacts || selectedContacts.length === 0) {
       toast.error("No contacts selected");
       return;
     }
 
-    const success = await deleteContactsBulk(selectedContactIds);
+    const success = await deleteContactsBulk(selectedContacts.map(contact => contact._id!.toString()));
     if (success) {
       // ✅ Remove deleted contacts from UI
       setContacts((prev) =>
-        prev.filter((c) => !selectedContactIds.includes(c._id!.toString()))
+        prev.filter((c) => !selectedContacts.some((sc) => sc._id === c._id))
       );
       clearSelection?.(); // ✅ Optionally clear selection state
     }
@@ -52,100 +60,30 @@ export default function ContactList() {
     // refreshContacts();
   };
 
-  const selectedContacts: SelectedContact[] = contacts
-    .filter(contact => selectedContactIds.includes(contact._id!.toString()))
-    .map(contact => ({
-      number: contact.phones[0] // Using first phone number
-    }));
-
-
   // Toggle contact selection
-  const toggleContactSelection = (contactId: string) => {
-    setSelectedContactIds(prev => 
-      prev.includes(contactId) 
-        ? prev.filter(id => id !== contactId)
-        : [...prev, contactId]
+  const toggleContactSelection = (contact: Contact) => {
+    setSelectedContacts(prev =>
+      prev.some(c => c._id === contact._id)
+        ? prev.filter(c => c._id !== contact._id)
+        : [...prev, contact]
     );
   };
 
   // Select all contacts
   const selectAllContacts = () => {
-    setSelectedContactIds(contacts.map(contact => contact._id!.toString()));
+    setSelectedContacts(contacts); // whole objects
   };
 
   // Clear all selections
   const clearSelection = () => {
-    setSelectedContactIds([]);
+    setSelectedContacts([]);
     setIsSelectionMode(false);
-  };
-
-  // Start broadcast selection
-  const startBroadcastSelection = () => {
-    setIsSelectionMode(true);
-  };
-
-  // Open broadcast dialog
-  const openBroadcastDialog = () => {
-    if (selectedContactIds.length === 0) {
-      toast.error("Please select at least one contact!");
-      return;
-    }
-    setIsBroadcastDialogOpen(true);
   };
 
   const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
     const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
     return phoneNumber ? phoneNumber.formatInternational() : number;
   }
-
-  // Create broadcast
-  const createBroadcast = async () => {
-    if (!selectedContacts || selectedContacts.length === 0) {
-      toast.error("Please select at least one contact!");
-      return;
-    }
-
-    if (!broadcastName.trim()) {
-      toast.error("Please enter a broadcast name!");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const response = await fetch("/api/whatsapp/chats/broadcast", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          chatName: broadcastName.trim(), 
-          participants: selectedContacts 
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.message || "Failed to create broadcast chat");
-      }
-
-      toast.success("Broadcast chat created successfully");
-      setIsBroadcastDialogOpen(false);
-      setBroadcastName("");
-      clearSelection();
-      router.push("/dashboard/messages");
-    } catch (err: any) {
-      toast.error(`Error: ${err.message || err}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Handle individual contact deletion in selection mode
-  const handleContactDeleted = (contactId: string) => {
-    refreshContacts();
-    // Remove from selected contacts if it was selected
-    setSelectedContactIds(prev => prev.filter(id => id !== contactId));
-  };
 
   function formatAndJoinPhones(phones: string[], defaultCountry: CountryCode = "IN") {
     return phones
@@ -164,11 +102,6 @@ export default function ContactList() {
     router.push(`/dashboard/contacts/${id}`);
   };
 
-  // In your navigation
-  const goToNewContact = () => {
-    router.push('/dashboard/contacts/new');
-  };
-
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -176,11 +109,12 @@ export default function ContactList() {
         <h1 className="text-xl font-semibold">Contacts <span className="text-gray-500 text-sm">({totalContacts})</span></h1>
         <div className="flex items-center gap-2">
           <IconButton
-            onClick={goToNewContact}
+            onClick={openAddContactDialog}
             label={"Add Contact"}
             IconSrc={"/assets/icons/add-contacts.svg"}
           />
           <ContactsMenu onSelectContacts={() => setIsSelectionMode(true)} />
+          {AddContactDialog}
         </div>
       </div>
 
@@ -194,13 +128,16 @@ export default function ContactList() {
                 label={"Close Selection"}
                 IconSrc={"/assets/icons/close.svg"}
               />
-              <h2 className="text-lg">{selectedContactIds.length} selected</h2>
+              <h2 className="text-lg">{selectedContacts.length} selected</h2>
             </div>
             <SelectedContactsMenu 
               onDeleteSelected={handleDeleteSelected}
-              // onMakeBroadcast={handleMakeBroadcast} 
+              onMakeBroadcast={handleMakeBroadcast} 
               onSelectAll={selectAllContacts} 
             />
+            
+            {/* The dialog renders here */}
+            {BroadcastDialog}
           </div>
         </div>
       )}
@@ -229,7 +166,7 @@ export default function ContactList() {
           <div className="p-8 text-center">No contacts found.</div>
         ) : (
           contacts.map((contact) => {
-            const isSelected = selectedContactIds.includes(contact._id!.toString());
+            const isSelected = selectedContacts.some(c => c._id === contact._id);
             return (
               <div
                 key={contact._id!.toString()}
@@ -245,12 +182,16 @@ export default function ContactList() {
                   isSelected={isSelected}
                   onClick={() =>
                     isSelectionMode
-                      ? toggleContactSelection(contact._id!.toString())
-                      : goToContact(contact._id!.toString())
+                      ? toggleContactSelection(contact)
+                      : null
                   }
-                  rightMenu={<ContactMenu contact={contact} onDelete={handleDelete} />}
+                  rightMenu={
+                    <ContactMenu 
+                      contact={contact} 
+                      onDelete={handleDelete}
+                      onEdit={() => handleEditContact(contact)}
+                    />}
                 />
-
               </div>
             );
           })
@@ -269,7 +210,7 @@ export default function ContactList() {
             </div>
           ))}
       </div>
-
+      {EditContactDialog}
     </div>
   );
 }

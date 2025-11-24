@@ -13,7 +13,7 @@ export default function PusherListener() {
   const router = useRouter();
   const pathname = usePathname(); // ✅ Reactive to URL change
   const { data: session, status } = useSession();
-  const { activeChat, setNewMessageData } = useChatStore();
+  const { activeChat, setActiveChat, setNewMessageData } = useChatStore();
 
   useEffect(() => {
     if (status !== "authenticated" || !session?.user?.id) return;
@@ -45,12 +45,17 @@ export default function PusherListener() {
       const shortMessage =
         fullMessage.length > 60 ? fullMessage.substring(0, 57).trim() + "..." : fullMessage;
 
+      // Reusable for toast button
+      const openChatFromToast = () => {
+        setActiveChat(chat);
+        router.push("/dashboard/chats");
+      };
       toast.success(msg.from, {
         description: shortMessage,
         duration: 5000,
         action: {
           label: "View",
-          onClick: () => router.push(`/dashboard/chats?phone=${msg.from}`),
+          onClick: () => openChatFromToast(),
         },
       });
     });

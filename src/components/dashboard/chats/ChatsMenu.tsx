@@ -1,56 +1,21 @@
 "use client";
 
-import { ImportIcon, FileSpreadsheet, Mail } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import IconButton from "@/components/common/IconButton";
-import { useGoogleImport } from "@/hooks/contact/useGoogleImport";
-import { useRouter } from "next/navigation";
+import GenericMenu from "@/components/common/DropDownMenu";
 
 interface ChatsMenuProps {
   onSelectChats?: () => void; // ✅ Prop for parent callback
+  onMakeBroadcast?: () => void;
 }
 
-export default function ChatsMenu({ onSelectChats }: ChatsMenuProps) {
+export default function ChatsMenu({ onSelectChats, onMakeBroadcast }: ChatsMenuProps) {
+  const topItems = [
+    { icon: "/assets/icons/select.svg", label: "Select Chats", action: onSelectChats },
+    { icon: "/assets/icons/broadcast.svg", label: "Make Broadcast", action: onMakeBroadcast },
+  ];
 
-  const router = useRouter();
+  const bottomItems = [
+    { icon: "/assets/icons/delete.svg", label: "Delete chats", action: onSelectChats, danger: true },
+  ];
 
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <IconButton
-            asChild
-            label="Chat Menu"
-            IconSrc="/assets/icons/more-vertical.svg"
-            tooltipSide="bottom"
-          />
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent
-          align="end"
-          onClick={(e) => e.stopPropagation()}
-          className="dark:bg-[#161717]"
-        >
-          
-          <DropdownMenuItem
-            className="hover:dark:bg-[#343636] flex items-center gap-2"
-            onClick={() => onSelectChats?.()}
-          >
-            <img
-              src={"/assets/icons/select.svg"}
-              className="w-6 h-6 dark:invert"
-              alt={"select"}
-            />
-            Select Chats
-          </DropdownMenuItem>
-
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
-  );
+  return <GenericMenu topItems={topItems} bottomItems={bottomItems} />;
 }
