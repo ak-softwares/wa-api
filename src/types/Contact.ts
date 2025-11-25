@@ -1,4 +1,3 @@
-// /types/Contact.ts
 import { Types } from "mongoose";
 
 export interface IContact {

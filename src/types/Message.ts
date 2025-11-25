@@ -26,6 +26,7 @@ export interface IMessage {
   context?: Context;
   tag?: string;
   participants: ChatParticipant[];
+  aiUsageId?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

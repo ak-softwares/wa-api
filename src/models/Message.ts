@@ -33,9 +33,10 @@ const MessageSchema = new Schema<IMessage>(
       enum: Object.values(MessageType),
       default: MessageType.Text,
     },
-    context: { type: ContextSchema, default: null },
+    context: { type: ContextSchema },
     tag: { type: String },
-    participants: { type: [ChatParticipantSchema], required: true },
+    aiUsageId: { type: String },
+    participants: { type: [ChatParticipantSchema] },
   },
   { timestamps: true }
 );

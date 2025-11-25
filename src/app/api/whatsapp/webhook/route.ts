@@ -143,21 +143,23 @@ export async function POST(req: NextRequest) {
               user_name: sender_name
             });
           } else if (wa.aiChat?.isActive) {
-            const aiReply = await getAIReply({
+            const { aiGeneratedReply, aiUsageId } = await getAIReply({
+              userId: user._id.toString(),
               prompt: wa.aiChat?.prompt ?? "",
               chat,
               phone_number_id,
               user_name: sender_name
             });
-            if (aiReply) {
+            if (aiGeneratedReply) {
               const { newMessage: aiMessage, waMessageId, errorResponse: sendMsgError } = await sendWhatsAppMessage({
                 userId: user._id.toString(),
                 chatId: chat._id,
                 phone_number_id,
                 permanent_token: wa.permanent_token,
                 to: from,
-                message: aiReply,
-                tag: "aichat"
+                message: aiGeneratedReply,
+                tag: "aichat",
+                aiUsageId,
               });
               if(waMessageId){
                 // ✅ trigger message for specific user (for listener)

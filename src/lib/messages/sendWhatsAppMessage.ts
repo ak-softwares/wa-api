@@ -16,6 +16,7 @@ interface SendMessageOptions {
   message: string;
   context?: Context
   tag?: string;
+  aiUsageId?: string;
 }
 
 /**
@@ -30,6 +31,7 @@ export async function sendWhatsAppMessage({
   message,
   context,
   tag,
+  aiUsageId,
 }: SendMessageOptions) {
   const url = `https://graph.facebook.com/v23.0/${phone_number_id}/messages`;
   const headers = {
@@ -72,6 +74,7 @@ export async function sendWhatsAppMessage({
       status,
       type: MessageType.Text,
       tag,
+      aiUsageId,
       context
   });
 

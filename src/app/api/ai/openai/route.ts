@@ -29,6 +29,7 @@ export async function POST(req: Request) {
     // 5. Call OpenAI chat completion
     const resp = await openai.chat.completions.create({
       model: "gpt-4.1-mini", // or whatever model you want
+      user: user._id.toString(), // << unique user ID
       messages: [
         {
           role: "system",
