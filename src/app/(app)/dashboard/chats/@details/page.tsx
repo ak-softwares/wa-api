@@ -18,6 +18,8 @@ import { useRouter } from "next/navigation";
 import { Message } from "@/types/Message";
 import { Chat } from "@/types/Chat";
 import { useFavourite } from "@/hooks/chat/useFavourite";
+import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
+import ForwardMessagePopup from "@/components/dashboard/messages/ForwardMessagePopup";
 
 export default function MessagePage() {
   const { theme } = useTheme(); // or use your theme context
@@ -34,6 +36,10 @@ export default function MessagePage() {
   const { messages, setMessages, onSend, loading, loadingMore, hasMore } = useMessages({ containerRef, chatId });
   const { deleteChat } = useDeleteChats();
   const { toggleFavourite, loading: favouriteLoading } = useFavourite();
+  const { isBlocked, toggleBlock, ConfirmDialog } = useBlockedContacts();
+  const [isForwardMessageOpen, setIsForwardMessageOpen] = useState(false);
+  const [forwardMessage, setForwardMessage] = useState<Message | null>(null);
+
 
   // ✅ Reset unread count when chat is opened
   useEffect(() => {
@@ -209,6 +215,8 @@ export default function MessagePage() {
                 onDeleteChat={handleDelete}
                 isFavourite={activeChat.isFavourite}
                 onToggleFavourite={() => handleUpdateChat(activeChat._id!.toString(), { isFavourite: !activeChat.isFavourite })}
+                onBlockToggle={() => toggleBlock(partner)}
+                isBlocked={isBlocked(partner)}
               />
             </div>
           </div>
@@ -269,13 +277,18 @@ export default function MessagePage() {
                           </div>
                       );
                   })
-                  : messages.map((m) => (
-                    <MessageBubble 
-                      key={m._id?.toString()}
-                      message={m}
-                      onDelete={handleDeleteMessage}
-                      onReply={() => onReply(m)}
-                    />))
+                  : messages.map((message) => (
+                      <MessageBubble 
+                        key={message._id?.toString()}
+                        message={message}
+                        onDelete={handleDeleteMessage}
+                        onReply={() => onReply(message)}
+                        onForward={() => {
+                          setForwardMessage(message);
+                          setIsForwardMessageOpen(true);
+                        }}
+                      />
+                    ))
                   }
               </div>
 
@@ -412,6 +425,16 @@ export default function MessagePage() {
           onClose={() => setShowContactDetails(false)} 
         />
       </div>
+      <ConfirmDialog />
+      {/* New Chat Popup */}
+      <ForwardMessagePopup
+        isOpen={isForwardMessageOpen}
+        onClose={() => {
+          setIsForwardMessageOpen(false);
+          setForwardMessage(null);
+        }}
+        message={forwardMessage!}
+      />
     </div>
   );
 }

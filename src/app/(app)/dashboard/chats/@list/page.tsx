@@ -17,7 +17,8 @@ import { useChats } from "@/hooks/chat/useChats";
 import NewChatPopup from "@/components/dashboard/chats/AppChatPopup";
 import MakeBroadcastPopup from "@/components/dashboard/chats/MakeBroadcastPopup";
 import { ChatFilterType } from "@/utiles/enums/chatFilters";
-import { Chat } from "@/types/Chat";
+import { Chat, ChatParticipant } from "@/types/Chat";
+import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 
 export default function ChatList({
   searchParams,
@@ -34,6 +35,7 @@ export default function ChatList({
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
   const [isMakeBroadcastOpen, setIsMakeBroadcastOpen] = useState(false);
   const { activeChat, setActiveChat } = useChatStore();
+  const { isBlocked, toggleBlock, ConfirmDialog } = useBlockedContacts();
 
   const FILTERS: { key: ChatFilterType; label: string }[] = [
     { key: "all", label: "All" },
@@ -58,7 +60,7 @@ export default function ChatList({
     }
   };
 
-  const handleUpdateChat = (chatId: string, isFavourite: boolean) => {
+  const handleUpdateChatFavourite = (chatId: string, isFavourite: boolean) => {
     setChats((prev) =>
       prev.map((chat) =>
         String(chat._id) === chatId
@@ -261,7 +263,9 @@ export default function ChatList({
                         <ChatMenu
                           chat={chat} 
                           onDelete={handleDeleteChat}
-                          onUpdateFavourite={handleUpdateChat}
+                          onUpdateFavourite={handleUpdateChatFavourite}
+                          onBlockToggle={() => toggleBlock(partner)}
+                          isBlocked={isBlocked(partner)}
                         />
                       </div>
                     </div>
@@ -285,6 +289,7 @@ export default function ChatList({
             </div>
           ))}
       </div>
+      <ConfirmDialog />
     </div>
   );
 }

@@ -23,11 +23,6 @@ export default function ContactsMenu({ onSelectContacts }: ContactsMenuProps) {
   const goToImportedContacts = () => {
     router.push("/dashboard/contacts/imported-contacts");
   };
-  
-  // In your navigation
-  const goToBroadcasts = () => {
-    router.push('/dashboard/contacts/broadcasts');
-  };
 
   return (
     <>
@@ -63,7 +58,7 @@ export default function ContactsMenu({ onSelectContacts }: ContactsMenuProps) {
           {/* Chat Item */}
           <DropdownMenuItem
             className="flex items-center gap-2 hover:dark:bg-[#343636]"
-            onClick={goToBroadcasts}
+            onClick={() => onSelectContacts?.()}
           >
             <img
               src={"/assets/icons/broadcast.svg"}

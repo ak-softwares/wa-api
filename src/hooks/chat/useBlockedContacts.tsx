@@ -8,8 +8,7 @@ import { ChatParticipant } from "@/types/Chat";
 
 export function useBlockedContacts() {
   const [blockedList, setBlockedList] = useState<ChatParticipant[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  const [loading, setLoading] = useState(false); // ⭐ NEW
   const [actionLoading, setActionLoading] = useState(false); // ⭐ NEW
 
   const [dialogState, setDialogState] = useState<{
@@ -41,10 +40,10 @@ export function useBlockedContacts() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setBlockedList]);
 
   useEffect(() => {
-    fetchBlocked();
+      fetchBlocked();
   }, [fetchBlocked]);
 
   // Block
@@ -58,11 +57,7 @@ export function useBlockedContacts() {
       const json = await res.json();
 
       if (json.success) {
-        setBlockedList((prev) =>
-          prev.some((p) => p.number === participant.number)
-            ? prev
-            : [...prev, participant]
-        );
+        setBlockedList([...blockedList, participant]);
         toast.success("Contact blocked");
       } else {
         toast.error(json.message || "Failed to block contact");
@@ -83,7 +78,9 @@ export function useBlockedContacts() {
       const json = await res.json();
 
       if (json.success) {
-        setBlockedList((prev) => prev.filter((p) => p.number !== participant.number));
+        setBlockedList(
+          blockedList.filter((p) => p.number !== participant.number)
+        );
         toast.success("Contact unblocked");
       } else {
         toast.error(json.message || "Failed to unblock contact");
@@ -105,9 +102,9 @@ export function useBlockedContacts() {
   // Toggle block
   const toggleBlock = async (participant: ChatParticipant) => {
     if (isBlocked(participant)) {
-      return await unblockNumber(participant);
+      setDialogState({ open: true, participant, action: "unblock" });
     } else {
-      return await blockNumber(participant);
+      setDialogState({ open: true, participant, action: "block" });
     }
   };
 

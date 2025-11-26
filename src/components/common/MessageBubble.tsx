@@ -11,20 +11,19 @@ import { toast } from "../ui/sonner";
 import { MessageStatus } from "@/types/MessageStatus";
 import { useOpenChat } from "@/hooks/chat/useOpenChat";
 import ForwardMessagePopup from "../dashboard/messages/ForwardMessagePopup";
-import ForwardMessagePopupToPhone from "../dashboard/messages/ForwardMessagePopupPhone";
 
 interface MessageBubbleProps {
   message: Message;
   onDelete?: (messageId: string) => void; // new callback
   onReply?: () => void; // new callback
+  onForward?: () => void; // new callback
 }
 
-export default function MessageBubble({ message, onDelete, onReply }: MessageBubbleProps) {
+export default function MessageBubble({ message, onDelete, onReply, onForward }: MessageBubbleProps) {
   const activeChat = useChatStore((s) => s.activeChat);
   const [hovered, setHovered] = useState(false);
   const { deleteMessage, deleteMessagesBulk, deleting } = useDeleteMessages();
   const { openChatByContact } = useOpenChat();
-  const [isForwardMessageOpen, setIsForwardMessageOpen] = useState(false);
 
   const isMine = !activeChat?.participants?.some(
     (p: ChatParticipant) => p.number === message.from
@@ -73,11 +72,6 @@ export default function MessageBubble({ message, onDelete, onReply }: MessageBub
     toast.success("Message copied: " + preview);
   };
 
-  const forwardMessage = () => {
-    setIsForwardMessageOpen(true);
-  };
-
-
   const menuItems = [
     {
       icon: "/assets/icons/reply.svg",
@@ -102,7 +96,7 @@ export default function MessageBubble({ message, onDelete, onReply }: MessageBub
     {
       icon: "/assets/icons/forward.svg",
       label: "Forward",
-      action: forwardMessage,
+      action: onForward,
     },
     {
       icon: "/assets/icons/pin.svg",
@@ -284,12 +278,6 @@ export default function MessageBubble({ message, onDelete, onReply }: MessageBub
           }`}
         >
           <MessageMenu isMine={isMine} items={menuItems} />
-          {/* New Chat Popup */}
-          <ForwardMessagePopup
-            isOpen={isForwardMessageOpen}
-            onClose={() => setIsForwardMessageOpen(false)}
-            message={message}
-          />
         </div>
       </div>
     </div>

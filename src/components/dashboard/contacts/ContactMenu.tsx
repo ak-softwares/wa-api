@@ -23,21 +23,15 @@ interface ContactMenuProps {
   contact: Contact;
   onDelete?: (contactId: string) => void;
   onEdit?: () => void;
+  onBlockToggle?: () => void;
+  isBlocked?: boolean;
 }
 
-export default function ContactMenu({ contact, onDelete, onEdit }: ContactMenuProps) {
+export default function ContactMenu({ contact, onDelete, onEdit, onBlockToggle, isBlocked }: ContactMenuProps) {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { deleteContact, deleting } = useDeleteContacts();
   const { openChatByContact } = useOpenChat();
-  const { isBlocked, confirmBlock, confirmUnblock, ConfirmDialog } = useBlockedContacts();
-
-  // Convert Contact → ChatParticipant shape
-  const participant: ChatParticipant = {
-    number: contact.phones[0],
-    name: contact.name ?? undefined,
-    imageUrl: contact.imageUrl ?? undefined,
-  };
 
   const handleDelete = async () => {
     if (!contact._id) return;
@@ -68,18 +62,19 @@ export default function ContactMenu({ contact, onDelete, onEdit }: ContactMenuPr
   };
 
   // ⭐ Dynamic Block / Unblock item (same logic as ChatMenu)
-  const blockItem = isBlocked(participant)
+  const blockItem = 
+  isBlocked
     ? {
         icon: "/assets/icons/block.svg",
         label: "Unblock",
         danger: false,
-        action: () => confirmUnblock(participant),
+        action: () => onBlockToggle?.(),
       }
     : {
         icon: "/assets/icons/block.svg",
         label: "Block",
         danger: true,
-        action: () => confirmBlock(participant),
+        action: () => onBlockToggle?.(),
       };
 
   const topItems = [
@@ -95,9 +90,6 @@ export default function ContactMenu({ contact, onDelete, onEdit }: ContactMenuPr
 
   return (
     <>
-      {/* 🔥 Required for block/unblock confirmation */}
-      <ConfirmDialog />
-      
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <span

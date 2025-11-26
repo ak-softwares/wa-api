@@ -11,6 +11,8 @@ interface ContactsMenuProps {
   onDeleteChat?: () => void;
   onToggleFavourite?: () => void;
   isFavourite?: boolean;
+  onBlockToggle?: () => void;
+  isBlocked?: boolean;
 }
 
 export default function MessagesMenu({
@@ -19,10 +21,11 @@ export default function MessagesMenu({
   onDeleteChat,
   onToggleFavourite,
   isFavourite = false,
+  onBlockToggle,
+  isBlocked,
 }: ContactsMenuProps) {
   const { activeChat } = useChatStore();
   const isBroadcast = activeChat?.type === "broadcast";
-  const { isBlocked, confirmBlock, confirmUnblock, ConfirmDialog } = useBlockedContacts();
 
   // ⭐ Convert activeChat participant → ChatParticipant
   const participant: ChatParticipant | null =
@@ -32,18 +35,18 @@ export default function MessagesMenu({
 
   // ⭐ Dynamic Block / Unblock menu entry
   const blockItem =
-    participant && isBlocked(participant)
+    isBlocked
       ? {
           icon: "/assets/icons/block.svg",
           label: "Unblock",
-          action: () => confirmUnblock(participant),
+          action: () => onBlockToggle?.(),
           danger: false,
         }
       : {
           icon: "/assets/icons/block.svg",
           label: "Block",
           action: () => {
-            if (participant) confirmBlock(participant);
+            if (participant) onBlockToggle?.();
           },
           danger: true,
         };
@@ -84,12 +87,5 @@ export default function MessagesMenu({
   });
 
 
-    return (
-    <>
-      {/* 🔥 Required for block / unblock confirmation */}
-      <ConfirmDialog />
-
-      <GenericMenu topItems={topItems} bottomItems={bottomItems} />
-    </>
-  );
+    return (<GenericMenu topItems={topItems} bottomItems={bottomItems} />);
 }

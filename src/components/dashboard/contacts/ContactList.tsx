@@ -17,10 +17,11 @@ import { useBroadcast } from "@/hooks/chat/useBroadcast";
 import { Contact } from "@/types/Contact";
 import { useAddContact } from "@/hooks/contact/useAddContact";
 import { useEditContact } from "@/hooks/contact/useEditContact";
+import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
+import { ChatParticipant } from "@/types/Chat";
 
 export default function ContactList() {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
-
   const { contacts, setContacts, loading, loadingMore, hasMore, refreshContacts, searchContacts, totalContacts } = useContacts({ sidebarRef });
   const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -29,7 +30,7 @@ export default function ContactList() {
   const { deleteContactsBulk } = useDeleteContacts();
   const { openAddContactDialog, AddContactDialog } = useAddContact();
   const { openEditContactDialog, EditContactDialog } = useEditContact();
-
+  const { isBlocked, toggleBlock, ConfirmDialog } = useBlockedContacts();
 
   const handleEditContact = (contact: Contact) => {
     openEditContactDialog(contact);
@@ -167,6 +168,12 @@ export default function ContactList() {
         ) : (
           contacts.map((contact) => {
             const isSelected = selectedContacts.some(c => c._id === contact._id);
+            // Convert Contact → ChatParticipant shape
+            const participant: ChatParticipant = {
+              number: contact.phones[0],
+              name: contact.name ?? undefined,
+              imageUrl: contact.imageUrl ?? undefined,
+            };
             return (
               <div
                 key={contact._id!.toString()}
@@ -190,6 +197,8 @@ export default function ContactList() {
                       contact={contact} 
                       onDelete={handleDelete}
                       onEdit={() => handleEditContact(contact)}
+                      onBlockToggle={() => toggleBlock(participant)}
+                      isBlocked={isBlocked(participant)}
                     />}
                 />
               </div>
@@ -211,6 +220,7 @@ export default function ContactList() {
           ))}
       </div>
       {EditContactDialog}
+      <ConfirmDialog />
     </div>
   );
 }

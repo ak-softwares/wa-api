@@ -11,19 +11,19 @@ import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
 import MenuItemsList from "@/components/common/MenuItemList";
 import { Chat, ChatParticipant } from "@/types/Chat";
 import { useFavourite } from "@/hooks/chat/useFavourite";
-import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 
 interface ChatMenuProps {
   chat: Chat;
   onDelete?: (chatId: string) => void; // new callback
   onUpdateFavourite?: (chatId: string, isFavourite: boolean) => void; // added
+  onBlockToggle?: (participant: ChatParticipant) => void;  // ✅ fixed
+  isBlocked?: boolean;   // ✅ NOW BOOLEAN
 }
 
-export default function ChatMenu({ chat, onDelete, onUpdateFavourite }: ChatMenuProps) {
+export default function ChatMenu({ chat, onDelete, onUpdateFavourite, onBlockToggle, isBlocked }: ChatMenuProps) {
 
   const { deleteChat } = useDeleteChats();
   const { toggleFavourite } = useFavourite();
-  const { isBlocked, confirmBlock, confirmUnblock, ConfirmDialog } = useBlockedContacts();
 
   const isBroadcast = chat?.type === "broadcast";
   const participant: ChatParticipant = chat.participants[0]; // assuming one-on-one chat
@@ -65,18 +65,18 @@ export default function ChatMenu({ chat, onDelete, onUpdateFavourite }: ChatMenu
   // ⭐ Add Block/Unblock only if participant exists (not broadcast)
   if (!isBroadcast) {
     bottomItems.push(
-      isBlocked(participant)
+      isBlocked
         ? {
             icon: "/assets/icons/block.svg",
             label: "Unblock",
             danger: false,
-            action: () => confirmUnblock(participant),
+            action: () => onBlockToggle?.(participant),
           }
         : {
             icon: "/assets/icons/block.svg",
             label: "Block",
             danger: true,
-            action: () => confirmBlock(participant),
+            action: () => onBlockToggle?.(participant),
           }
     );
   }
@@ -91,9 +91,6 @@ export default function ChatMenu({ chat, onDelete, onUpdateFavourite }: ChatMenu
 
 
   return (
-    <>
-      <ConfirmDialog />
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <span
@@ -123,7 +120,5 @@ export default function ChatMenu({ chat, onDelete, onUpdateFavourite }: ChatMenu
           <MenuItemsList items={bottomItems} />
         </DropdownMenuContent>
       </DropdownMenu>
-    </>
-
   );
 }

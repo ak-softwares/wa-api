@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "@/components/ui/sonner";
-import { useRouter } from "next/navigation";
 import { Context, Message } from "@/types/Message";
 import { MessageStatus } from "@/types/MessageStatus";
 import { useSendWhatsappMessage } from "@/hooks/whatsapp/useSendWhatsappMessage";
@@ -48,6 +47,14 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
       if (pageToFetch === 1) setLoading(true);
       else setLoadingMore(true);
 
+      if (!chatId) {
+        setMessages([]);
+        setHasMore(false);
+        setLoading(false);
+        setLoadingMore(false);
+        return;
+      }
+      
       try {
         const res = await fetch(
           `/api/whatsapp/messages?chatId=${chatId}&page=${pageToFetch}&per_page=${perPage}`
