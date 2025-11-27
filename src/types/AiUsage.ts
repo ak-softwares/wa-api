@@ -2,8 +2,9 @@ import { Types } from "mongoose";
 
 export interface IAiUsage {
   _id?: Types.ObjectId;
-  userId: string;
-  chatId?: string;
+  userId: Types.ObjectId;
+  waAccountId?: Types.ObjectId;
+  chatId?: Types.ObjectId;
   model: string;
   promptTokens: number;
   completionTokens: number;
