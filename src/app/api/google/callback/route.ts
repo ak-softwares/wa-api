@@ -51,7 +51,7 @@ export async function GET(req: Request) {
 
     // Map to contact structure
     let contactsToInsert: Partial<IContact>[] = allConnections.map((c) => ({
-      userId: new mongoose.Types.ObjectId(user._id),
+      userId: user._id,
       name: c.names?.[0]?.displayName ?? undefined,
       email: c.emailAddresses?.[0]?.value ?? undefined,
       phones:
@@ -59,6 +59,7 @@ export async function GET(req: Request) {
           ?.map((p: any) => p.canonicalForm?.replace(/^\+/, "") || p.value)
           .filter((n: any): n is string => !!n) || [],
       imageUrl: c.photos?.[0]?.url ?? undefined,
+      tags: ["Google Import"],
     }));
 
     // Filter contacts without phone numbers

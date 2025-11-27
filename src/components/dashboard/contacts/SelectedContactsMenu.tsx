@@ -1,78 +1,25 @@
 "use client";
 
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import IconButton from "@/components/common/IconButton";
+import GenericMenu from "@/components/common/DropDownMenu";
 
 interface ContactsMenuProps {
   onSelectAll?: () => void; // ✅ Prop for parent callback
   onMakeBroadcast?: () => void; // ✅ Prop for parent callback
   onDeleteSelected?: () => void; // ✅ Prop for parent callback
+  onExportContacts?: () => void; // ✅ Prop for parent callback
 }
 
-export default function SelectedContactsMenu({ onSelectAll, onMakeBroadcast, onDeleteSelected }: ContactsMenuProps) {
+export default function SelectedContactsMenu({ onSelectAll, onMakeBroadcast, onDeleteSelected, onExportContacts }: ContactsMenuProps) {
 
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <IconButton
-            asChild
-            label="Contact Menu"
-            IconSrc="/assets/icons/more-vertical.svg"
-            tooltipSide="bottom"
-          />
-        </DropdownMenuTrigger>
+  const topItems = [
+    { icon: "/assets/icons/select.svg", label: "Select All", action: onSelectAll },
+    { icon: "/assets/icons/broadcast.svg", label: "Make Broadcast", action: onMakeBroadcast },
+    { icon: "/assets/icons/export.svg", label: "Export Contacts", action: onExportContacts },
+  ];
 
-        <DropdownMenuContent
-          align="end"
-          onClick={(e) => e.stopPropagation()}
-          className="dark:bg-[#161717]"
-        >
-          {/* Chat Item */}
-          <DropdownMenuItem
-            className="flex items-center gap-2 hover:dark:bg-[#343636]"
-            onClick={() => onSelectAll?.()}
-          >
-            <img
-              src={"/assets/icons/select.svg"}
-              className="w-6 h-6 dark:invert"
-              alt={"more options"}
-            />
-            Select All
-          </DropdownMenuItem>
+  const bottomItems = [
+    { icon: "/assets/icons/delete.svg", label: "Delete Selected", action: onDeleteSelected },
+  ];
 
-          {/* Chat Item */}
-          <DropdownMenuItem
-            className="flex items-center gap-2 hover:dark:bg-[#343636]"
-            onClick={() => onMakeBroadcast?.()}
-          >
-            <img
-              src={"/assets/icons/broadcast.svg"}
-              className="w-6 h-6 dark:invert"
-              alt={"more options"}
-            />
-            Make Broadcast
-          </DropdownMenuItem>
-
-          {/* Edit Placeholder */}
-          <DropdownMenuItem
-            className="hover:dark:bg-[#343636] flex items-center gap-2"
-            onClick={() => onDeleteSelected?.()}
-          >
-            <img
-              src={"/assets/icons/delete.svg"}
-              className="w-6 h-6 dark:invert"
-              alt={"Delete Selected"}
-            />
-            Delete Selected
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
-  );
+  return <GenericMenu topItems={topItems} bottomItems={bottomItems} />;
 }

@@ -1,32 +1,13 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
 import Contact from "@/models/Contact";
 import { ApiResponse } from "@/types/apiResponse";
-import { authOptions } from "../auth/[...nextauth]/authOptions";
+import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
 // GET contacts (paginated, with optional search functionality)
 export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      const response: ApiResponse = {
-        success: false,
-        message: "Unauthorized",
-      };
-      return NextResponse.json(response, { status: 401 });
-    }
-
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email }).select("_id");
-    if (!user) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User not found",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
+    const { user, errorResponse } = await fetchAuthenticatedUser();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     // Pagination + filters + search
     const { searchParams } = new URL(req.url);
@@ -116,14 +97,8 @@ export async function GET(req: Request) {
 // POST contact
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      const response: ApiResponse = {
-        success: false,
-        message: "Unauthorized",
-      };
-      return NextResponse.json(response, { status: 401 });
-    }
+    const { user, errorResponse } = await fetchAuthenticatedUser();
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const { name, phones, email, tags } = await req.json();
     if (!name || !phones?.length) {
@@ -132,16 +107,6 @@ export async function POST(req: Request) {
         message: "Name and at least one phone number are required",
       };
       return NextResponse.json(response, { status: 400 });
-    }
-
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email }).select("_id");
-    if (!user) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User not found",
-      };
-      return NextResponse.json(response, { status: 404 });
     }
 
     const newContact = await Contact.create({

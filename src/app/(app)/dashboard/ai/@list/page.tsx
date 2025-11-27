@@ -26,8 +26,8 @@ export default function AiPage() {
         <MenuTile
           icon={
             <img
-              src="/assets/icons/broadcast.svg"
-              className="w-6 h-6 dark:invert"
+              src="/assets/icons/ai-icon.svg"
+              className="w-7 h-7 dark:invert"
               alt="AI Chat Icon"
             />
           }

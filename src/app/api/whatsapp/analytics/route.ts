@@ -33,9 +33,8 @@ export async function POST(req: Request) {
     });
 
     // 3. Total AI Replies
-    const totalAIReplies = await Message.countDocuments({
+    const totalAIReplies = await AiUsage.countDocuments({
       userId: user._id,
-      tag: "aiChat",
     //   from: waAccount.phone_number_id,   // ensures it's an outgoing AI reply
     //   status: { $in: ["sent", "delivered", "read"] },
       createdAt: { $gte: start, $lte: end }

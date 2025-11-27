@@ -1,4 +1,4 @@
-export default function DefaultDetails() {
+export default function DefaultContactDetailsPage() {
   return (
     <div className="flex flex-col items-center justify-center h-full">
       <img

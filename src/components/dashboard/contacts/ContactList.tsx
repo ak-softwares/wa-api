@@ -19,6 +19,7 @@ import { useAddContact } from "@/hooks/contact/useAddContact";
 import { useEditContact } from "@/hooks/contact/useEditContact";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import { ChatParticipant } from "@/types/Chat";
+import { useExportContacts } from "@/hooks/contact/useExportContacts";
 
 export default function ContactList() {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
@@ -31,6 +32,11 @@ export default function ContactList() {
   const { openAddContactDialog, AddContactDialog } = useAddContact();
   const { openEditContactDialog, EditContactDialog } = useEditContact();
   const { isBlocked, toggleBlock, ConfirmDialog } = useBlockedContacts();
+  const { exportContacts } = useExportContacts();
+
+  const handleExport = () => {
+    exportContacts(selectedContacts);
+  };
 
   const handleEditContact = (contact: Contact) => {
     openEditContactDialog(contact);
@@ -99,9 +105,6 @@ export default function ContactList() {
       .join(", ");
   }
 
-  const goToContact = (id: string) => {
-    router.push(`/dashboard/contacts/${id}`);
-  };
 
   return (
     <div className="flex flex-col h-full">
@@ -135,6 +138,7 @@ export default function ContactList() {
               onDeleteSelected={handleDeleteSelected}
               onMakeBroadcast={handleMakeBroadcast} 
               onSelectAll={selectAllContacts} 
+              onExportContacts={handleExport}
             />
             
             {/* The dialog renders here */}

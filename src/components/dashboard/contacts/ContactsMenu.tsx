@@ -1,15 +1,11 @@
 "use client";
 
 import { ImportIcon, FileSpreadsheet, Mail } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import IconButton from "@/components/common/IconButton";
 import { useGoogleImport } from "@/hooks/contact/useGoogleImport";
 import { useRouter } from "next/navigation";
+import GenericMenu from "@/components/common/DropDownMenu";
+import { useContactStore } from "@/store/contactStore";
+import { useExportContacts } from "@/hooks/contact/useExportContacts";
 
 interface ContactsMenuProps {
   onSelectContacts?: () => void; // ✅ Prop for parent callback
@@ -19,73 +15,25 @@ export default function ContactsMenu({ onSelectContacts }: ContactsMenuProps) {
 
   const router = useRouter();
   const { handleGoogleImport, loading } = useGoogleImport();
+  const { setSelectedContactMenu } = useContactStore();
 
-  const goToImportedContacts = () => {
-    router.push("/dashboard/contacts/imported-contacts");
+  const goToExcelImportPage = () => {
+    setSelectedContactMenu("imported-contacts");
   };
 
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <IconButton
-            asChild
-            label="Contact Menu"
-            IconSrc="/assets/icons/more-vertical.svg"
-            tooltipSide="bottom"
-          />
-        </DropdownMenuTrigger>
+  const goToVCFImportPage = () => {
+    setSelectedContactMenu("imported-vcf");
+  };
 
-        <DropdownMenuContent
-          align="end"
-          onClick={(e) => e.stopPropagation()}
-          className="dark:bg-[#161717]"
-        >
-          
-          {/* Edit Placeholder */}
-          <DropdownMenuItem
-            className="hover:dark:bg-[#343636] flex items-center gap-2"
-            onClick={() => onSelectContacts?.()}
-          >
-            <img
-              src={"/assets/icons/select.svg"}
-              className="w-6 h-6 dark:invert"
-              alt={"more options"}
-            />
-            Select Contacts
-          </DropdownMenuItem>
 
-          {/* Chat Item */}
-          <DropdownMenuItem
-            className="flex items-center gap-2 hover:dark:bg-[#343636]"
-            onClick={() => onSelectContacts?.()}
-          >
-            <img
-              src={"/assets/icons/broadcast.svg"}
-              className="w-6 h-6 dark:invert"
-              alt={"more options"}
-            />
-            Broadcast List
-          </DropdownMenuItem>
+  const topItems = [
+    { icon: "/assets/icons/select.svg", label: "Select Contacts", action: onSelectContacts },
+    { icon: "/assets/icons/broadcast.svg", label: "Make Broadcast", action: onSelectContacts },
+    { icon: "/assets/icons/download.svg", label: "Import from Google", action: handleGoogleImport },
+    { icon: "/assets/icons/document.svg", label: "Import from Excel", action: goToExcelImportPage },
+    { icon: "/assets/icons/VCF.svg", label: "Import from VCF", action: goToVCFImportPage },
+    { icon: "/assets/icons/export.svg", label: "Export Contacts", action: onSelectContacts },
+  ];
 
-          <DropdownMenuItem
-            className="flex items-center gap-2 hover:dark:bg-[#343636]"
-            onClick={handleGoogleImport}
-          >
-            <Mail size={22} strokeWidth={2.5} />
-            Import from Google
-          </DropdownMenuItem>
-
-          <DropdownMenuItem
-            className="flex items-center gap-2 hover:dark:bg-[#343636]"
-            onClick={goToImportedContacts}
-          >
-            <FileSpreadsheet size={22} strokeWidth={2.5} />
-            Import from Excel
-          </DropdownMenuItem>
-
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
-  );
+  return <GenericMenu topItems={topItems} />;
 }
