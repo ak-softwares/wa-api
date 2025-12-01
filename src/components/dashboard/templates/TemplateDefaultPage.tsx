@@ -1,9 +1,9 @@
-export default function DefaultDetails() {
+export default function TemplateDetailsDefaultPage() {
   return (
     <div className="flex flex-col items-center justify-center h-full">
       <img
         src="/assets/icons/template.svg"
-        alt="Contact"
+        alt="Template"
         className="w-24 h-24 mb-4 dark:invert opacity-20"
       />
       <p className="text-3xl font-light tracking-wide">Templates</p>

@@ -65,9 +65,9 @@ export default function AnalyticsCard() {
             <SelectValue placeholder="Select Range" />
           </SelectTrigger>
 
-          <SelectContent className="dark:bg-[#161717]">
+          <SelectContent>
             {Object.values(DateRangeEnum).map((range) => (
-              <SelectItem key={range} value={range} className="dark:hover:bg-[#222222]">
+              <SelectItem key={range} value={range}>
                 {DateRangeLabels[range]}
               </SelectItem>
             ))}

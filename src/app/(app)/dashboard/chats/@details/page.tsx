@@ -20,11 +20,14 @@ import { Chat } from "@/types/Chat";
 import { useFavourite } from "@/hooks/chat/useFavourite";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import ForwardMessagePopup from "@/components/dashboard/messages/ForwardMessagePopup";
+import EmojiPicker, { Theme } from "emoji-picker-react";
+import AttachButton from "@/components/dashboard/messages/AttachButton";
 
 export default function MessagePage() {
   const { theme } = useTheme(); // or use your theme context
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
   const {activeChat, setActiveChat} = useChatStore();
   const router = useRouter();
 
@@ -39,7 +42,38 @@ export default function MessagePage() {
   const { isBlocked, toggleBlock, ConfirmDialog } = useBlockedContacts();
   const [isForwardMessageOpen, setIsForwardMessageOpen] = useState(false);
   const [forwardMessage, setForwardMessage] = useState<Message | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Insert emoji at cursor position
+  const insertEmoji = (emoji: string) => {
+    const input = inputRef.current;
+    if (!input) return;
+
+    const start = input.selectionStart ?? 0;
+    const end = input.selectionEnd ?? 0;
+
+    const updatedText =
+      message.slice(0, start) + emoji + message.slice(end);
+
+    setMessage(updatedText);
+
+    // Set cursor after emoji
+    setTimeout(() => {
+      input.focus();
+      input.setSelectionRange(start + emoji.length, start + emoji.length);
+    }, 0);
+  };
 
   // ✅ Reset unread count when chat is opened
   useEffect(() => {
@@ -354,16 +388,37 @@ export default function MessagePage() {
               )}
               <div className="relative flex items-center">
                 <div className="absolute left-1.5 flex gap-2 items-center">
-                  <IconButton
+                  <AttachButton
+                    onMedia={() => console.log("Choose image")}
+                    onAdio={() => console.log("Choose video")}
+                    onCamera={() => console.log("Choose camera")}
+                    onDocument={() => console.log("Choose document")}
+                    onTemplate={() => console.log("Choose template")}
+                  />
+
+                  {/* Emoji Button here */}
+                  {/* <IconButton
                     // onClick={clearSelection}
                     label={"Attach"}
                     IconSrc={"/assets/icons/plus.svg"}
-                  />
+                  /> */}
                   <IconButton
-                    // onClick={clearSelection}
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                     label={"Emoji"}
                     IconSrc={"/assets/icons/emoji.svg"}
                   />
+                  {/* Emoji Popup */}
+                  {showEmojiPicker && (
+                    <div ref={pickerRef} className="absolute bottom-12 left-0 z-50">
+                      <EmojiPicker
+                        theme={theme === "dark" ? Theme.DARK : Theme.LIGHT}
+                        onEmojiClick={(emoji) => {
+                          insertEmoji(emoji.emoji);
+                          setShowEmojiPicker(false);
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
                 <Input
                   ref={inputRef}   // 👈 attach ref

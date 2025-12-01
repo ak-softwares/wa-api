@@ -7,7 +7,6 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -16,8 +15,6 @@ import { useDeleteContacts } from "@/hooks/contact/useDeleteContacts";
 import { Contact } from "@/types/Contact";
 import { useOpenChat } from "@/hooks/chat/useOpenChat";
 import MenuItemsList from "@/components/common/MenuItemList";
-import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
-import { ChatParticipant } from "@/types/Chat";
 
 interface ContactMenuProps {
   contact: Contact;

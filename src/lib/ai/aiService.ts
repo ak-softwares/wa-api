@@ -36,7 +36,7 @@ Do NOT overuse the name.
     chatId: chat._id,
   })
     .sort({ createdAt: -1 })
-    .limit(10)
+    .limit(20)
     .lean();
 
   const historyMessages = recentMessages

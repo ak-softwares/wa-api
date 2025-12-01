@@ -1,11 +1,9 @@
 "use client";
 
-import { ImportIcon, FileSpreadsheet, Mail } from "lucide-react";
 import { useGoogleImport } from "@/hooks/contact/useGoogleImport";
 import { useRouter } from "next/navigation";
 import GenericMenu from "@/components/common/DropDownMenu";
 import { useContactStore } from "@/store/contactStore";
-import { useExportContacts } from "@/hooks/contact/useExportContacts";
 
 interface ContactsMenuProps {
   onSelectContacts?: () => void; // ✅ Prop for parent callback
