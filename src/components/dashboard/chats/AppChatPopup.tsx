@@ -14,10 +14,9 @@ import { useOpenChat } from "@/hooks/chat/useOpenChat";
 interface NewChatPopupProps {
   isOpen: boolean;
   onClose: () => void;
-  phone: string;
 }
 
-export default function NewChatPopup({ isOpen, onClose, phone }: NewChatPopupProps) {
+export default function NewChatPopup({ isOpen, onClose }: NewChatPopupProps) {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
   const { contacts, loading, loadingMore, hasMore, refreshContacts, searchContacts } = useContacts({ sidebarRef });
   const { activeChat, setActiveChat } = useChatStore();

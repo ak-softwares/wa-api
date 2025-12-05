@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Template,
   TemplateComponent,
-  TemplateHeaderComponent,
+  TemplateHeaderComponentCreate,
 } from "@/types/Template";
 import TemplateMenu from "./TemplateMenu";
 
@@ -11,6 +11,7 @@ interface TemplateTileProps {
   template: Template;
   onDelete?: (templateName: string) => void; // FIXED
   onDuplicate?: (template: Template) => void;
+  onEdit?: (template: Template) => void;
   onClick?: () => void;
   isSelected?: boolean;
   isSelectionMode?: boolean;
@@ -22,6 +23,7 @@ export function TemplateTile({
   onDelete,
   onClick,
   onDuplicate,
+  onEdit,
   isSelected = false,
   isSelectionMode = false,
   isActive = false, // NEW
@@ -40,9 +42,9 @@ export function TemplateTile({
   };
 
   const getHeaderFormat = () => {
-    const headerComponent = template.components.find(
+    const headerComponent = template?.components?.find(
       (c: TemplateComponent) => c.type === "HEADER"
-    ) as TemplateHeaderComponent | undefined;
+    ) as TemplateHeaderComponentCreate | undefined;
 
     return headerComponent?.format || "TEXT";
   };
@@ -129,6 +131,7 @@ export function TemplateTile({
           template={template}
           onDelete={() => onDelete?.(template.name)}
           onDuplicateClick={() => onDuplicate?.(template)}
+          onEdit={() => onEdit?.(template)}
         />
       )}
     </div>

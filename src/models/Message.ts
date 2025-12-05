@@ -21,7 +21,8 @@ const MessageSchema = new Schema<IMessage>(
     chatId: { type: Schema.Types.ObjectId, ref: "Chat", required: true },
     to: { type: String, required: true },
     from: { type: String, required: true },
-    message: { type: String, required: true },
+    message: { type: String },
+    template: { type: Schema.Types.Mixed },
     waMessageId: { type: String },
     status: {
       type: String,

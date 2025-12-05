@@ -128,3 +128,11 @@
 .dark .text-walink {
   color: #1fa857; /* Dark mode color */
 }
+
+:root {
+  --icon-filter: brightness(0) invert(31%) sepia(98%) saturate(2190%) hue-rotate(203deg) contrast(97%); /* blue */
+}
+
+.dark {
+  --icon-filter: brightness(0) invert(62%) sepia(91%) saturate(658%) hue-rotate(86deg) contrast(101%); /* your green */
+}

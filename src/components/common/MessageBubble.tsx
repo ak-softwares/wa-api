@@ -10,7 +10,10 @@ import { useDeleteMessages } from "@/hooks/message/useDeleteMessages";
 import { toast } from "../ui/sonner";
 import { MessageStatus } from "@/types/MessageStatus";
 import { useOpenChat } from "@/hooks/chat/useOpenChat";
-import ForwardMessagePopup from "../dashboard/messages/ForwardMessagePopup";
+import { MessageType } from "@/types/MessageType";
+import TemplateMessage from "./RenderTemplateMessage";
+import { formatRichText } from "./FormatRichText";
+import MessageMetaInfo from "../dashboard/messages/MessageMetaInfo";
 
 interface MessageBubbleProps {
   message: Message;
@@ -24,6 +27,8 @@ export default function MessageBubble({ message, onDelete, onReply, onForward }:
   const [hovered, setHovered] = useState(false);
   const { deleteMessage, deleteMessagesBulk, deleting } = useDeleteMessages();
   const { openChatByContact } = useOpenChat();
+  
+  const isTemplate: boolean = !!message?.template || message?.type === MessageType.Template;
 
   const isMine = !activeChat?.participants?.some(
     (p: ChatParticipant) => p.number === message.from
@@ -111,47 +116,6 @@ export default function MessageBubble({ message, onDelete, onReply, onForward }:
     },
   ];
 
-    // ✅ Format message text
-  const formatMessageText = (text: string) => {
- 
-    // Match URLs (handles long query params, %5F etc.)
-    const urlRegex = /(https?:\/\/[^\s"']+)/g;
-    const phoneRegex = /(\+?\d[\d\s-]{8,}\d)/g;
-    const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
-    const boldRegex = /\*([^*]+)\*/g;
-
-    let formatted = text 
-      // ✅ Convert full URLs to links
-      .replace(
-        urlRegex,
-        (url) => {
-          return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="dark:text-[#21C063] text-blue-600 underline break-all">${url}</a>`;
-        }
-      );
-
-      // 2️⃣ Now apply phone/email/bold only OUTSIDE <a ...>...</a>
-      formatted = formatted.replace(/(<a[^>]*>.*?<\/a>)|([^<]+)/g, (match, link, textPart) => {
-        // If this part is a link → do NOT touch it
-        if (link) return link;
-
-        // If it's normal text → apply phone/email/bold
-        return textPart
-          // ✅ Convert phone numbers (e.g., +91 92583 44427 → WhatsApp link)
-          .replace(phoneRegex, (num: string) => {
-            const clean = num.replace(/\D/g, "");
-            return `<b class="chat-number text-walink" data-phone="${clean}" style="cursor:pointer">${num}</b>`;
-          })
-
-          .replace(emailRegex, (email: string) =>
-            `<a href="mailto:${email}" class="dark:text-[#21C063] text-blue-600">${email}</a>`
-          )
-          .replace(boldRegex, "<b>$1</b>");
-      });
-
-    return formatted;
-  };
-
-
   return (
     <div
       className={`flex ${isMine ? "justify-end" : "justify-start"}`}
@@ -200,77 +164,23 @@ export default function MessageBubble({ message, onDelete, onReply, onForward }:
             </div>
           </div>
         )}
-        <p className="break-words">
+        <div className="break-words">
           {/* ✅ Message content with formatting */}
-          <p
-            className="break-words"
-            dangerouslySetInnerHTML={{ __html: formatMessageText(message.message) }}
-          />
-          <span className="text-[11px] text-gray-400 float-right ml-2 mt-1 flex items-center gap-1">
-            {/* Tag Icon */}
-            {message.tag === "broadcast" && (
-              <img
-                src="/assets/icons/broadcast-icon.svg"
-                className="w-4 h-4 dark:invert opacity-60"
-                alt="broadcast"
-              />
-            )}
-
-            {(message.tag === "aichat") && (
-              <img
-                src="/assets/icons/ai-icon.svg"
-                className="w-4 h-4 dark:invert opacity-60"
-                alt="ai tag"
-              />
-            )}
-            {(message.tag === "aiagent") && (
-              <img
-                src="/assets/icons/ai-agent-icon.svg"
-                className="w-4 h-4 dark:invert opacity-60"
-                alt="ai tag"
-              />
-            )}
-
-            {/* Time */}
-            {formatTime(message.createdAt)}
-
-            {(message.status === MessageStatus.Pending) && (
-              <img
-                src="/assets/icons/msg-time.svg"
-                className="w-4 h-4 dark:invert opacity-60"
-                alt="ai tag"
-              />
-            )}
-            {(message.status === MessageStatus.Failed) && (
-              <img
-                src="/assets/icons/warning.svg"
-                className="w-4 h-4 dark:invert opacity-60"
-                alt="ai tag"
-              />
-            )}
-            {(message.status === MessageStatus.Sent) && (
-              <img
-                src="/assets/icons/status-dblcheck.svg"  //status-check.svg
-                className="w-4 h-4 dark:invert opacity-60"
-                alt="ai tag"
-              />
-            )}
-            {(message.status === MessageStatus.Delivered) && (
-              <img
-                src="/assets/icons/status-dblcheck.svg"
-                className="w-4 h-4 dark:invert opacity-60"
-                alt="ai tag"
-              />
-            )}
-            {(message.status === MessageStatus.Read) && (
-              <img
-                src="/assets/icons/status-dblcheck-1.svg"
-                className="w-4 h-4 dark:invert opacity-60"
-                alt="ai tag"
-              />
-            )}
-          </span>
-        </p>
+          {/* TEMPLATE RENDER */}
+          {isTemplate ? (
+            <TemplateMessage message={message} template={message.template!} />
+          ) : (
+            <p
+              className="break-words whitespace-pre-line"
+              dangerouslySetInnerHTML={{ __html: formatRichText(message.message ?? "") }}
+            />
+          )}
+          { !isTemplate && (
+            <div className="flex justify-end">
+              <MessageMetaInfo message={message} />
+            </div>
+          )}
+        </div>
 
         <div
           className={`absolute top-0 right-0 transition-opacity ${

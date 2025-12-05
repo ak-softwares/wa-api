@@ -20,14 +20,9 @@ import { ChatFilterType } from "@/utiles/enums/chatFilters";
 import { Chat, ChatParticipant } from "@/types/Chat";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 
-export default function ChatList({
-  searchParams,
-}: {
-  searchParams: { phone?: string };
-}) {
-  const phone = searchParams.phone || undefined;
+export default function ChatList() {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
-  const { chats, totalChats, setChats, loading, loadingMore, hasMore, searchChats, filter, setFilter } = useChats({ sidebarRef, phone });
+  const { chats, totalChats, setChats, loading, loadingMore, hasMore, searchChats, filter, setFilter } = useChats({ sidebarRef });
 
   const [selectedChatIds, setSelectedChatIds] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -135,7 +130,6 @@ export default function ChatList({
           <NewChatPopup
             isOpen={isNewChatOpen}
             onClose={() => setIsNewChatOpen(false)}
-            phone={phone ?? ""} // Your phone prop
           />
           <MakeBroadcastPopup
             isOpen= {isMakeBroadcastOpen}

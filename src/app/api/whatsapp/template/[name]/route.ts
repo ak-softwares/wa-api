@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { Template } from "@/models/Template";
 
 // DELETE /api/whatsapp/templates/[name]
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ name: string }> }) {
@@ -33,6 +34,25 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ n
           }`,
         },
         { status: 400 }
+      );
+    }
+
+        /* ------------------------------------------------------------
+     * 2️⃣ DELETE TEMPLATE FROM DATABASE
+     * ------------------------------------------------------------ */
+    const dbDelete = await Template.findOneAndDelete({
+      userId: user._id,
+      waAccountId: waAccount._id,
+      name: name
+    });
+
+    if (!dbDelete) {
+      return NextResponse.json(
+        {
+          success: true, // Facebook deleted already → not a failure
+          message: "Template deleted from Facebook, but not found in DB",
+        },
+        { status: 200 }
       );
     }
 

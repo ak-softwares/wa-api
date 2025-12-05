@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTemplates } from "@/hooks/template/useTemplate";
 import { Skeleton } from "@/components/ui/skeleton";
 import TemplatesMenu from "@/components/dashboard/templates/TemplatesMenu";
@@ -14,12 +13,11 @@ import { useTemplateStore } from "@/store/templateStore";
 import { useDeleteTemplate } from "@/hooks/template/useDeleteTemplate";
 
 export default function TemplateListPage() {
-  const router = useRouter();
   const { templates, loading, refreshTemplates, searchTemplates } = useTemplates();
 
   const [selectedTemplates, setSelectedTemplates] = useState<Template[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const { setDuplicateTemplateData, setSelectedTemplateMenu } = useTemplateStore();
+  const { setDuplicateTemplateData, setSelectedTemplateMenu, setEditTemplateData } = useTemplateStore();
   // PASS THE REFRESH FUNCTION TO DELETE HOOK
   const { openDeleteDialog, openBulkDeleteDialog, DeleteDialogs } =
     useDeleteTemplate(() => {
@@ -51,6 +49,11 @@ export default function TemplateListPage() {
   const handleDuplicateTemplate = (template: Template) => {
     setDuplicateTemplateData(template);
     setSelectedTemplateMenu("create-template");
+  };
+
+  const handleEditTemplate = (template: Template) => {
+    setSelectedTemplateMenu("create-template");
+    setEditTemplateData(template);
   };
 
   return (
@@ -130,6 +133,7 @@ export default function TemplateListPage() {
               }}
               onDelete={handleDeleteTemplate}
               onDuplicate={handleDuplicateTemplate}
+              onEdit={handleEditTemplate}
             />
           ))
         )}

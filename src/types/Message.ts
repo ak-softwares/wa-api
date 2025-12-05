@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import { MessageStatus } from "@/types/MessageStatus";
 import { MessageType } from "@/types/MessageType";
 import { ChatParticipant } from "@/types/Chat";
+import { Template } from "./Template";
 
 export interface IContext {
   id: string;
@@ -19,13 +20,14 @@ export interface IMessage {
   chatId: Types.ObjectId;
   to: string;
   from: string;
-  message: string;
+  message?: string;
+  template?: Template;
   waMessageId?: string;
   status?: MessageStatus;
   type?: MessageType;
   context?: Context;
   tag?: string;
-  participants: ChatParticipant[];
+  participants?: ChatParticipant[];
   aiUsageId?: string;
   createdAt?: Date;
   updatedAt?: Date;

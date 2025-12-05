@@ -22,6 +22,9 @@ import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import ForwardMessagePopup from "@/components/dashboard/messages/ForwardMessagePopup";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import AttachButton from "@/components/dashboard/messages/AttachButton";
+import TemplatePopup from "@/components/dashboard/templates/SendTemplatePopup";
+import { Template } from "@/types/Template";
+import { useTemplates } from "@/hooks/template/useTemplate";
 
 export default function MessagePage() {
   const { theme } = useTheme(); // or use your theme context
@@ -43,6 +46,16 @@ export default function MessagePage() {
   const [isForwardMessageOpen, setIsForwardMessageOpen] = useState(false);
   const [forwardMessage, setForwardMessage] = useState<Message | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const { templates: fetchedTemplates, loading: templatesLoading } = useTemplates();
+
+  const handleOpenPopup = () => {
+    if (templatesLoading) return; // optional safeguard
+
+    setTemplates(fetchedTemplates || []);
+    setIsPopupOpen(true);
+  };
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -393,7 +406,7 @@ export default function MessagePage() {
                     onAdio={() => console.log("Choose video")}
                     onCamera={() => console.log("Choose camera")}
                     onDocument={() => console.log("Choose document")}
-                    onTemplate={() => console.log("Choose template")}
+                    onTemplate={handleOpenPopup}
                   />
 
                   {/* Emoji Button here */}
@@ -489,6 +502,13 @@ export default function MessagePage() {
           setForwardMessage(null);
         }}
         message={forwardMessage!}
+      />
+      <TemplatePopup
+        isOpen={isPopupOpen}
+        chatId={activeChat._id!}
+        onClose={() => setIsPopupOpen(false)}
+        // onSend={(templateId => console.log("Send template", templateId))}
+        templates={templates}
       />
     </div>
   );

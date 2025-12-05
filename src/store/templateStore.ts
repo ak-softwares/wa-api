@@ -7,6 +7,9 @@ interface TemplateStore {
 
   duplicateTemplateData: Template | null;
   setDuplicateTemplateData: (template: Template | null) => void;
+
+  editTemplateData: Template | null;
+  setEditTemplateData: (template: Template | null) => void;
 }
 
 export const useTemplateStore = create<TemplateStore>((set) => ({
@@ -15,4 +18,7 @@ export const useTemplateStore = create<TemplateStore>((set) => ({
 
   duplicateTemplateData: null,
   setDuplicateTemplateData: (template) => set({ duplicateTemplateData: template }),
+
+  editTemplateData: null,
+  setEditTemplateData: (template) => set({ editTemplateData: template }),
 }));
