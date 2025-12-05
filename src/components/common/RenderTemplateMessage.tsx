@@ -106,11 +106,11 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
 
 
       {/* ---------------- BUTTONS ---------------- */}
-      <div className="flex flex-col gap-4 mt-2 -mb-2 -mx-3">
+      <div className="flex flex-col -mb-2 -mx-3">
         {template.components
           .filter((c: any) => c.type === TemplateComponentType.BUTTONS)
           .map((btnGroup: any, idx: number) => (
-            <div key={idx} className="flex flex-col mt-2 w-full">
+            <div key={idx} className="flex flex-col w-full">
               {btnGroup.buttons.map((btn: any, bIndex: number) => {
                 // ---------------- URL BUTTON ----------------
                 if (btn.type === "URL") {
