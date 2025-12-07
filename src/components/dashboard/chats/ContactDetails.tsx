@@ -24,7 +24,7 @@ interface ContactDetailsProps {
 export default function ContactDetails({ isOpen, onClose }: ContactDetailsProps) {
   const { activeChat } = useChatStore();
   const { deleteChat } = useDeleteChats();
-  const { isBlocked, confirmBlock, confirmUnblock, ConfirmDialog } = useBlockedContacts();
+  const { isBlocked, confirmBlock, confirmUnblock, confirmBlockDialog } = useBlockedContacts();
   const { openAddContactDialog, AddContactDialog } = useAddContact();
   const [showAddMembersPopup, setShowAddMembersPopup] = useState(false);
   const [showViewAllMembers, setShowViewAllMembers] = useState(false);
@@ -260,7 +260,7 @@ export default function ContactDetails({ isOpen, onClose }: ContactDetailsProps)
           </Button>
         </div>
       </div>
-      <ConfirmDialog />
+      {confirmBlockDialog()}
     </div>
   );
 }

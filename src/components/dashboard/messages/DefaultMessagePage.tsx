@@ -1,4 +1,4 @@
-export default function DefaultChatPage() {
+export default function DefaultMessagePage() {
   return (
       <div className="flex flex-col items-center justify-center h-full">
         <img

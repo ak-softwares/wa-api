@@ -4,15 +4,15 @@ import React, { useState, useRef, useEffect } from "react";
 import IconButton from "@/components/common/IconButton";
 
 export default function AttachButton({
-  onMedia,
-  onAdio,
-  onCamera,
+  onImage,
+  onVideo,
+  onAudio,
   onDocument,
   onTemplate
 }: {
-  onMedia?: () => void;
-  onAdio?: () => void;
-  onCamera?: () => void;
+  onImage?: () => void;
+  onVideo?: () => void;
+  onAudio?: () => void;
   onDocument?: () => void;
   onTemplate?: () => void;
 }) {
@@ -52,34 +52,33 @@ export default function AttachButton({
         >
           <button
             onClick={() => {
-              onMedia?.();
+              onImage?.();
               setOpen(false);
             }}
             className="flex items-center gap-2 px-3 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
           >
-            <img src="/assets/icons/image.svg" alt="Document Icon" className="w-6 h-6" />
-            Media
+            <img src="/assets/icons/camera.svg" alt="Image Icon" className="w-6 h-6" />
+            Image
           </button>
-
           <button
             onClick={() => {
-              onAdio?.();
+              onVideo?.();
+              setOpen(false);
+            }}
+            className="flex items-center gap-2 px-3 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
+          >
+            <img src="/assets/icons/image.svg" alt="Video Icon" className="w-6 h-6" />
+            Video
+          </button>
+          <button
+            onClick={() => {
+              onAudio?.();
               setOpen(false);
             }}
             className="flex items-center gap-2 px-3 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
           >
             <img src="/assets/icons/audio.svg" alt="Audio Icon" className="w-6 h-6" />
             Audio
-          </button>
-          <button
-            onClick={() => {
-              onCamera?.();
-              setOpen(false);
-            }}
-            className="flex items-center gap-2 px-3 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
-          >
-            <img src="/assets/icons/document-icon.svg" alt="Document Icon" className="w-6 h-6" />
-            Document
           </button>
 
           <button
@@ -89,8 +88,8 @@ export default function AttachButton({
             }}
             className="flex items-center gap-2 px-3 py-2 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
           >
-            <img src="/assets/icons/camera.svg" alt="Camera Icon" className="w-6 h-6" />
-            Camera
+            <img src="/assets/icons/document-icon.svg" alt="Document Icon" className="w-6 h-6" />
+            Document
           </button>
 
           <button

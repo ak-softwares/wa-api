@@ -11,7 +11,7 @@ import { toast } from "../ui/sonner";
 import { MessageStatus } from "@/types/MessageStatus";
 import { useOpenChat } from "@/hooks/chat/useOpenChat";
 import { MessageType } from "@/types/MessageType";
-import TemplateMessage from "./RenderTemplateMessage";
+import TemplateMessage from "../dashboard/templates/RenderTemplateMessage";
 import { formatRichText } from "./FormatRichText";
 import MessageMetaInfo from "../dashboard/messages/MessageMetaInfo";
 

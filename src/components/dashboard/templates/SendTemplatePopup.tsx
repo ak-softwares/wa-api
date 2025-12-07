@@ -26,6 +26,8 @@ import { Template } from "@/types/Template";
 import { toast } from "@/components/ui/sonner";
 import { useSendTemplate } from "@/hooks/template/useSendTemplate";
 import { Types } from "mongoose";
+import { useMedia } from "@/hooks/common/useMedia";
+import { MediaType } from "@/utiles/enums/mediaTypes";
 
 interface TemplatePopupProps {
   isOpen: boolean;
@@ -47,8 +49,8 @@ export default function TemplatePopup({
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [variables, setVariables] = useState<Record<string, string>>({});
   const [previewValues, setPreviewValues] = useState<Record<string, string>>({});
-  const [uploading, setUploading] = useState(false);
   const { sendTemplate, loading } = useSendTemplate();
+  const { uploadMedia, uploading } = useMedia();
 
   // Reset when popup opens/closes
   useEffect(() => {
@@ -132,92 +134,56 @@ export default function TemplatePopup({
     return text;
   };
 
-  // Upload header media to server to get header_handle
-  const uploadHeaderMedia = async (file: File) => {
-    if (!selectedTemplate) return null;
-    setUploading(true);
-
-    try {
-      const form = new FormData();
-      form.append("file", file);
-
-      const res = await fetch("/api/whatsapp/media", { // <-- corrected path
-        method: "POST",
-        body: form,
-      });
-
-      const data = await res.json();
-      if (!data.success) {
-        toast.error(data.message || "Upload failed");
-        return null;
-      }
-
-      const header_handle = data.data?.mediaId;
-      toast.success("Media uploaded");
-
-      setSelectedTemplate((prev) => {
-        if (!prev) return prev;
-        const comps = prev.components?.map((c) => {
-          if (c.type === "HEADER") {
-            return {
-              ...(c as any),
-              example: {
-                ...((c as any).example || {}),
-                header_handle,
-              },
-            };
-          }
-          return c;
-        });
-        return { ...prev, components: comps };
-      });
-
-      return header_handle;
-    } catch (err: any) {
-      toast.error("Upload failed");
-      return null;
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  // Handle file change for header media
-  const handleHeaderFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  
+  /// --------------------------------------
+  // Unified Handler: Validate (once) + Upload + Update Template
+  // --------------------------------------
+  const handleHeaderFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !selectedTemplate) return;
 
-    // Validate size 5MB
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      toast.error("File must be < 5MB");
-      return;
-    }
+    const headerComp = selectedTemplate.components?.find(
+      (c) => c.type === "HEADER"
+    ) as any;
 
-    // Basic type validation to match header format
-    const headerComp = selectedTemplate.components?.find((c) => c.type === "HEADER") as any;
     if (!headerComp) {
       toast.error("Header component missing");
       return;
     }
 
-    const fmt = headerComp.format;
-    if (fmt === "IMAGE" && !file.type.startsWith("image/")) {
-      toast.error("Select an image file");
-      return;
-    }
-    if (fmt === "VIDEO" && !file.type.startsWith("video/")) {
-      toast.error("Select a video file");
-      return;
-    }
-    if (fmt === "DOCUMENT" && !file.type.includes("pdf") && !file.type.includes("word") && !file.type.includes("officedocument")) {
-      // loosened check to allow doc/docx/pdf
-      toast.error("Select a valid document (PDF/DOC/DOCX/XLS/XLSX)");
+    const format = headerComp.format as MediaType;
+
+    // ---- Upload directly (no second validation) ----
+    const { mediaId, error: uploadErr } = await uploadMedia(file, format);
+
+    if (uploadErr || !mediaId) {
+      toast.error(uploadErr || "Upload failed");
       return;
     }
 
-    // Upload
-    uploadHeaderMedia(file);
+    toast.success("Media uploaded");
+
+    // ---- Update template header_handle ----
+    setSelectedTemplate((prev) => {
+      if (!prev) return prev;
+      const comps = prev.components?.map((c) => {
+        if (c.type === "HEADER") {
+          return {
+            ...c,
+            example: {
+              ...(c.example || {}),
+              header_handle: mediaId,
+            },
+          };
+        }
+        return c;
+      });
+      return { ...prev, components: comps };
+    });
+
+    return mediaId;
   };
+
 
   // Fill variables into a template (cloned) — replaces {{n}} with provided values
   const getFilledTemplate = (template: Template, vars: Record<string, string>): Template => {

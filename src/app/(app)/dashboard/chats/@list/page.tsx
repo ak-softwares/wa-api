@@ -30,8 +30,8 @@ export default function ChatList() {
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
   const [isMakeBroadcastOpen, setIsMakeBroadcastOpen] = useState(false);
   const { activeChat, setActiveChat } = useChatStore();
-  const { isBlocked, toggleBlock, ConfirmDialog } = useBlockedContacts();
-
+  const { isBlocked, toggleBlock, confirmBlockDialog } = useBlockedContacts();
+  
   const FILTERS: { key: ChatFilterType; label: string }[] = [
     { key: "all", label: "All" },
     { key: "unread", label: "Unread" },
@@ -46,6 +46,7 @@ export default function ChatList() {
 
   const handleOpenChat = async (chat: any) => {
     setActiveChat(chat)
+    // setSelectedMessageMenu("message");
   };
 
   const handleDeleteChat = (chatId: string) => {
@@ -160,7 +161,7 @@ export default function ChatList() {
 
       {/* Search Bar */}
       <SearchBar
-          placeholder="Search contacts..."
+          placeholder="Search chats..."
           onSearch={searchChats}
       />
 
@@ -283,7 +284,7 @@ export default function ChatList() {
             </div>
           ))}
       </div>
-      <ConfirmDialog />
+      {confirmBlockDialog()}
     </div>
   );
 }

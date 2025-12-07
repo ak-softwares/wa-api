@@ -31,7 +31,7 @@ export default function ContactList() {
   const { deleteContactsBulk } = useDeleteContacts();
   const { openAddContactDialog, AddContactDialog } = useAddContact();
   const { openEditContactDialog, EditContactDialog } = useEditContact();
-  const { isBlocked, toggleBlock, ConfirmDialog } = useBlockedContacts();
+  const { isBlocked, toggleBlock, confirmBlockDialog } = useBlockedContacts();
   const { exportContacts } = useExportContacts();
 
   const handleExport = () => {
@@ -224,7 +224,7 @@ export default function ContactList() {
           ))}
       </div>
       {EditContactDialog}
-      <ConfirmDialog />
+      {confirmBlockDialog()}
     </div>
   );
 }

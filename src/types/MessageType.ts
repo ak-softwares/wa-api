@@ -1,8 +1,10 @@
-// src/types/messageStatus.ts
 export enum MessageType {
-  Text = "text",
-  Image = "image",
-  Document = "document",
-  Audio = "audio",
-  Template = "template",
+  TEXT = "text",
+  IMAGE = "image",
+  VIDEO = "video",
+  DOCUMENT = "document",
+  AUDIO = "audio",
+  LOCATION = "location",
+  TEMPLATE = "template",
+  STICKER = "sticker"
 }

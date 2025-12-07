@@ -4,9 +4,10 @@
 import { ITemplate } from "@/types/Template";
 import { TemplateComponentType } from "@/utiles/enums/template";
 import React, { useEffect, useState } from "react";
-import { formatRichText } from "./FormatRichText";
-import MessageMetaInfo from "../dashboard/messages/MessageMetaInfo";
+import { formatRichText } from "../../common/FormatRichText";
+import MessageMetaInfo from "../messages/MessageMetaInfo";
 import { Message } from "@/types/Message";
+import { useMedia } from "@/hooks/common/useMedia";
 
 interface TemplateMessageProps {
   message?: Message;
@@ -14,15 +15,31 @@ interface TemplateMessageProps {
 }
 
 export default function TemplateMessage({ message, template }: TemplateMessageProps) {
+  const { fetchMedia } = useMedia();
   if (!template || !template.components) return null;
 
   return (
     <div className="flex flex-col gap-1 mb-1 min-w-[200px]">
 
-      {/* ---------------- HEADER ---------------- */}
       {template.components
         .filter((c: any) => c.type === TemplateComponentType.HEADER)
         .map((h: any, idx: number) => {
+
+          const mediaId = h.example?.header_handle;
+
+          // Local states for preview URLs
+          const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+
+          useEffect(() => {
+            if (!mediaId) return;
+            const load = async () => {
+              const url = await fetchMedia(mediaId);
+              setMediaUrl(url);
+            };
+            load();
+          }, [mediaId]);
+
+          // TEXT HEADER
           if (h.format === "TEXT") {
             return (
               <div key={idx} className="text-sm font-semibold opacity-90">
@@ -31,12 +48,12 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
             );
           }
 
+          // IMAGE HEADER
           if (h.format === "IMAGE") {
-            const mediaId = h.example?.header_handle;
             return (
               <div key={idx} className="-ml-2 -mr-2 -mt-1">
                 <img
-                  src={`/api/whatsapp/media/${mediaId}`}
+                  src={mediaUrl || "/placeholder.png"}
                   alt="header-image"
                   className="rounded-md w-full max-h-48 object-cover"
                 />
@@ -44,22 +61,23 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
             );
           }
 
+          // VIDEO HEADER
           if (h.format === "VIDEO") {
-            const mediaId = h.example?.header_handle;
             return (
               <div key={idx} className="-ml-2 -mr-2 -mt-1">
-                <video key={idx} controls className="rounded-md w-full max-h-48">
-                  <source src={`/api/whatsapp/media/${mediaId}`} />
+                <video controls className="rounded-md w-full max-h-48">
+                  <source src={mediaUrl || ""} />
                 </video>
               </div>
             );
           }
 
+          // DOCUMENT HEADER
           if (h.format === "DOCUMENT") {
             return (
               <a
                 key={idx}
-                href={h.example?.header_handle?.[0]}
+                href={mediaUrl || "#"}
                 target="_blank"
                 className="text-blue-600 underline dark:text-[#21C063]"
               >
@@ -71,6 +89,7 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
           return null;
         })
       }
+
 
       {/* ---------------- BODY ---------------- */}
       {template.components

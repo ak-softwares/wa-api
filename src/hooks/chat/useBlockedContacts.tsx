@@ -143,7 +143,7 @@ export function useBlockedContacts() {
   // -------------------------------------
   // CONFIRMATION DIALOG COMPONENT
   // -------------------------------------
-  const ConfirmDialog = () => (
+  const confirmBlockDialog = () => (
     <Dialog open={dialogState.open} onOpenChange={closeDialog}>
       <DialogContent>
         <DialogHeader>
@@ -186,7 +186,7 @@ export function useBlockedContacts() {
     toggleBlock,
     confirmBlock,
     confirmUnblock,
-    ConfirmDialog,
+    confirmBlockDialog,
     blockNumber,
   };
 }
