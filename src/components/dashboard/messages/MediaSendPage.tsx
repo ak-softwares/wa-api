@@ -1,17 +1,17 @@
 // MediaSendPage.tsx
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useChatStore } from "@/store/chatStore";
-import { Send, X, RotateCw, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { RotateCw, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMessages } from "@/hooks/message/useMessages";
 import { MediaSelection } from "./MessagePage";
 import { MediaType } from "@/utiles/enums/mediaTypes";
 import MessagesHeader from "./MessageHeader";
 import IconButton from "@/components/common/IconButton";
-import Image from "next/image";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import { useTheme } from "next-themes";
+import { useSendMedia } from "@/hooks/message/useSendMedia";
 
 interface MediaSendPageProps {
   mediaList: MediaSelection[];
@@ -34,6 +34,7 @@ export default function MediaSendPage({ mediaList, chatId, onClose, onSendSucces
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [mediaListState, setMediaList] = useState(mediaList);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { sendMedia, isSending: isSendingMedia } = useSendMedia();
 
   const detectMediaType = (file: File): MediaType => {
     if (file.type.startsWith("image/")) return MediaType.IMAGE;
@@ -107,68 +108,29 @@ export default function MediaSendPage({ mediaList, chatId, onClose, onSendSucces
 
     setIsSending(true);
     try {
-      // For multiple media, you might want to:
-      // 1. Send all media in one request with multiple FormData entries
-      // 2. Send sequentially
-      // 3. Send in parallel and handle grouping
-      
-      // Here's an example implementation for sequential sending:
       for (let i = 0; i < mediaListState.length; i++) {
         const media = mediaListState[i];
         if (!media.file) continue;
 
-        // Create FormData for file upload
-        const formData = new FormData();
-        formData.append("file", media.file);
-        formData.append("caption", captions[i] || "");
-        formData.append("chatId", chatId);
-        formData.append("mediaIndex", i.toString());
-        formData.append("totalMedia", mediaListState.length.toString());
+        await sendMedia({
+          chatId,
+          file: media.file,
+          caption: captions[i] || "",
+          mediaType: media.type,
+        });
 
-        // Determine media type for API
-        let mediaType = MediaType.IMAGE;
-        if (media.type === MediaType.AUDIO) mediaType = MediaType.AUDIO;
-        if (media.type === MediaType.DOCUMENT) mediaType = MediaType.DOCUMENT;
-
-        // You'll need to implement the actual API call here
-        // Example:
-        // const response = await fetch('/api/whatsapp/send-media', {
-        //   method: 'POST',
-        //   body: formData
-        // });
-
-        // For now, simulate sending with the existing onSend
-        const payload = {
-          text: i === 0 ? "caption" : "", // Only caption first message
-          media: {
-            type: mediaType,
-            filename: media.file.name,
-            size: media.file.size
-          }
-        };
-
-        await onSend(payload);
-        
-        // Small delay between sends if needed
+        // Optional delay
         if (i < mediaListState.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise((r) => setTimeout(r, 300));
         }
       }
-      
-      // Close and call success callback
-      if (onSendSuccess) {
-        onSendSuccess();
-      } else {
-        onClose();
-      }
+
+      onSendSuccess ? onSendSuccess() : onClose();
     } catch (error) {
-      console.error("Error sending media:", error);
-      alert("Failed to send media. Please try again.");
     } finally {
       setIsSending(false);
     }
   };
-
 
   const handleRotate = () => {
     setRotations(prev => {
@@ -261,7 +223,7 @@ export default function MediaSendPage({ mediaList, chatId, onClose, onSendSucces
         return (
           <div className="relative w-full h-68 flex items-center justify-center">
             <img
-              src={previewUrls[currentMediaIndex] || ""}
+              src={URL.createObjectURL(currentMedia.file)}
               alt="Preview"
               className="max-w-[45%] max-h-full object-contain"
               style={{
@@ -472,86 +434,90 @@ export default function MediaSendPage({ mediaList, chatId, onClose, onSendSucces
     }
   };
 
-const renderThumbnails = () => {
-  if (mediaListState.length <= 1) return null;
+  const previewElement = useMemo(() => {
+    return renderPreview();
+  }, [currentMediaIndex, mediaListState, rotations, zooms, mediaList]);
 
-  return (
-    <div className="px-4 py-6 border-t dark:border-gray-800">
+  const renderThumbnails = () => {
+    if (mediaListState.length < 1) return null;
 
-      {/* Wrapper: Thumbnails (center) + Send button (right) */}
-      <div className="flex items-center justify-center relative">
+    return (
+      <div className="px-4 py-6 border-t dark:border-gray-800">
 
-        {/* Thumbnails Wrapper with scrollbar */}
-        <div className="flex-1 overflow-x-auto ml-5 mr-20 w-max max-w-[50vw]">
-          <div className="flex gap-3 items-center justify-center w-max mx-auto py-2 ">
-            {mediaListState.map((media, index) => {
-              const mediaType = detectMediaType(media.file!);
+        {/* Wrapper: Thumbnails (center) + Send button (right) */}
+        <div className="flex items-center justify-center relative">
 
-              return (
-                <div key={index} className="relative flex-shrink-0">
-                  <button
-                    onClick={() => setCurrentMediaIndex(index)}
-                    className={`w-16 h-16 rounded-md overflow-hidden border-4 ${
-                      index === currentMediaIndex
-                        ? "border-green-500"
-                        : "border-transparent"
-                    }`}
-                  >
-                    {mediaType === MediaType.IMAGE && previewUrls[index] ? (
-                      <img
-                        src={previewUrls[index]}
-                        alt={`Thumbnail ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-xl">
-                        {mediaType === MediaType.IMAGE && "🖼️"}
-                        {mediaType === MediaType.AUDIO && "🎵"}
-                        {mediaType === MediaType.DOCUMENT && "📄"}
-                        {mediaType === MediaType.VIDEO && "📹"}
-                      </div>
-                    )}
-                  </button>
+          {/* Thumbnails Wrapper with scrollbar */}
+          <div className="flex-1 overflow-x-auto ml-5 mr-20 w-max max-w-[50vw]">
+            <div className="flex gap-3 items-center justify-center w-max mx-auto py-2 ">
+              {mediaListState.map((media, index) => {
+                const mediaType = detectMediaType(media.file!);
 
-                  {/* Remove Button */}
-                  <button
-                    onClick={() => removeMedia(index)}
-                    className="absolute top-0 right-0 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs shadow"
-                  >
-                    ✕
-                  </button>
-                </div>
-              );
-            })}
+                return (
+                  <div key={index} className="relative flex-shrink-0">
+                    <button
+                      onClick={() => setCurrentMediaIndex(index)}
+                      className={`w-16 h-16 rounded-md overflow-hidden border-4 ${
+                        index === currentMediaIndex
+                          ? "border-green-500"
+                          : "border-transparent"
+                      }`}
+                    >
+                      {mediaType === MediaType.IMAGE && previewUrls[index] ? (
+                        <img
+                          src={previewUrls[index]}
+                          alt={`Thumbnail ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-xl">
+                          {mediaType === MediaType.IMAGE && "🖼️"}
+                          {mediaType === MediaType.AUDIO && "🎵"}
+                          {mediaType === MediaType.DOCUMENT && "📄"}
+                          {mediaType === MediaType.VIDEO && "📹"}
+                        </div>
+                      )}
+                    </button>
 
-            {/* Add More Button */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="w-16 h-16 rounded-md border-2 border-dashed border-gray-400 dark:border-gray-600 flex items-center justify-center text-2xl"
-            >
-              +
+                    {/* Remove Button */}
+                    <button
+                      onClick={() => removeMedia(index)}
+                      className="absolute top-0 right-0 bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs shadow"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
+
+              {/* Add More Button */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-16 h-16 rounded-md border-2 border-dashed border-gray-400 dark:border-gray-600 flex items-center justify-center text-2xl"
+              >
+                +
+              </button>
+
+              <input type="file" multiple ref={fileInputRef} className="hidden" onChange={handleAddMore} />
+            </div>
+          </div>
+
+
+          {/* Right-Aligned Send Button with Badge */}
+          <div className="absolute right-0">
+            <button className="w-14 h-14 flex items-center cursor-pointer justify-center rounded-full transition bg-[#21C063] shadow-lg">
+              <img src="/assets/icons/send-message.svg" className="w-7 h-7" alt="Send media" onClick={handleSend} />
             </button>
 
-            <input type="file" multiple ref={fileInputRef} className="hidden" onChange={handleAddMore} />
+            {/* Badge */}
+            <span className="absolute -top-1 -right-1 bg-white text-black text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+              {mediaListState.length}
+            </span>
           </div>
         </div>
-
-
-        {/* Right-Aligned Send Button with Badge */}
-        <div className="absolute right-0">
-          <button className="w-14 h-14 flex items-center cursor-pointer justify-center rounded-full transition bg-[#21C063] shadow-lg">
-            <img src="/assets/icons/send-message.svg" className="w-7 h-7" alt="Send media" />
-          </button>
-
-          {/* Badge */}
-          <span className="absolute -top-1 -right-1 bg-white text-black text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
-            {mediaListState.length}
-          </span>
-        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 
   return (
@@ -582,72 +548,74 @@ const renderThumbnails = () => {
 
       {/* Preview Area */}
       <div className="flex-1 overflow-auto">
-        {mediaListState.length > 0 ? renderPreview() : (
-          <div className="w-full h-96 flex items-center justify-top">
+        {mediaListState.length > 0 ? previewElement : (
+          <div className="w-full h-96 flex items-center justify-center">
             <div className="text-gray-500">No media selected</div>
           </div>
         )}
       </div>
 
       {/* Caption Input */}
-      <div className="flex px-5 py-4 transition-all duration-200 justify-center items-center">
-        <div
-          className={`w-[70%] relative flex items-center bg-gray-200 dark:bg-[#2E2F2F] rounded-md transition-all duration-200
-            ${currentCaption ? "border-2 border-white translate-y-[2px]" : "border-2 border-transparent"}
-          `}
-        >
+      {currentMediaType !== MediaType.AUDIO && (
+        <div className="flex px-5 py-4 transition-all duration-200 justify-center items-center">
+          <div
+            className={`w-[70%] relative flex items-center bg-gray-200 dark:bg-[#2E2F2F] rounded-md transition-all duration-200
+              ${currentCaption ? "border-2 border-white translate-y-[2px]" : "border-2 border-transparent"}
+            `}
+          >
 
-          {/* 📝 Input Field */}
-          <input
-            ref={inputRef}   // 👈 attach ref
-            type="text"
-            value={currentCaption}
-            onChange={(e) => updateCaption(e.target.value)}
-            placeholder="Add a caption..."
-            onFocus={() => {}}
-            onBlur={() => {}}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            className="
-              w-full py-2.5 pl-4 pr-2 rounded-full
-              bg-transparent outline-none
-              text-gray-800 dark:text-white
-              placeholder:text-gray-400
-              transition-all duration-200
-              text-md
-            "
-          />
-
-          {currentCaption && (
-            <IconButton
-              onClick={() => updateCaption("")}
-              label={"Close"}
-              IconSrc={"/assets/icons/close.svg"}
+            {/* 📝 Input Field */}
+            <input
+              ref={inputRef}   // 👈 attach ref
+              type="text"
+              value={currentCaption}
+              onChange={(e) => updateCaption(e.target.value)}
+              placeholder="Add a caption..."
+              onFocus={() => {}}
+              onBlur={() => {}}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              className="
+                w-full py-2.5 pl-4 pr-2 rounded-full
+                bg-transparent outline-none
+                text-gray-800 dark:text-white
+                placeholder:text-gray-400
+                transition-all duration-200
+                text-md
+              "
             />
-          )}
-          <IconButton
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            label={"Emoji"}
-            IconSrc={"/assets/icons/emoji.svg"}
-          />
-          {/* Emoji Popup */}
-          {showEmojiPicker && (
-            <div ref={pickerRef} className="absolute bottom-12 left-0 z-50">
-              <EmojiPicker
-                theme={theme === "dark" ? Theme.DARK : Theme.LIGHT}
-                onEmojiClick={(emoji) => {
-                  insertEmoji(emoji.emoji);
-                  setShowEmojiPicker(false);
-                }}
+
+            {currentCaption && (
+              <IconButton
+                onClick={() => updateCaption("")}
+                label={"Close"}
+                IconSrc={"/assets/icons/close.svg"}
               />
-            </div>
-          )}
+            )}
+            <IconButton
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              label={"Emoji"}
+              IconSrc={"/assets/icons/emoji.svg"}
+            />
+            {/* Emoji Popup */}
+            {showEmojiPicker && (
+              <div ref={pickerRef} className="absolute bottom-12 left-0 z-50">
+                <EmojiPicker
+                  theme={theme === "dark" ? Theme.DARK : Theme.LIGHT}
+                  onEmojiClick={(emoji) => {
+                    insertEmoji(emoji.emoji);
+                    setShowEmojiPicker(false);
+                  }}
+                />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Thumbnail navigation */}
       {renderThumbnails()}

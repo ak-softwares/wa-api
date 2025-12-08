@@ -5,6 +5,14 @@ export enum MediaType {
   AUDIO = "AUDIO",
 }
 
+export interface Media {
+  id?: string;       // media_id from WhatsApp
+  link?: string;     // public URL
+  caption?: string;  // only for image/video/document
+  filename?: string; // only for document
+  mediaType?: MediaType;
+}
+
 export const MEDIA_MIME_TYPES: Record<MediaType, string[]> = {
   [MediaType.IMAGE]: ["image/jpeg", "image/png", "image/webp"],
   [MediaType.VIDEO]: ["video/mp4", "video/mpeg", "video/quicktime"],

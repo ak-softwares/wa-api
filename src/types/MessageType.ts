@@ -1,9 +1,6 @@
 export enum MessageType {
   TEXT = "text",
-  IMAGE = "image",
-  VIDEO = "video",
-  DOCUMENT = "document",
-  AUDIO = "audio",
+  MEDIA = "media",
   LOCATION = "location",
   TEMPLATE = "template",
   STICKER = "sticker"

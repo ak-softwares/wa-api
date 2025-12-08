@@ -72,7 +72,7 @@ export async function sendWhatsAppMessage({
       message,
       waMessageId,
       status,
-      type: MessageType.Text,
+      type: MessageType.TEXT,
       tag,
       aiUsageId,
       context
@@ -161,7 +161,7 @@ export async function sendBroadcastMessage({
     message,
     waMessageId: "",
     status: MessageStatus.Sent,
-    type: MessageType.Text,
+    type: MessageType.TEXT,
     tag,
     participants,
   });

@@ -33,17 +33,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "Chat not found" }, { status: 404 });
     }
 
-    // Normalize template
-
-    // If header is media -> ensure header_handle exists
-    // const header = metaTemplate.components?.find((c: any) => String(c.type).toUpperCase() === "HEADER") as any;
-    // if (header && ["IMAGE", "VIDEO", "DOCUMENT"].includes(String(header.format || "").toUpperCase())) {
-    //   const headerHandle = header.example?.header_handle || null;
-    //   if (!headerHandle) {
-    //     return NextResponse.json({ success: false, message: "Header media is required but header_handle missing. Upload header media first." }, { status: 400 });
-    //   }
-    // }
-
     // Call your unified sender
     const { newMessages, errorResponse: templateError } = await sendTemplateMessage({
       userId: user._id,

@@ -1,9 +1,10 @@
 // /models/Message.ts
 import mongoose, { Schema, models } from "mongoose";
-import { IMessage, IContext, Media, Location } from "@/types/Message";
+import { IMessage, IContext, Location } from "@/types/Message";
 import { MessageStatus } from "@/types/MessageStatus";
 import { MessageType } from "@/types/MessageType";
 import { ChatParticipantSchema } from "@/models/Chat";
+import { Media } from "@/utiles/enums/mediaTypes";
 
 // ---- Context Sub-Schema ----
 const ContextSchema = new Schema<IContext>(
@@ -22,8 +23,7 @@ const MediaSchema = new Schema<Media>(
     link: { type: String },      // public URL
     caption: { type: String },   // allowed for image/video/document
     filename: { type: String },  // only for documents
-    mimeType: { type: String },
-    size: { type: Number }
+    mediaType: { type: String },
   },
   { _id: false }
 );
@@ -59,11 +59,7 @@ const MessageSchema = new Schema<IMessage>(
       enum: Object.values(MessageType),
       default: MessageType.TEXT,
     },
-    image: { type: MediaSchema },
-    video: { type: MediaSchema },
-    document: { type: MediaSchema },
-    audio: { type: MediaSchema },
-    sticker: { type: MediaSchema },
+    media: { type: MediaSchema },
     location: { type: LocationSchema },
     context: { type: ContextSchema },
     tag: { type: String },

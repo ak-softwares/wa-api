@@ -39,11 +39,14 @@ export const useMedia = () => {
   // --------------------------------------
   // UPLOAD MEDIA
   // --------------------------------------
-  const uploadMedia = async (file: File, format: MediaType) => {
-    // Run validation before uploading
-    const error = validateMedia(file, format);
-    if (error) {
-        return { mediaId: null, error };
+  const uploadMedia = async (file: File, format?: MediaType) => {
+    
+    if(format){
+      // Run validation before uploading
+      const error = validateMedia(file, format);
+      if (error) {
+          return { mediaId: null, error };
+      }
     }
 
     setUploading(true);

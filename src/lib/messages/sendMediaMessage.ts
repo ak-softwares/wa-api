@@ -5,37 +5,36 @@ import { MessageType } from "@/types/MessageType";
 import { Chat, ChatParticipant } from "@/types/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { NextResponse } from "next/server";
-import { ITemplate, Template } from "@/types/Template";
 import { IMessage } from "@/types/Message";
 import { Types } from "mongoose";
-import { convertTemplateToMetaForSend } from "../mapping/convertTemplateToMeta";
+import { Media, MediaType } from "@/utiles/enums/mediaTypes";
 
-interface SendTemplateOptions {
+interface SendMediaOptions {
   userId: Types.ObjectId;
   chat: Chat;
   phone_number_id: string;
   permanent_token: string;
   participants: ChatParticipant[];
-  template: ITemplate;
-  tag?: string;
+  media: Media;
   aiUsageId?: string;
+  tag?: string;
 }
 
 /**
- * Unified sender for BOTH:
- * - single chat
- * - broadcast chat
+ * ✔ EXACT same architecture as sendTemplateMessage()
+ * ✔ Works for single + broadcast
+ * ✔ Handles all media types (image/video/audio/document/sticker)
  */
-export async function sendTemplateMessage({
+export async function sendMediaMessage({
   userId,
   chat,
   phone_number_id,
   permanent_token,
   participants,
-  template,
+  media,
   tag,
   aiUsageId,
-}: SendTemplateOptions) {
+}: SendMediaOptions) {
   const url = `https://graph.facebook.com/v23.0/${phone_number_id}/messages`;
 
   const headers = {
@@ -44,9 +43,8 @@ export async function sendTemplateMessage({
   };
 
   // ------------------------------------
-  // Determine participant list
+  // Validate participants
   // ------------------------------------
-
   if (!participants || participants.length === 0) {
     return {
       errorResponse: NextResponse.json(
@@ -58,59 +56,86 @@ export async function sendTemplateMessage({
 
   const dbMessages: IMessage[] = [];
   let firstWaMessageId: string | null = null;
-  const metaTemplate = convertTemplateToMetaForSend(template);
 
   // ------------------------------------
-  // LOOP (works for single + broadcast)
+  // LOOP (same as template logic)
   // ------------------------------------
   for (const participant of participants) {
     const to = participant?.number;
     if (!to) continue;
 
-    const payload = {
+    // ------------------------------------
+    // Build media payload
+    // ------------------------------------
+    const mediaObject: any = {};
+
+    if (media.id) mediaObject.id = media.id;
+    if (media.link) mediaObject.link = media.link;
+    if (media.caption) mediaObject.caption = media.caption;
+
+    const mediaType = media.mediaType?.toLowerCase();
+
+    if (media.mediaType === MediaType.DOCUMENT && media.filename) {
+      mediaObject.filename = media.filename;
+    }
+
+    const payload: any = {
       messaging_product: "whatsapp",
       to,
-      type: "template",
-      template: metaTemplate.template,
+      type: mediaType,
+      [mediaType!]: mediaObject,
     };
+
     let waMessageId: string | null = null;
-    // console.log("Payload:", JSON.stringify(payload, null, 2));
-    
+    // console.log("payload:", JSON.stringify(payload, null, 2));
     try {
       const fbResponse = await axios.post(url, payload, { headers });
+
       waMessageId = fbResponse.data?.messages?.[0]?.id || null;
 
-      // store first id for single chat return
+      // Only take 1st message ID for single chat return
       if (!firstWaMessageId) firstWaMessageId = waMessageId;
     } catch (err: any) {
-        // ----------------------------
-        // 👇 NEW REQUIRED BEHAVIOR
-        // If single participant => return error
-        // ----------------------------
-        if (participants.length === 1) {
-          const response: ApiResponse = { success: false, message: err?.response?.data?.error?.message };
-          return { errorResponse: NextResponse.json(response, { status: err?.response?.status || 403 }) };
-        }
+      // ------------------------------------
+      // EXACT required behavior (same as template):
+      // If single chat → forward error
+      // ------------------------------------
+      if (participants.length === 1) {
+        const response: ApiResponse = {
+          success: false,
+          message: err?.response?.data?.error?.message,
+        };
+        return {
+          errorResponse: NextResponse.json(
+            response,
+            { status: err?.response?.status || 403 }
+          ),
+        };
+      }
+
+      // broadcast → allow fail but store failed status
       waMessageId = null;
     }
 
-    // Save message to DB
+    // ------------------------------------
+    // Store DB message
+    // ------------------------------------
     dbMessages.push({
       userId,
       chatId: chat._id!,
       to,
       from: phone_number_id,
-      template: template,
-      waMessageId: waMessageId ? waMessageId : undefined,
+      waMessageId: waMessageId || undefined,
       status: waMessageId ? MessageStatus.Sent : MessageStatus.Failed,
-      type: MessageType.TEMPLATE,
+      type: MessageType.MEDIA,
+      media,
       tag,
       aiUsageId,
     });
   }
 
-  // Insert all created messages
+  // Insert all DB messages
   const newMessages = await Message.insertMany(dbMessages);
 
-  return { newMessages };
+  return { newMessages, firstWaMessageId };
 }

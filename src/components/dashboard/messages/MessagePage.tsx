@@ -143,7 +143,7 @@ export default function MessagePage() {
 
   const messageSend = () => {
     if (message.trim()) {
-        const payload: any = { text: message };
+      const payload: any = { text: message };
 
       // Only add context if messageContext exists
       if (messageContext) {
