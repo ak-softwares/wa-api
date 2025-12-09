@@ -28,7 +28,7 @@ export default function MessageBubble({ message, onDelete, onReply, onForward }:
   const { deleteMessage, deleteMessagesBulk, deleting } = useDeleteMessages();
   const { openChatByContact } = useOpenChat();
   
-  const isTemplate: boolean = !!message?.template || message?.type === MessageType.Template;
+  const isTemplate: boolean = !!message?.template || message?.type === MessageType.TEMPLATE;
 
   const isMine = !activeChat?.participants?.some(
     (p: ChatParticipant) => p.number === message.from
