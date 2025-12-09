@@ -5,9 +5,25 @@ export default function Footer() {
     <footer className="border-t border-border bg-background/70 backdrop-blur">
       <div className="mx-auto max-w-7xl px-4 py-6">
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+          
           <p className="text-xs text-muted-foreground">
             © 2025 WA-API of Companies. All rights reserved.
           </p>
+
+          {/* Center Section */}
+          <nav className="flex items-center gap-4 text-xs text-muted-foreground">
+            <Link href="/terms" className="transition-colors hover:text-foreground">
+              Terms & Conditions
+            </Link>
+            <Link
+              href="http://localhost:3000/privacy"
+              className="transition-colors hover:text-foreground"
+            >
+              Privacy Policy
+            </Link>
+          </nav>
+
+          {/* Right Section */}
           <nav className="flex items-center gap-4 text-xs text-muted-foreground">
             <Link href="#features" className="transition-colors hover:text-foreground">
               Features
@@ -26,6 +42,7 @@ export default function Footer() {
               Android App
             </Link>
           </nav>
+
         </div>
       </div>
     </footer>

@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
             message: messageText,
             waMessageId,
             status: MessageStatus.Received,
-            type: MessageType.Text,
+            type: MessageType.TEXT,
             context
           });
 
