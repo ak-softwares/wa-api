@@ -1,6 +1,5 @@
 "use client";
 
-import { formatTime } from "@/utiles/formatTime/formatTime";
 import { Message } from "@/types/Message";
 import { useChatStore } from "@/store/chatStore";
 import { ChatParticipant } from "@/types/Chat";
@@ -8,12 +7,13 @@ import { useEffect, useState } from "react";
 import MessageMenu from "../dashboard/messages/MessageMenu";
 import { useDeleteMessages } from "@/hooks/message/useDeleteMessages";
 import { toast } from "../ui/sonner";
-import { MessageStatus } from "@/types/MessageStatus";
 import { useOpenChat } from "@/hooks/chat/useOpenChat";
 import { MessageType } from "@/types/MessageType";
 import TemplateMessage from "../dashboard/templates/RenderTemplateMessage";
 import { formatRichText } from "./FormatRichText";
 import MessageMetaInfo from "../dashboard/messages/MessageMetaInfo";
+import MediaMessage from "../dashboard/templates/RenderMediaMessage";
+import { useMedia } from "@/hooks/common/useMedia";
 
 interface MessageBubbleProps {
   message: Message;
@@ -27,8 +27,10 @@ export default function MessageBubble({ message, onDelete, onReply, onForward }:
   const [hovered, setHovered] = useState(false);
   const { deleteMessage, deleteMessagesBulk, deleting } = useDeleteMessages();
   const { openChatByContact } = useOpenChat();
+  const { fetchMedia } = useMedia();
   
   const isTemplate: boolean = !!message?.template || message?.type === MessageType.TEMPLATE;
+  const isMedia: boolean = !!message?.media || message?.type === MessageType.MEDIA;
 
   const isMine = !activeChat?.participants?.some(
     (p: ChatParticipant) => p.number === message.from
@@ -77,6 +79,26 @@ export default function MessageBubble({ message, onDelete, onReply, onForward }:
     toast.success("Message copied: " + preview);
   };
 
+  const handleDownload = async (mediaId?: string, fileName?: string) => {
+    try {
+      if (!mediaId) return;
+
+      // fetch actual media URL
+      const mediaUrl = await fetchMedia(mediaId);
+      if (!mediaUrl) throw new Error("Media not found");
+
+      // trigger download
+      const a = document.createElement("a");
+      a.href = mediaUrl;
+      a.download = fileName || "file";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (err) {
+      toast.error("Failed to download file");
+    }
+  };
+
   const menuItems = [
     {
       icon: "/assets/icons/reply.svg",
@@ -96,7 +118,7 @@ export default function MessageBubble({ message, onDelete, onReply, onForward }:
     {
       icon: "/assets/icons/download.svg",
       label: "Download",
-      action: () => console.log("Copy"),
+      action: () => handleDownload(message?.media?.id, message.media?.filename),
     },
     {
       icon: "/assets/icons/forward.svg",
@@ -169,10 +191,14 @@ export default function MessageBubble({ message, onDelete, onReply, onForward }:
           {/* TEMPLATE RENDER */}
           {isTemplate ? (
             <TemplateMessage message={message} template={message.template!} />
+          ) : isMedia ? (
+            <MediaMessage message={message} />
           ) : (
             <p
               className="break-words whitespace-pre-line"
-              dangerouslySetInnerHTML={{ __html: formatRichText(message.message ?? "") }}
+              dangerouslySetInnerHTML={{
+                __html: formatRichText(message.message ?? "")
+              }}
             />
           )}
           { !isTemplate && (
