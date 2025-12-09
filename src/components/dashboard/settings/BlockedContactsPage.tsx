@@ -11,7 +11,7 @@ import { useState } from "react";
 import { toast } from "@/components/ui/sonner";
 
 export default function BlockedContactsPage() {
-    const { blockedList, confirmBlock, confirmUnblock, ConfirmDialog, loading, blockNumber } = useBlockedContacts();
+    const { blockedList, confirmBlock, confirmUnblock, confirmBlockDialog, loading, blockNumber } = useBlockedContacts();
     // const { blockContactList } = useBlockedContacts();
     const { setSelectedSettingsMenu } = useSettingsStore();
     const [isBlockOpen, setIsBlockOpen] = useState(false);
@@ -92,7 +92,7 @@ export default function BlockedContactsPage() {
                     messages to your WhatsApp API number.
                 </p>
             </div>
-            <ConfirmDialog />
+            {confirmBlockDialog()}
             <BlockContactsPopup
                 isOpen={isBlockOpen}
                 onClose={() => setIsBlockOpen(false)}
