@@ -11,7 +11,7 @@ interface MessageMetaInfoProps {
 
 export default function MessageMetaInfo({ message }: MessageMetaInfoProps) {
 
-  const isTemplate: boolean = !!message?.template || message?.type === MessageType.Template;
+  const isTemplate: boolean = !!message?.template || message?.type === MessageType.TEMPLATE;
     
   return (
     <span className="flex items-center gap-1 text-[11px] text-gray-400 ml-auto mt-1">
