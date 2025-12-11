@@ -2,9 +2,10 @@
 
 import { useState, useCallback } from "react";
 import { Template } from "@/types/Template";
-import { IMessage } from "@/types/Message";
+import { IMessage, Message } from "@/types/Message";
 import { toast } from "@/components/ui/sonner";
 import { Types } from "mongoose";
+import { useMessageStore } from "@/store/messageStore";
 
 interface SendTemplateParams {
   chatId: Types.ObjectId;
@@ -19,6 +20,7 @@ interface SendTemplateResult {
 
 export function useSendTemplate() {
   const [loading, setLoading] = useState(false);
+  const { setAppendMessage } = useMessageStore();
 
   const sendTemplate = useCallback(
     async ({ chatId, template }: SendTemplateParams): Promise<SendTemplateResult> => {
@@ -38,6 +40,13 @@ export function useSendTemplate() {
           return { success: false, message: result.message || "Failed to send template" };
         }
 
+        const realMessage: Message = result.data[0];
+        
+        // -------------------------------
+        // 4) Replace TEMP with REAL
+        // -------------------------------
+        setAppendMessage(realMessage);
+ 
         toast.success("Template message sent 🚀");
 
         return {

@@ -3,6 +3,12 @@ import { useState } from "react";
 import { toast } from "@/components/ui/sonner";
 import { Media, MediaType } from "@/utiles/enums/mediaTypes";
 import { useMedia } from "../common/useMedia";
+import { Types } from "mongoose";
+import { MessageStatus } from "@/types/MessageStatus";
+import { Message } from "@/types/Message";
+import { useChatStore } from "@/store/chatStore";
+import { useMessageStore } from "@/store/messageStore";
+import { MessageType } from "@/types/MessageType";
 
 interface SendMediaParams {
   chatId: string;
@@ -20,7 +26,7 @@ interface UseSendMediaReturn {
 export function useSendMedia(): UseSendMediaReturn {
   const [isSending, setIsSending] = useState(false);
   const [progress, setProgress] = useState(0);
-
+  const { setAppendMessage } = useMessageStore();
   const { uploadMedia } = useMedia();
 
   const sendMedia = async ({
@@ -31,8 +37,28 @@ export function useSendMedia(): UseSendMediaReturn {
   }: SendMediaParams): Promise<boolean> => {
     setIsSending(true);
     setProgress(10);
-
+    const tempMediaPayload: Media = {
+      id: "132456",
+      caption,
+      mediaType,
+      filename: mediaType === MediaType.DOCUMENT ? file.name : undefined,
+    };
     try {
+      const tempId = new Types.ObjectId();
+      const tempMessage: Message = {
+          _id: tempId,
+          userId: "local-user" as any,
+          chatId: chatId as any,
+          to: "",
+          from: "me",
+          media: tempMediaPayload,
+          status: MessageStatus.Pending,
+          type: MessageType.MEDIA,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+      };
+      setAppendMessage(tempMessage);
+  
       // ---------------------------------------
       // 1) Upload Media to WhatsApp (media API)
       // ---------------------------------------
@@ -73,8 +99,15 @@ export function useSendMedia(): UseSendMediaReturn {
         throw new Error(result.message || "Failed to send media");
       }
 
+      const realMessage: Message = result.data[0];
+      
+      // -------------------------------
+      // 4) Replace TEMP with REAL
+      // -------------------------------
+      setAppendMessage(realMessage, tempId);
+
       setProgress(100);
-      toast.success("Media sent successfully");
+      // toast.success("Media sent successfully");
       return true;
     } catch (err: any) {
       toast.error(err.message || "Failed to send media");

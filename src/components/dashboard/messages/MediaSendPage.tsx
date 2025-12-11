@@ -107,6 +107,7 @@ export default function MediaSendPage({ mediaList, chatId, onClose, onSendSucces
     if (mediaListState.length === 0) return;
 
     setIsSending(true);
+    onClose();
     try {
       for (let i = 0; i < mediaListState.length; i++) {
         const media = mediaListState[i];
@@ -116,7 +117,7 @@ export default function MediaSendPage({ mediaList, chatId, onClose, onSendSucces
           chatId,
           file: media.file,
           caption: captions[i] || "",
-          mediaType: media.type,
+          mediaType: detectMediaType(media.file),
         });
 
         // Optional delay
@@ -505,8 +506,21 @@ export default function MediaSendPage({ mediaList, chatId, onClose, onSendSucces
 
           {/* Right-Aligned Send Button with Badge */}
           <div className="absolute right-0">
-            <button className="w-14 h-14 flex items-center cursor-pointer justify-center rounded-full transition bg-[#21C063] shadow-lg">
-              <img src="/assets/icons/send-message.svg" className="w-7 h-7" alt="Send media" onClick={handleSend} />
+            <button
+            onClick={handleSend}
+            disabled={isSending}
+            className={`w-14 h-14 flex items-center justify-center rounded-full transition shadow-lg
+            ${isSending ? "bg-[#A8E5C3] cursor-not-allowed" : "bg-[#21C063]"}`}>
+              {isSending ? (
+                // Loader spinner
+                <div className="w-6 h-6 border-4 border-black/60 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <img
+                  src="/assets/icons/send-message.svg"
+                  className="w-7 h-7 cursor-pointer"
+                  alt="Send"
+                />
+              )}
             </button>
 
             {/* Badge */}

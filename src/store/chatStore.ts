@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Chat } from "@/types/Chat";
 import { Message } from "@/types/Message";
+import { Types } from "mongoose";
 
 interface ChatStore {
   // 🟢 Current active chat (opened in chat window)

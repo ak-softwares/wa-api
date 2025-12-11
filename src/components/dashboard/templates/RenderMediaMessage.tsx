@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { Message } from "@/types/Message";
 import { useMedia } from "@/hooks/common/useMedia";
 import { formatRichText } from "@/components/common/FormatRichText";
-import { MEDIA_MIME_TYPES, MediaType } from "@/utiles/enums/mediaTypes";
+import { MediaType } from "@/utiles/enums/mediaTypes";
 
 interface MediaMessageProps {
   message: Message;

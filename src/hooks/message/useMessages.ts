@@ -8,6 +8,7 @@ import { useSendWhatsappMessage } from "@/hooks/whatsapp/useSendWhatsappMessage"
 import { ApiResponse } from "@/types/apiResponse";
 import { Types } from "mongoose";
 import { useChatStore } from "@/store/chatStore";
+import { useMessageStore } from "@/store/messageStore";
 
 interface UseMessagesProps {
   containerRef?: React.RefObject<HTMLDivElement | null>;
@@ -24,6 +25,33 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
   const [refreshFlag, setRefreshFlag] = useState(0);
   const { sendMessage } = useSendWhatsappMessage();
   const { newMessage, newChat, setNewMessageData } = useChatStore();
+  const { appendMessage, setAppendMessage } = useMessageStore();
+
+  useEffect(() => {
+    if (!appendMessage) return;
+    if (!chatId) return;
+    if (appendMessage.message.chatId!.toString() !== chatId) return;
+
+    const { message, tempId } = appendMessage;
+
+    setMessages((prev) => {
+      // Check if message with tempId exists
+      const exists = prev.some(
+        (msg) => msg._id?.toString() === tempId?.toString()
+      );
+
+      if (exists) {
+        // 🔄 Replace temp message with real message
+        return prev.map((msg) =>
+          msg._id?.toString() === tempId?.toString() ? message : msg
+        );
+      } else {
+        // ➕ Append new message (real one)
+        return [message, ...prev];
+      }
+    });
+    setAppendMessage(null, null);
+  }, [appendMessage, chatId]);
 
   // 🔹 When a new message arrives via Pusher → append it if chat matches
   useEffect(() => {
