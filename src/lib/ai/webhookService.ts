@@ -2,16 +2,18 @@ import axios from "axios";
 
 interface SendToAIAgentParams {
   webhookUrl: string;
+  payload: any;
   prompt?: string;
   user_name?: string;
-  payload: any;
+  user_phone?: string;
 }
 
 export const sendToAIAgent = async ({
   webhookUrl,
   payload,
   prompt,
-  user_name
+  user_name,
+  user_phone,
 }: SendToAIAgentParams) => {
   if (!webhookUrl) {
     return {
@@ -22,8 +24,8 @@ export const sendToAIAgent = async ({
     const finalSystemPrompt = `
 ${prompt}
 
-The user's name is: ${user_name}.
-Use the user's name naturally in your responses when appropriate.
+The user's name is: ${user_name}. The user's phone is: ${user_phone}.
+Use the user's name and user phone naturally in your responses when appropriate.
 Do NOT overuse the name.
 `;
   try {

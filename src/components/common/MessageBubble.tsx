@@ -14,6 +14,7 @@ import { formatRichText } from "./FormatRichText";
 import MessageMetaInfo from "../dashboard/messages/MessageMetaInfo";
 import MediaMessage from "../dashboard/templates/RenderMediaMessage";
 import { useMedia } from "@/hooks/common/useMedia";
+import LocationMessage from "../dashboard/templates/RenderLocationMessage";
 
 interface MessageBubbleProps {
   message: Message;
@@ -31,6 +32,8 @@ export default function MessageBubble({ message, onDelete, onReply, onForward }:
   
   const isTemplate: boolean = !!message?.template || message?.type === MessageType.TEMPLATE;
   const isMedia: boolean = !!message?.media || message?.type === MessageType.MEDIA;
+  const isLocation: boolean = !!message?.location || message?.type === MessageType.LOCATION;
+
 
   const isMine = !activeChat?.participants?.some(
     (p: ChatParticipant) => p.number === message.from
@@ -193,6 +196,8 @@ export default function MessageBubble({ message, onDelete, onReply, onForward }:
             <TemplateMessage message={message} template={message.template!} />
           ) : isMedia ? (
             <MediaMessage message={message} />
+          ) : isLocation ? (
+            <LocationMessage message={message} />   // 👈 NEW BLOCK
           ) : (
             <p
               className="break-words whitespace-pre-line"

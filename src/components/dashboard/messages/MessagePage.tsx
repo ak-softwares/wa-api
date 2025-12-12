@@ -91,13 +91,6 @@ export default function MessagePage() {
     resetFileInput(fileInputRef);
   };
 
-  const handleOpenPopup = () => {
-    if (templatesLoading) return; // optional safeguard
-
-    setTemplates(fetchedTemplates || []);
-    setIsPopupOpen(true);
-  };
-
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
@@ -189,9 +182,17 @@ export default function MessagePage() {
     setShowContactDetails(false);
   }, [activeChat]);
 
+  const handleOpenPopup = () => {
+    if (templatesLoading) return; // optional safeguard
+
+    setTemplates(fetchedTemplates || []);
+    setIsPopupOpen(true);
+  };
+
   if(!activeChat){
     return <DefaultMessagePage />
   }
+
   // If media is selected, show MediaSendPage
   if (mediaSelections.length > 0) {
     return (

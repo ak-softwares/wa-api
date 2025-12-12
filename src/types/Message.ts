@@ -40,8 +40,8 @@ export interface IMessage {
 export type Message = IMessage;
 
 export interface Location {
-  latitude: string;
-  longitude: string;
+  latitude: number;
+  longitude: number;
   name?: string;
   address?: string;
 }

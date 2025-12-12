@@ -19,6 +19,11 @@ import {
   TemplateCategory, 
   TemplateButtonType
 } from "@/utiles/enums/template";
+import MessagePreviewPage from "../messages/MessagePreviewPage";
+import { Types } from "mongoose";
+import { MessageType } from "@/types/MessageType";
+import { MessageStatus } from "@/types/MessageStatus";
+import { Message } from "@/types/Message";
 
 export default function CreateTemplatePage() {
   const [isSaving, setIsSaving] = useState(false);
@@ -39,12 +44,74 @@ export default function CreateTemplatePage() {
   });
   const [isUploading, setIsUploading] = useState(false);
   const [bodyText, setBodyText] = useState("Hello");
+  const router = useRouter();
+  const [sampleValues, setSampleValues] = useState([""]);
   const [footerText, setFooterText] = useState("");
   const { duplicateTemplateData, setDuplicateTemplateData, setEditTemplateData, editTemplateData, setSelectedTemplateMenu } = useTemplateStore();
   const [buttons, setButtons] = useState<TemplateButton[]>([
     { type: TemplateButtonType.QUICK_REPLY, text: "" }
   ]);
   const [isEdit, setIsEdit] = useState(false);
+
+  const fullMessage: Message = {
+    _id: new Types.ObjectId(),
+    userId: new Types.ObjectId(),
+    chatId: new Types.ObjectId(),
+
+    to: "91826XXXXXX",        // you can replace with real example number
+    from: "81399XXXXX",
+
+    status: MessageStatus.Delivered,
+    type: MessageType.TEMPLATE,
+    createdAt: new Date(),
+
+    template: {
+      _id: new Types.ObjectId(),
+      id: templateId || "temp_preview", // REAL FIELD
+      userId: new Types.ObjectId(),
+      waAccountId: new Types.ObjectId(),
+
+      name: templateName || "Untitled Template", // REAL FIELD
+      category: templateCategory,                // REAL FIELD
+      language: templateLanguage,                // REAL FIELD
+
+      components: [
+        {
+          type: TemplateComponentType.HEADER,
+          format: headerFormat,
+          text: headerFormat === TemplateHeaderType.TEXT ? headerText : undefined,
+          example:
+            headerFormat !== TemplateHeaderType.TEXT && headerMedia.previewUrl
+              ? { header_handle: [headerMedia.previewUrl] }
+              : undefined
+        },
+        {
+          type: TemplateComponentType.BODY,
+          text: bodyText || "",
+          example: /\{\{\d+\}\}/.test(bodyText)
+              ? {
+                  body_text: [sampleValues],   // 👈 SAME VALUES ADDED HERE
+                }
+              : undefined,
+        },
+        footerText
+          ? {
+              type: TemplateComponentType.FOOTER,
+              text: footerText
+            }
+          : null,
+        buttons.filter(btn => btn.text.trim()).length > 0
+          ? {
+              type: TemplateComponentType.BUTTONS,
+              buttons: buttons
+            }
+          : null
+      ].filter(Boolean) as any, // remove empty components
+
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  };
 
   useEffect(() => {
     if (editTemplateData) {
@@ -117,11 +184,6 @@ export default function CreateTemplatePage() {
       setDuplicateTemplateData(null);
     }
   }, [duplicateTemplateData, setDuplicateTemplateData]);
-
-  const router = useRouter();
-
-  // Sample values for body text variables
-  const [sampleValues, setSampleValues] = useState([""]);
 
   // Handle media upload
   const handleMediaUpload = async (file: File) => {
@@ -436,17 +498,6 @@ export default function CreateTemplatePage() {
     setButtons(buttons.filter((_, i) => i !== index));
   };
 
-  // Render preview message with sample values
-  const renderPreviewMessage = () => {
-    let preview = bodyText;
-    
-    variables.forEach((varNum, index) => {
-      const sampleValue = sampleValues[index] || `Sample ${varNum}`;
-      preview = preview.replace(new RegExp(`{{${varNum}}}`, 'g'), sampleValue);
-    });
-    
-    return preview;
-  };
 
   // Get header icon based on format
   const getHeaderIcon = () => {
@@ -460,83 +511,6 @@ export default function CreateTemplatePage() {
       default:
         return null;
     }
-  };
-
-  // Render preview based on header format
-  const renderPreview = () => {
-    return (
-      <div className="space-y-3">
-        {/* Header Preview */}
-        {headerFormat !== TemplateHeaderType.TEXT && headerMedia.previewUrl ? (
-          <div className="border-b pb-2">
-            {headerFormat === TemplateHeaderType.IMAGE ? (
-              <div className="relative rounded overflow-hidden">
-                <img 
-                  src={headerMedia.previewUrl} 
-                  alt="Header preview" 
-                  className="w-full h-40 object-cover"
-                />
-                <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                  {getHeaderIcon()}
-                  <span>Header</span>
-                </div>
-              </div>
-            ) : headerFormat === TemplateHeaderType.VIDEO ? (
-              <div className="relative rounded overflow-hidden bg-gray-900">
-                <video 
-                  src={headerMedia.previewUrl} 
-                  className="w-full h-40 object-contain"
-                  controls={false}
-                />
-                <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                  {getHeaderIcon()}
-                  <span>Video Header</span>
-                </div>
-              </div>
-            ) : headerFormat === TemplateHeaderType.DOCUMENT ? (
-              <div className="border rounded p-3 bg-white dark:bg-gray-800">
-                <div className="flex items-center gap-2">
-                  <File className="w-6 h-6 text-blue-500" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{headerMedia.fileName}</p>
-                    <p className="text-xs text-gray-500">Document Header</p>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-          </div>
-        ) : headerText && headerFormat === TemplateHeaderType.TEXT ? (
-          <div className="text-center font-semibold text-sm border-b pb-2">
-            {headerText}
-          </div>
-        ) : null}
-
-        {/* Body Preview */}
-        <div className="flex items-start gap-2">
-          <div className="bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-sm text-sm max-w-[80%]">
-            {renderPreviewMessage()}
-          </div>
-        </div>
-
-        {/* Footer Preview */}
-        {footerText && (
-          <p className="text-xs text-gray-500 mt-2">{footerText}</p>
-        )}
-
-        {/* Buttons Preview */}
-        {buttons.some(btn => btn.text.trim()) && (
-          <div className="flex flex-wrap gap-2 pt-2">
-            {buttons
-              .filter(btn => btn.text.trim())
-              .map((btn, i) => (
-                <Button key={i} size="sm" variant="outline" className="rounded-full text-xs">
-                  {btn.text}
-                </Button>
-              ))}
-          </div>
-        )}
-      </div>
-    );
   };
 
   // Reset header media when format changes
@@ -883,15 +857,8 @@ export default function CreateTemplatePage() {
         </div>
 
         {/* Right Section - WhatsApp Preview */}
-        <div className="flex-3 w-full md:w-[360px]">
-          <Card className="sticky top-6">
-            <CardHeader>
-              <CardTitle>WhatsApp Preview</CardTitle>
-            </CardHeader>
-            <CardContent className="bg-[#e9f5ec] dark:bg-gray-700 rounded-lg p-4 m-4 min-h-[200px]">
-              {renderPreview()}
-            </CardContent>
-          </Card>
+        <div className="flex-3 w-full md:w-[360px] self-start sticky top-20">
+          <MessagePreviewPage messages={[fullMessage]} isMine={true} />
         </div>
       </div>
     </div>

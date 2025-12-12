@@ -12,7 +12,8 @@ interface GetAIReplyParams {
   prompt: string;
   phone_number_id: string;
   chat: Chat;
-  user_name: string;
+  user_name?: string;
+  user_phone?: string;
 }
 export async function getAIReply({
   userId,
@@ -20,12 +21,13 @@ export async function getAIReply({
   chat,
   phone_number_id,
   user_name,
+  user_phone,
 }: GetAIReplyParams) {
   const aiPrompt = prompt || "You are a helpful AI assistant.";
   const finalSystemPrompt = `
 ${aiPrompt}
 
-The user's name is: ${user_name}.
+The user's name is: ${user_name}. The user's phone number is: ${user_phone}
 Use the user's name naturally in your responses when appropriate.
 Do NOT overuse the name.
 `;
