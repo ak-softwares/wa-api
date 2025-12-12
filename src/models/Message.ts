@@ -31,8 +31,8 @@ const MediaSchema = new Schema<Media>(
 // ---- Location Sub-Schema ----
 const LocationSchema = new Schema<Location>(
   {
-    latitude: { type: String, required: true },
-    longitude: { type: String, required: true },
+    latitude: { type: Number, required: true },
+    longitude: { type: Number, required: true },
     name: { type: String },
     address: { type: String }
   },
