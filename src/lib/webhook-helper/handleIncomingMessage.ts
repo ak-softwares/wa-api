@@ -98,7 +98,8 @@ export async function handleIncomingMessage({
           id: audio.id,
           link: audio.url,
           caption: audio.caption,
-          mediaType: MediaType.AUDIO
+          mediaType: MediaType.AUDIO,
+          voice: audio.voice
         }
       };
       break;

@@ -11,6 +11,7 @@ export interface Media {
   caption?: string;  // only for image/video/document
   filename?: string; // only for document
   mediaType?: MediaType;
+  voice?: boolean;
 }
 
 export const MEDIA_MIME_TYPES: Record<MediaType, string[]> = {
