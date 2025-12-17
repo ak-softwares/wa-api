@@ -36,6 +36,9 @@ export default function Header() {
           <Link href="#faq" className="transition-colors hover:text-foreground">
             FAQ
           </Link>
+          <Link href="/contact" className="transition-colors hover:text-foreground">
+            Contact us
+          </Link>
         </nav>
 
         {/* Right side */}

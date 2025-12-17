@@ -5,10 +5,10 @@ import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function POST(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse;
 
-    const { phone_number_id, permanent_token } = waAccount;
+    const { permanent_token } = waAccount;
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;

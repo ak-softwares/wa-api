@@ -16,10 +16,16 @@ export default function Footer() {
               Terms & Conditions
             </Link>
             <Link
-              href="http://localhost:3000/privacy"
+              href="/privacy"
               className="transition-colors hover:text-foreground"
             >
               Privacy Policy
+            </Link>
+            <Link
+              href="/contact"
+              className="transition-colors hover:text-foreground"
+            >
+              Contact us
             </Link>
           </nav>
 
