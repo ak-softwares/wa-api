@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
           const chat: IChat | null = await getOrCreateChat({
             userId: user._id,
             waAccountId: wa._id!,
-            from,
+            phone: from,
             chatCache,
           });
 

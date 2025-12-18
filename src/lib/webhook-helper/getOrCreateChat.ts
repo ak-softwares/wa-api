@@ -5,53 +5,54 @@ import { Types } from "mongoose";
 interface GetOrCreateChatArgs {
   userId: Types.ObjectId;
   waAccountId: Types.ObjectId;
-  from: string;
-  chatCache: Map<string, IChat>;
+  phone: string;
+  chatCache?: Map<string, IChat>;
 }
 
 export async function getOrCreateChat({
   userId,
   waAccountId,
-  from,
+  phone,
   chatCache,
 }: GetOrCreateChatArgs) {
-  try{
-    // 1. Check cache
-    let chat = chatCache.get(from);
-    if (chat) return chat;
+  try {
+    // 1. Check cache (if provided)
+    if (chatCache) {
+      const cachedChat = chatCache.get(phone);
+      if (cachedChat) return cachedChat;
+    }
 
     // 2. Find or create in DB
-    chat = await Chat.findOneAndUpdate(
-        {
-            userId,
-            waAccountId,
-            "participants.number": from, // participants: { $elemMatch: { number: from } }
-            type: { $ne: "broadcast" }, // exclude broadcast
+    const chat = await Chat.findOneAndUpdate(
+      {
+        userId,
+        waAccountId,
+        "participants.number": phone,
+        type: { $ne: "broadcast" },
+      },
+      {
+        $setOnInsert: {
+          userId,
+          waAccountId,
+          participants: [{ number: phone }],
+          type: "single",
         },
-        {
-            $setOnInsert: {
-                userId,
-                waAccountId,
-                participants: [{ number: from }],
-                type: "single",
-            },
-        },
-        {
-            upsert: true,  // create if not exists
-            new: true,     // return updated/new document
-            setDefaultsOnInsert: true, 
-        }
+      },
+      {
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true,
+      }
     );
 
-    // 3. Cache and return
     if (!chat) throw new Error("Chat creation failed");
-    chatCache.set(from, chat);
+
+    // 3. Cache result (if cache exists)
+    chatCache?.set(phone, chat);
+
     return chat;
   } catch (err) {
-    // console.error("❌ Error in getOrCreateChat:", err);
-
-    // Optional: log to DB or Sentry
-    // await Log.create({ type: "chat_error", error: err, from, userId });
-    return null; // Signal failure safely
+    return null;
   }
 }
+

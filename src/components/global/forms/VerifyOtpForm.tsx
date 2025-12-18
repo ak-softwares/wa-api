@@ -15,7 +15,7 @@ import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios, { AxiosError } from "axios";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
 import { ApiResponse } from "@/types/apiResponse";
 import { signIn } from "next-auth/react";
 import { Pencil } from "lucide-react";
