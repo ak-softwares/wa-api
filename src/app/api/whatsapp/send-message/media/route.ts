@@ -70,7 +70,18 @@ export async function POST(req: NextRequest) {
     };
     await Chat.updateOne({ _id: chat._id }, { $set: updateFields });
 
-    return NextResponse.json({ success, message: success ? "Media sent successfully" : "Failed to send media", data: messages }, { status: success ? 200 : 400 });
+    return NextResponse.json(
+      {
+        success: success,
+        message: success
+          ? "Media sent successfully"
+          : "Failed to send media",
+        // data: {
+        //   chat,
+        // },
+      },
+      { status: success ? 200 : 400 }
+    );
     
   } catch (error: any) {
     return NextResponse.json({ success: false, message: `Error: ${error?.response?.data ? JSON.stringify(error.response.data) : error.message}` }, { status: 500 });

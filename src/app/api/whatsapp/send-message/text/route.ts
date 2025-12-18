@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
           : "Failed to send message",
         data: {
           waMessageId: waMessageId || undefined,
-          chat,
+          // chat,
         },
       },
       { status: waMessageId ? 200 : 400 }

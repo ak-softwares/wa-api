@@ -30,11 +30,8 @@ export default function Header() {
           <Link href="#industries" className="transition-colors hover:text-foreground">
             Industries
           </Link>
-          <Link href="#testimonials" className="transition-colors hover:text-foreground">
-            Testimonials
-          </Link>
-          <Link href="#faq" className="transition-colors hover:text-foreground">
-            FAQ
+          <Link href="/pricing" className="transition-colors hover:text-foreground">
+            Pricing
           </Link>
           <Link href="/contact" className="transition-colors hover:text-foreground">
             Contact us

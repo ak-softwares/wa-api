@@ -27,13 +27,22 @@ export default function Footer() {
             >
               Contact us
             </Link>
+            <Link
+              href="/pricing"
+              className="transition-colors hover:text-foreground"
+            >
+              Pricing
+            </Link>
+            <Link
+              href="/refund"
+              className="transition-colors hover:text-foreground"
+            >
+              Refund Policy
+            </Link>
           </nav>
 
           {/* Right Section */}
           <nav className="flex items-center gap-4 text-xs text-muted-foreground">
-            <Link href="#features" className="transition-colors hover:text-foreground">
-              Features
-            </Link>
             <Link href="#industries" className="transition-colors hover:text-foreground">
               Industries
             </Link>
