@@ -39,7 +39,7 @@ export default function LandingPage() {
   ]
 
   const faqs = [
-    { q: "Is WA-API really free to use?", a: "Yes. It’s 100% free with no subscription fees or hidden charges." },
+   {  q: "What is the pricing?", a: "$0.002 per message, including AI and all features. No subscriptions. Meta API charges apply separately."},
     { q: "Do I need coding skills to set it up?", a: "No. Use the dashboard and Android app to run campaigns and automation without code." },
     { q: "Can I send WhatsApp broadcasts to many customers?", a: "Yes. Send bulk promotions and updates to thousands in a few clicks." },
     { q: "How does automation work?", a: "Set rules for replies, reminders, and order updates to engage customers 24/7." },
