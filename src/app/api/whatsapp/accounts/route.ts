@@ -2,8 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import axios from "axios";
-import { WaAccount } from "@/types/WaAccount";
 import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { WaAccount } from "@/models/WaAccount";
 
 // 📌 Full WhatsApp setup: exchange token → register phone → subscribe app
 export async function POST(req: NextRequest) {
@@ -83,49 +83,33 @@ export async function POST(req: NextRequest) {
     }
 
     // ---------------- Step 5: Update & Save User ----------------
-    const newAccount = {
-      phone_number_id,
-      waba_id,
-      business_id,
-      permanent_token,
-      verified_name: phoneData.verified_name || "",
-      display_phone_number: phoneData.display_phone_number || "",
-      quality_rating: phoneData.quality_rating || "",
-      code_verification_status: phoneData.code_verification_status || "",
-      is_phone_number_registered: phoneRegistered,
-      is_app_subscribed: appSubscribed,
-    };
+    // 5️⃣ Upsert WA Account (SEPARATE COLLECTION)
+    const waAccount = await WaAccount.findOneAndUpdate(
+      { userId: user._id, phone_number_id },
+      {
+        userId: user._id,
+        phone_number_id,
+        waba_id,
+        business_id,
+        permanent_token,
+        verified_name: phoneData.verified_name || "",
+        display_phone_number: phoneData.display_phone_number || "",
+        quality_rating: phoneData.quality_rating || "",
+        code_verification_status: phoneData.code_verification_status || "",
+        is_phone_number_registered: phoneRegistered,
+        is_app_subscribed: appSubscribed,
+      },
+      { upsert: true, new: true }
+    );
 
-    const index = user.waAccounts.findIndex((acc: WaAccount) => acc.phone_number_id === phone_number_id);
-
-    if (index !== -1) {
-      // ✅ update existing — keep default as it is OR override if you want
-      user.waAccounts[index] = {
-        ...user.waAccounts[index],
-        ...newAccount,
-        updatedAt: new Date(),
-      };
-
-      // ✅ Also mark this as the new default (since it's just been updated)
-      user.defaultWaAccountId = user.waAccounts[index]._id;
-    } else {
-      // ✅ insert new account and mark as default
-      user.waAccounts.push({
-        ...newAccount,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      // ✅ Always set the new one as default
-      const addedAccount = user.waAccounts[user.waAccounts.length - 1];
-      user.defaultWaAccountId = addedAccount._id;
-    }
-
+    // 6️⃣ Always set latest as default
+    user.defaultWaAccountId = waAccount._id;
     await user.save();
 
 
     // ---------------- Final Response ----------------
-    if (permanent_token) {
-      const response: ApiResponse = {
+    return NextResponse.json(
+      {
         success: true,
         message: "Setup completed successfully",
         data: {
@@ -133,15 +117,9 @@ export async function POST(req: NextRequest) {
           phone_registered: phoneRegistered,
           app_subscribed: appSubscribed,
         },
-      };
-      return NextResponse.json(response, { status: 200 });
-    } else {
-      const response: ApiResponse = {
-        success: false,
-        message: "Token exchange failed",
-      };
-      return NextResponse.json(response, { status: 500 });
-    }
+      } as ApiResponse,
+      { status: 200 }
+    );
   } catch (err: any) {
     const response: ApiResponse = { success: false, message: err.message || "Unexpected error" };
     return NextResponse.json(response, { status: 500 });
@@ -174,15 +152,17 @@ export async function DELETE(req: Request) {
       }
     } catch {}
 
-    // Step 3: Remove only default account from DB
-    user.waAccounts = user.waAccounts.filter(
-      (a: WaAccount) => a.phone_number_id !== phone_number_id
-    );
+    // 3️⃣ Delete WA account document
+    await WaAccount.deleteOne({
+      _id: waAccount._id,
+      userId: user._id,
+    });
+
+    // 4️⃣ Reset default WA account
+    const nextAccount = await WaAccount.findOne({ userId: user._id }).sort({ createdAt: 1 });
 
     // ✅ Step 5: If deleted account was default, reset defaultWaAccountId
-    if (user.defaultWaAccountId?.equals(waAccount._id)) {
-      user.defaultWaAccountId = user.waAccounts.length > 0 ? user.waAccounts[0]._id : undefined;
-    }
+    user.defaultWaAccountId = nextAccount ? nextAccount._id : undefined;
     
     await user.save();
 

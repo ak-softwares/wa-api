@@ -1,5 +1,4 @@
 import mongoose, { Types } from "mongoose";
-import { IWaAccount } from "./WaAccount";
 
 export interface IUser {
   _id: mongoose.Types.ObjectId;
@@ -11,7 +10,6 @@ export interface IUser {
   apiToken?: string;
   apiTokenHashed?: string;
   defaultWaAccountId?: Types.ObjectId;
-  waAccounts?: IWaAccount[];
   createdAt?: Date;
   updatedAt?: Date;
   resetPasswordToken?: string;

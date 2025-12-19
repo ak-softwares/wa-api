@@ -1,11 +1,12 @@
-import { Schema } from "mongoose";
 import { encrypt, safeDecrypt } from "@/lib/crypto";
 import { IWaAccount } from "@/types/WaAccount";
 import { AIChatSchema } from "./AIChat";
 import { AIAgentSchema } from "./AIAgent";
+import mongoose, { Schema, model, models } from "mongoose";
 
 export const WaAccountSchema = new Schema<IWaAccount>(
   {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     phone_number_id: { type: String, required: true },
     waba_id: { type: String, required: true },
     business_id: {
@@ -35,9 +36,11 @@ export const WaAccountSchema = new Schema<IWaAccount>(
     aiAgent: { type: AIAgentSchema },
   },
   {
-    _id: true,
+    // _id: true,
     toJSON: { getters: true },
     toObject: { getters: true },
     timestamps: true,
   }
 );
+
+export const WaAccount = models.WaAccount || model<IWaAccount>("WaAccount", WaAccountSchema);

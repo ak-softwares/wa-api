@@ -5,6 +5,7 @@ import { User } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { NextRequest, NextResponse } from "next/server";
 import { hmacHash } from "@/lib/crypto";
+import { WaAccount } from "@/models/WaAccount";
 
 /**
  * Finds a user by plain (unencrypted) API token
@@ -80,23 +81,28 @@ export async function getDefaultWaAccount(req?: NextRequest) {
   const { user, errorResponse } = await fetchAuthenticatedUser(req);
   if (errorResponse) return { errorResponse };
 
-  // Check WhatsApp account list
-  if (!user.waAccounts?.length) {
-    const response: ApiResponse = { success: false, message: "No WA account found", data: null };
+
+  // 1️⃣ Check default WA account id
+  if (!user.defaultWaAccountId) {
+    const response: ApiResponse = { success: false, message: "No default WA account set" };
     return { errorResponse: NextResponse.json(response, { status: 404 }) };
   }
 
-  // Get default WhatsApp account
-  const waAccount = user.defaultWaAccount;
+  // 2️⃣ Fetch WA account from its own collection
+  const waAccount = await WaAccount.findOne({
+    _id: user.defaultWaAccountId,
+    userId: user._id, // security check
+  });
+
   if (!waAccount) {
-    const response: ApiResponse = { success: false, message: "No default WA account", data: null };
+    const response: ApiResponse = { success: false, message: "Default WA account not found" };
     return { errorResponse: NextResponse.json(response, { status: 404 }) };
   }
 
   // Check token existence
   // console.log(waAccount.permanent_token);
   if (!waAccount.permanent_token) {
-    const response: ApiResponse = { success: false, message: "Permanent token not found", data: null };
+    const response: ApiResponse = { success: false, message: "Permanent token not found" };
     return { errorResponse: NextResponse.json(response, { status: 400 }) };
   }
 

@@ -4,6 +4,7 @@ import { Types } from "mongoose";
 
 export interface IWaAccount {
   _id?: Types.ObjectId;
+  userId: Types.ObjectId;
   phone_number_id: string;
   waba_id: string;
   business_id: string;
