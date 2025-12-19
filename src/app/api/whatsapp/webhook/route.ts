@@ -3,7 +3,6 @@ import { connectDB } from "@/lib/mongoose";
 import { IUser } from "@/types/User";
 import { User } from "@/models/User";
 import { IWaAccount } from "@/types/WaAccount";
-import { WaAccount } from "@/types/WaAccount";
 import { isChatOpen } from "@/lib/activeChats";
 import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
 import { getOrCreateChat } from "@/lib/webhook-helper/getOrCreateChat";
@@ -11,6 +10,7 @@ import { handleIncomingMessage } from "@/lib/webhook-helper/handleIncomingMessag
 import { IChat } from "@/types/Chat";
 import { Chat } from "@/models/Chat";
 import { handleAIMessage } from "@/lib/webhook-helper/handleAIMessage";
+import { WaAccount } from "@/models/WaAccount";
 
 
 const WA_VERIFY_TOKEN = process.env.WA_VERIFY_TOKEN; // secret token
@@ -51,11 +51,12 @@ export async function POST(req: NextRequest) {
         if (!phone_number_id || messages.length === 0) continue;
 
         // Find user only once per entry
-        const user: IUser | null = await User.findOne({ "waAccounts.phone_number_id": phone_number_id });
-        if (!user) continue;
-        const wa: IWaAccount | null = user.waAccounts?.find(
-          (acc: WaAccount) => acc.phone_number_id === phone_number_id) ?? null;
+        const wa: IWaAccount | null = await WaAccount.findOne({ phone_number_id });
         if (!wa) continue;
+
+        // Find the owning user
+        const user: IUser | null = await User.findById(wa.userId);
+        if (!user) continue;
 
         // Local cache for chats to reduce DB calls
         const chatCache = new Map<string, IChat>();
