@@ -31,7 +31,7 @@ export default function DeleteContactDialog({
   const handleDelete = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/contacts/${contactId}`, {
+      const res = await fetch(`/api/whatsapp/contacts/${contactId}`, {
         method: "DELETE",
       });
 

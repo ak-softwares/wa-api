@@ -131,7 +131,7 @@ export function useVCFImport() {
     try {
       setIsImporting(true);
 
-      const res = await fetch("/api/contacts/import", {
+      const res = await fetch("/api/whatsapp/contacts/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ contacts: validSelected }),

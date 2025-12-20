@@ -50,7 +50,7 @@ export default function AddContactDialog() {
   const onSubmit = async (data: NewContact) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/contacts", {
+      const res = await fetch("/api/whatsapp/contacts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

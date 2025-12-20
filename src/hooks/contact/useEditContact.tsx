@@ -84,7 +84,7 @@ const openDialog = useCallback(
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/contacts/${contactId}`, {
+      const res = await fetch(`/api/whatsapp/contacts/${contactId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
