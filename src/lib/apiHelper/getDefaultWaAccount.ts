@@ -8,13 +8,16 @@ import { hmacHash } from "@/lib/crypto";
 import { WaAccount } from "@/models/WaAccount";
 
 /**
- * Finds a user by plain (unencrypted) API token
+ * Finds a WA account by plain (unencrypted) API token
  */
-export async function findUserByApiToken(token: string) {
+export async function findWaAccountByApiToken(token: string) {
   if (!token) return null;
+
   const hashed = hmacHash(token);
-  return await User.findOne({ apiTokenHashed: hashed });
+
+  return await WaAccount.findOne({ apiTokenHashed: hashed });
 }
+
 
 export function getBearerToken(req?: NextRequest) {
   const authHeader = req?.headers.get("authorization");
@@ -37,24 +40,10 @@ export function getBearerToken(req?: NextRequest) {
  * ✅ Helper function to get authenticated user session and database record.
  * Handles authorization and database connection errors.
  */
-export async function fetchAuthenticatedUser(req?: NextRequest) {
+export async function fetchAuthenticatedUser() {
   await connectDB();
 
-  // 1️⃣ Try Bearer token first
-  const { token } = getBearerToken(req);
-  if (token) {
-    const user = await findUserByApiToken(token);
-    if (user) return { user };
-
-    // 🧩 Return proper response if token exists but user not found
-    const response: ApiResponse = {
-      success: false,
-      message: "Invalid or expired API token",
-    };
-    return { errorResponse: NextResponse.json(response, { status: 401 }) };
-  }
-
-  // 2️⃣ Try session-based authentication
+  // Try session-based authentication
   const session = await getServerSession(authOptions);
   const email = session?.user?.email;
 
@@ -78,7 +67,49 @@ export async function fetchAuthenticatedUser(req?: NextRequest) {
  * Includes validation for waAccounts, default account, and token existence.
  */
 export async function getDefaultWaAccount(req?: NextRequest) {
-  const { user, errorResponse } = await fetchAuthenticatedUser(req);
+  
+  // 1️⃣ Try Bearer token first
+  const { token } = getBearerToken(req);
+  if (token) {
+    const waAccount = await findWaAccountByApiToken(token);
+
+    if (!waAccount) {
+      const response: ApiResponse = {
+        success: false,
+        message: "Invalid or expired API token",
+      };
+      return { errorResponse: NextResponse.json(response, { status: 401 }) };
+    }
+
+    // 🔑 Fetch user from waAccount
+    const user = await User.findById(waAccount.userId);
+
+    if (!user) {
+      const response: ApiResponse = {
+        success: false,
+        message: "User not found for this API token",
+      };
+      return { errorResponse: NextResponse.json(response, { status: 404 }) };
+    }
+
+    // Optional: ensure WA account is usable
+    if (!waAccount.permanent_token) {
+      const response: ApiResponse = {
+        success: false,
+        message: "Permanent token not found",
+      };
+      return { errorResponse: NextResponse.json(response, { status: 400 }) };
+    }
+
+    waAccount.apiTokenUpdatedAt = new Date();
+    await waAccount.save();
+
+    // ✅ API-token case returns BOTH
+    return { user, waAccount };
+  }
+
+  // 2️⃣ Session-based auth (no Bearer token)
+  const { user, errorResponse } = await fetchAuthenticatedUser();
   if (errorResponse) return { errorResponse };
 
 

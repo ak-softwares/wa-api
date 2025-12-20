@@ -4,6 +4,7 @@ import { IContact } from "@/types/Contact";
 const ContactSchema = new Schema<IContact>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    waAccountId: { type: Schema.Types.ObjectId, ref: "WaAccount", required: true },
     name: { type: String, trim: true },
     phones: [
       {

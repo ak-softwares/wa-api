@@ -1,4 +1,4 @@
-import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 import { ApiResponse } from "@/types/apiResponse";
 import { NextResponse } from "next/server";
 import Contact from "@/models/Contact";
@@ -6,7 +6,7 @@ import { IContact } from "@/types/Contact";  // <-- your contact type
 
 export async function POST(req: Request) {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
     if (errorResponse) return errorResponse;
 
     const body = await req.json();
@@ -37,6 +37,7 @@ export async function POST(req: Request) {
     // --- Prepare documents for DB ---
     const docs = validContacts.map((c) => ({
       userId: user._id,
+      waAccountId: waAccount._id,
       name: c.name,
       phones: c.phones,
       email: c.email || null,

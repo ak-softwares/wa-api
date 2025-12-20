@@ -14,7 +14,7 @@ export const ChatParticipantSchema = new Schema<IChatParticipant>(
 const ChatSchema = new Schema<IChat>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    waAccountId: { type: Schema.Types.ObjectId, ref: "User.waAccounts", required: true },
+    waAccountId: { type: Schema.Types.ObjectId, ref: "WaAccount", required: true },
     participants: { type: [ChatParticipantSchema], required: true },
     type: {
       type: String,

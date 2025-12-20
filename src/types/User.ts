@@ -7,8 +7,6 @@ export interface IUser {
   phone: number;
   company?: string;
   password: string;
-  apiToken?: string;
-  apiTokenHashed?: string;
   defaultWaAccountId?: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;

@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import Contact from "@/models/Contact";
 import { ApiResponse } from "@/types/apiResponse";
-import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { IContact } from "@/types/Contact";
 
 // GET contacts (paginated, with optional search functionality)
 export async function GET(req: Request) {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     // Pagination + filters + search
@@ -16,7 +17,7 @@ export async function GET(req: Request) {
     const searchQuery = searchParams.get("q") || "";
     const skip = (page - 1) * perPage;
 
-    let contacts: any[] = [];
+    let contacts: IContact[] = [];
     let total = 0;
 
     // If search query exists, use MongoDB Atlas Search
@@ -35,7 +36,8 @@ export async function GET(req: Request) {
         },
         {
           $match: {
-            userId: user._id // Filter by user after search
+            userId: user._id, // Filter by user after search
+            waAccountId: waAccount._id
           }
         },
         {
@@ -59,7 +61,7 @@ export async function GET(req: Request) {
       total = searchResult?.metadata?.[0]?.total || 0;
     } else {
       // Regular paginated query without search
-      const query = { userId: user._id };
+      const query = { userId: user._id, waAccountId: waAccount._id };
 
       [contacts, total] = await Promise.all([
         Contact.find(query)
@@ -97,7 +99,7 @@ export async function GET(req: Request) {
 // POST contact
 export async function POST(req: Request) {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const { name, phones, email, tags } = await req.json();
@@ -111,6 +113,7 @@ export async function POST(req: Request) {
 
     const newContact = await Contact.create({
       userId: user._id,
+      waAccountId: waAccount._id,
       name,
       phones,
       email,

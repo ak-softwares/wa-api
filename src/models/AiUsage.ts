@@ -4,7 +4,7 @@ import mongoose, { Schema, models } from "mongoose";
 const AiUsageSchema = new Schema<IAiUsage>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   chatId: { type: Schema.Types.ObjectId, ref: "Chat" },
-  waAccountId: { type: Schema.Types.ObjectId, ref: "User.waAccounts" },
+  waAccountId: { type: Schema.Types.ObjectId, ref: "WaAccount" },
   model: { type: String, required: true },
   promptTokens: { type: Number, required: true },
   completionTokens: { type: Number, required: true },

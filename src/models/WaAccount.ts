@@ -1,7 +1,8 @@
-import { encrypt, safeDecrypt } from "@/lib/crypto";
+import { encrypt, safeDecrypt, hmacHash } from "@/lib/crypto";
 import { IWaAccount } from "@/types/WaAccount";
 import { AIChatSchema } from "./AIChat";
 import { AIAgentSchema } from "./AIAgent";
+import crypto from "crypto";
 import mongoose, { Schema, model, models } from "mongoose";
 
 export const WaAccountSchema = new Schema<IWaAccount>(
@@ -34,6 +35,22 @@ export const WaAccountSchema = new Schema<IWaAccount>(
     },
     aiChat: { type: AIChatSchema },
     aiAgent: { type: AIAgentSchema },
+    apiToken: {
+      type: String,
+      unique: true,
+      sparse: true,
+      set: (value?: string | null) => {
+        if (!value) return null;
+        return encrypt(String(value));
+      },
+      get: (value?: string | null) => {
+        if (!value) return null;
+        return safeDecrypt(value) ?? null;
+      },
+    },
+    apiTokenHashed: String,
+    apiTokenCreatedAt: { type: Date },
+    apiTokenUpdatedAt: { type: Date },
   },
   {
     // _id: true,
@@ -42,5 +59,15 @@ export const WaAccountSchema = new Schema<IWaAccount>(
     timestamps: true,
   }
 );
+
+WaAccountSchema.methods.generateApiToken = function () {
+  const rawToken = `wa_agent_${crypto.randomBytes(32).toString("hex")}`;
+  this.apiToken = rawToken;
+  this.apiTokenHashed = hmacHash(rawToken);
+  const now = new Date();
+  this.apiTokenCreatedAt ??= now;
+  this.apiTokenUpdatedAt = now;
+  return rawToken; // return for user display
+};
 
 export const WaAccount = models.WaAccount || model<IWaAccount>("WaAccount", WaAccountSchema);

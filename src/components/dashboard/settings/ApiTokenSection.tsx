@@ -20,7 +20,7 @@ export default function APITokenSection() {
 
   const loadApiToken = async () => {
     setIsLoading(true);
-    const res = await fetch("/api/api-token");
+    const res = await fetch("/api/whatsapp/api-token");
     if (res.ok) {
       const { data } = await res.json();
       setConfig({ apiToken: data?.token || "" });
@@ -29,7 +29,7 @@ export default function APITokenSection() {
   };
 
   const generateNewToken = async () => {
-    const res = await fetch("/api/api-token", { method: "POST" });
+    const res = await fetch("/api/whatsapp/api-token", { method: "POST" });
     if (res.ok) {
       const { data } = await res.json();
       setConfig({ apiToken: data.token });
@@ -40,7 +40,7 @@ export default function APITokenSection() {
   };
 
   const revokeToken = async () => {
-    const res = await fetch("/api/api-token", { method: "DELETE" });
+    const res = await fetch("/api/whatsapp/api-token", { method: "DELETE" });
     if (res.ok) {
       setConfig({ apiToken: "" });
       toast.success("API token revoked");

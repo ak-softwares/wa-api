@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
-import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function POST() {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     // Update user's API token at root level (since your User model has apiToken field)
-    const newToken = user.generateApiToken();
-    user.updatedAt = new Date();
-
-    await user.save();
+    const newToken = waAccount.generateApiToken();
+    await waAccount.save();
 
     const response: ApiResponse = {
       success: true,
@@ -34,14 +32,14 @@ export async function POST() {
 // GET - Retrieve current API token
 export async function GET() {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
         
     const response: ApiResponse = {
       success: true,
       message: "API token retrieved successfully",
       data: {
-        token: user.apiToken || null,
+        token: waAccount.apiToken || null,
       },
     };
 
@@ -58,15 +56,15 @@ export async function GET() {
 // DELETE - Revoke API token
 export async function DELETE() {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     // Revoke the token by setting it to null
-    user.apiToken = null;
-    user.apiTokenHashed = null;
-    user.updatedAt = new Date();
+    waAccount.apiToken = null;
+    waAccount.apiTokenHashed = null;
+    waAccount.apiTokenUpdatedAt = new Date();
 
-    await user.save();
+    await waAccount.save();
 
     const response: ApiResponse = {
       success: true,

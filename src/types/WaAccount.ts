@@ -18,6 +18,10 @@ export interface IWaAccount {
   is_app_subscribed?: boolean;
   aiChat?: IAIChat;
   aiAgent?: IAIAgent;
+  apiToken?: string;
+  apiTokenHashed?: string;
+  apiTokenCreatedAt?: Date;
+  apiTokenUpdatedAt?: Date;
   phone_number?: string;
   blockedNumbers?: string[];
   createdAt?: Date;

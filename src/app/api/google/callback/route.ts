@@ -1,14 +1,13 @@
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
 import { ApiResponse } from "@/types/apiResponse";
 import Contact from "@/models/Contact";
 import { IContact } from "@/types/Contact";
-import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function GET(req: Request) {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const url = new URL(req.url);
@@ -52,6 +51,7 @@ export async function GET(req: Request) {
     // Map to contact structure
     let contactsToInsert: Partial<IContact>[] = allConnections.map((c) => ({
       userId: user._id,
+      waAccountId: waAccount._id,
       name: c.names?.[0]?.displayName ?? undefined,
       email: c.emailAddresses?.[0]?.value ?? undefined,
       phones:
@@ -69,6 +69,7 @@ export async function GET(req: Request) {
     const allPhones = contactsToInsert.flatMap((c) => c.phones || []);
     const existingContacts = await Contact.find({
       userId: user._id,
+      waAccountId: waAccount._id,
       phones: { $in: allPhones },
     }).select("phones");
 

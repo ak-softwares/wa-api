@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 export interface IContact {
   _id?: Types.ObjectId;
   userId: Types.ObjectId;
+  waAccountId: Types.ObjectId;
   name?: string;
   phones: string[];
   email?: string;
