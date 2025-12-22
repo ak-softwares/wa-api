@@ -2,7 +2,7 @@ import axios from "axios";
 import { Message } from "@/models/Message";
 import { MessageStatus } from "@/types/MessageStatus";
 import { MessageType } from "@/types/MessageType";
-import { ChatParticipant } from "@/types/Chat";
+import { ChatParticipant, ChatType } from "@/types/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { NextResponse } from "next/server";
 import { Context } from "@/types/Message";
@@ -102,7 +102,7 @@ export async function sendBroadcastMessage({
   permanent_token,
   participants,
   message,
-  tag = "broadcast",
+  tag = ChatType.BROADCAST,
 }: SendBroadcastOptions) {
   const url = `https://graph.facebook.com/v23.0/${phone_number_id}/messages`;
   const headers = {
@@ -156,7 +156,7 @@ export async function sendBroadcastMessage({
   const newMessage = await Message.create({
     userId,
     chatId,
-    to: "broadcast",
+    to: ChatType.BROADCAST,
     from: phone_number_id,
     message,
     waMessageId: "",

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
 import MenuItemsList from "@/components/common/MenuItemList";
-import { Chat, ChatParticipant } from "@/types/Chat";
+import { Chat, ChatParticipant, ChatType } from "@/types/Chat";
 import { useFavourite } from "@/hooks/chat/useFavourite";
 
 interface ChatMenuProps {
@@ -25,7 +25,7 @@ export default function ChatMenu({ chat, onDelete, onUpdateFavourite, onBlockTog
   const { deleteChat } = useDeleteChats();
   const { toggleFavourite } = useFavourite();
 
-  const isBroadcast = chat?.type === "broadcast";
+  const isBroadcast = chat?.type === ChatType.BROADCAST;
   const participant: ChatParticipant = chat.participants[0]; // assuming one-on-one chat
 
   const handleToggleFavourite = async () => {

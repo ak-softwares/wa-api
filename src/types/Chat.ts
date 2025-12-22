@@ -1,6 +1,13 @@
 // /types/Chat.ts
 import { Types } from "mongoose";
 
+export enum ChatType {
+  CHAT = "chat",
+  GROUP = "group",
+  BROADCAST = "broadcast",
+  CAMPAIGN = "campaign",
+}
+
 export interface IChatParticipant {
   number: string;
   name?: string;
@@ -15,7 +22,7 @@ export interface IChat {
   userId: Types.ObjectId;
   waAccountId: Types.ObjectId;
   participants: IChatParticipant[];
-  type: "single" | "broadcast";
+  type: ChatType;
   chatName?: string;
   chatImage?: string;
   isFavourite?: boolean

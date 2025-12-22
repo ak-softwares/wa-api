@@ -20,6 +20,8 @@ import DefaultMessagePage from "./DefaultMessagePage";
 import MediaSendPage from "./MediaSendPage";
 import { MediaType } from "@/utiles/enums/mediaTypes";
 import MessagesHeader from "./MessageHeader";
+import { MessagePaylaod } from "@/types/MessagePayload";
+import { MessageType } from "@/types/MessageType";
 
 export interface MediaSelection {
   type: MediaType;
@@ -136,18 +138,22 @@ export default function MessagePage() {
 
   const messageSend = () => {
     if (message.trim()) {
-      const payload: any = { text: message };
+      const messagePayload: MessagePaylaod = {
+        participants: activeChat?.participants!,
+        messageType: MessageType.TEXT,
+        message
+      };
 
       // Only add context if messageContext exists
       if (messageContext) {
-        payload.context = {
-          id: messageContext.waMessageId,
+        messagePayload.context = {
+          id: messageContext.waMessageId!,
           from: messageContext.from,
           message: messageContext.message,
         };
       }
 
-      onSend(payload);
+      onSend({messagePayload});
       setMessage("");
       setMessageContext(null);
     }

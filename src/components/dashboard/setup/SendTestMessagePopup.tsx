@@ -13,13 +13,15 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useSendWhatsappMessage } from "@/hooks/whatsapp/useSendWhatsappMessage"
 import { sampleMessageSchema } from "@/schemas/sampleMessageSchema";
 import z from "zod"
+import { MessageType } from "@/types/MessageType"
+import { MessagePaylaod } from "@/types/MessagePayload"
 
 type SendMessageForm = z.infer<typeof sampleMessageSchema>;
 
 export default function SendTestMessagePopup() {
   const [preview, setPreview] = useState({ to: "", message: "" })
   const [testMessageSent, setTestMessageSent] = useState(false)
-  const { isLoading: isLoading_sendMessage, sendMessageByPhone } = useSendWhatsappMessage()
+  const { isLoading: isLoading_sendMessage, sendMessage } = useSendWhatsappMessage()
 
   const form = useForm<SendMessageForm>({
     resolver: zodResolver(sampleMessageSchema),
@@ -37,9 +39,13 @@ export default function SendTestMessagePopup() {
   )
 
   const onSubmit = async (data: SendMessageForm) => {
-    await sendMessageByPhone(
-      data.to,
-      data.message,
+    const messagePayload: MessagePaylaod = {
+      participants: [{number: data.to}],
+      messageType: MessageType.TEXT,
+      message: data.message
+    };
+    await sendMessage(
+      messagePayload,
       () => {
         toast.success("Message sent successfully 🚀")
         setTestMessageSent(true)

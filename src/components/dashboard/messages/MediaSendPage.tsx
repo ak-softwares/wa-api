@@ -12,6 +12,7 @@ import IconButton from "@/components/common/IconButton";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import { useTheme } from "next-themes";
 import { useSendMedia } from "@/hooks/message/useSendMedia";
+import { ChatType } from "@/types/Chat";
 
 interface MediaSendPageProps {
   mediaList: MediaSelection[];
@@ -79,10 +80,10 @@ export default function MediaSendPage({ mediaList, chatId, onClose, onSendSucces
 
 
   // Determine partner information for display
-  const isBroadcast = activeChat?.type === "broadcast";
+  const isBroadcast = activeChat?.type === ChatType.BROADCAST;
   const partner = activeChat?.participants?.[0];
   const displayName = isBroadcast
-    ? activeChat?.chatName || "Broadcast"
+    ? activeChat?.chatName || ChatType.BROADCAST
     : partner?.name || partner?.number || "Unknown";
 
   // Create object URLs for image previews

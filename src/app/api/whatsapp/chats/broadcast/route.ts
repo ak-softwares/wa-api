@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Chat } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
-import { ChatParticipant } from "@/types/Chat";
+import { ChatParticipant, ChatType } from "@/types/Chat";
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
         name: participant.name ?? "",
         imageUrl: participant.imageUrl ?? "",
       })),
-      type: "broadcast",
+      type: ChatType.BROADCAST,
       chatName: chatName || `Broadcast - ${new Date().toLocaleDateString()}`,
       chatImage: chatImage || "",
     });

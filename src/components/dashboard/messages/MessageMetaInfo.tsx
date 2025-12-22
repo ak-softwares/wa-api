@@ -4,6 +4,7 @@ import { MessageStatus } from "@/types/MessageStatus";
 import { formatTime } from "@/utiles/formatTime/formatTime";
 import { Message } from "@/types/Message";
 import { MessageType } from "@/types/MessageType";
+import { ChatType } from "@/types/Chat";
 
 interface MessageMetaInfoProps {
   message: Message;
@@ -16,7 +17,7 @@ export default function MessageMetaInfo({ message }: MessageMetaInfoProps) {
   return (
     <span className="flex items-center gap-1 text-[11px] text-gray-400 ml-auto mt-1">
       {/* Tag Icons */}
-      {message.tag === "broadcast" && (
+      {message.tag === ChatType.BROADCAST && (
         <img
           src="/assets/icons/broadcast-icon.svg"
           className="w-4 h-4 dark:invert opacity-60"

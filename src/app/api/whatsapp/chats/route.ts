@@ -10,7 +10,6 @@ export async function GET(req: NextRequest) {
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const { searchParams } = new URL(req.url);
-    const phone = searchParams.get("phone");
     const searchQuery = searchParams.get("q") || "";
     const filter = searchParams.get("filter") || "all";
     const perPage = Math.min(parseInt(searchParams.get("per_page") || "10"), 100);
@@ -21,28 +20,6 @@ export async function GET(req: NextRequest) {
     let totalChats = 0;
 
     const contacts = await Contact.find({ userId: user._id }).lean();
-
-    // 🔹 If phone is provided → ensure chat exists / prepend temp chat
-    if (phone) {
-      // Find or create chat
-      let chat = await Chat.findOne({
-        userId: user._id,
-        waAccountId: waAccount._id,
-        participants: {
-          $elemMatch: { number: phone } // looks inside the participants array
-        },
-        type: { $ne: "broadcast" } // NOT a broadcast chat
-      });
-
-      if (!chat) {
-        await Chat.create({
-          userId: user._id,
-          waAccountId: waAccount._id,
-          participants: [{ number: phone }], // must be object, not string
-          type: "single"
-        });
-      }
-    }
 
     if (searchQuery) {
       // 🔹 Use Atlas Search

@@ -2,16 +2,15 @@
 
 import { useState } from "react";
 import { ApiResponse } from "@/types/apiResponse";
-import { Context, Message } from "@/types/Message";
+import { Message } from "@/types/Message";
+import { MessagePaylaod } from "@/types/MessagePayload";
 
 export function useSendWhatsappMessage() {
   const [isLoading, setIsLoading] = useState(false);
 
   // ⚡ Send WhatsApp message
   const sendMessage = async (
-    chatId: string,
-    message: string,
-    context?: Context,
+    messagePayload: MessagePaylaod,
     onSuccess?: (realMessage: Message) => void,
     onError?: (errorMsg: string) => void
   ): Promise<ApiResponse> => {
@@ -20,7 +19,7 @@ export function useSendWhatsappMessage() {
       const res = await fetch("/api/whatsapp/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chatId, message, context }),
+        body: JSON.stringify(messagePayload),
       });
 
       const data: ApiResponse = await res.json();
@@ -40,42 +39,8 @@ export function useSendWhatsappMessage() {
     }
   };
 
-  // ⚡ Send WhatsApp message
-  const sendMessageByPhone = async (
-    to: string,
-    message: string,
-    onSuccess?: () => void,
-    onError?: (errorMsg: string) => void
-  ): Promise<ApiResponse> => {
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/whatsapp/send-message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to, message }),
-      });
-
-      const data: ApiResponse = await res.json();
-
-      if (data.success) {
-        if (onSuccess) onSuccess();
-      } else {
-        if (onError) onError(data.message);
-      }
-      // 🔥 Return EXACT response from backend
-      return data;
-    } catch (error: any) {
-      const errorMsg = "Something went wrong while sending the message";
-      if (onError) onError(errorMsg);
-      return { success: false, message: errorMsg };
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return {
     isLoading,
     sendMessage,
-    sendMessageByPhone
   };
 }

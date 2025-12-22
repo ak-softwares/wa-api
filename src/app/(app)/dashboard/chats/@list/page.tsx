@@ -17,7 +17,7 @@ import { useChats } from "@/hooks/chat/useChats";
 import NewChatPopup from "@/components/dashboard/chats/AppChatPopup";
 import MakeBroadcastPopup from "@/components/dashboard/chats/MakeBroadcastPopup";
 import { ChatFilterType } from "@/utiles/enums/chatFilters";
-import { Chat, ChatParticipant } from "@/types/Chat";
+import { Chat, ChatParticipant, ChatType } from "@/types/Chat";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 
 export default function ChatList() {
@@ -206,11 +206,11 @@ export default function ChatList() {
         ) : (
           chats.map((chat) => {
             const isSelected = selectedChatIds.includes(chat._id!.toString());
-            const isBroadcast = chat.type === "broadcast";
+            const isBroadcast = chat.type === ChatType.BROADCAST;
             const partner = chat.participants[0];
             const isActive = chat._id === activeChat?._id
             const displayName = isBroadcast
-              ? chat.chatName || "Broadcast"
+              ? chat.chatName || ChatType.BROADCAST
               : partner?.name || formatPhone(String(partner?.number)) || "Unknown";
 
             const displayImage = isBroadcast

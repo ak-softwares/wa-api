@@ -9,6 +9,8 @@ import { ApiResponse } from "@/types/apiResponse";
 import { Types } from "mongoose";
 import { useChatStore } from "@/store/chatStore";
 import { useMessageStore } from "@/store/messageStore";
+import { MessagePaylaod } from "@/types/MessagePayload";
+import { MessageType } from "@/types/MessageType";
 
 interface UseMessagesProps {
   containerRef?: React.RefObject<HTMLDivElement | null>;
@@ -143,8 +145,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
     return () => container.removeEventListener("scroll", handleScroll);
   }, [containerRef, loading, loadingMore, hasMore]);
 
-  const onSend = async ({ text, context }: { text: string; context?: Context }) => {
-    if (!text.trim()) return;
+  const onSend = async ({ messagePayload }: { messagePayload: MessagePaylaod; }) => {
     const tempId = new Types.ObjectId();
 
     const tempMessage: Message = {
@@ -153,11 +154,11 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
         chatId: chatId as any,
         to: "",
         from: "me",
-        message: text,
+        message: messagePayload.message,
         status: MessageStatus.Pending,
         participants: [], // ✅ required
         type: "text" as any,
-        context,
+        context: messagePayload.context,
         createdAt: new Date(),
         updatedAt: new Date(),
     };
@@ -165,9 +166,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
     setMessages((prev) => [tempMessage, ...prev]);
 
     await sendMessage(
-        chatId,
-        text.trim(),
-        context,
+        messagePayload,
         (realMessage) => {
             // 🔥 Replace temp with real message
             setMessages((prev) =>

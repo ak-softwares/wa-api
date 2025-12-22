@@ -15,6 +15,7 @@ import AddContactsToBroadcastPopup from "./AddContactsToBroadcastPopup";
 import ViewAllMembersPopup from "./ViewAllMembersPopup";
 import MembersMenu from "./MembersMenu";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
+import { ChatType } from "@/types/Chat";
 
 interface ContactDetailsProps {
   isOpen: boolean;
@@ -51,10 +52,10 @@ export default function ContactDetails({ isOpen, onClose }: ContactDetailsProps)
     }
   };
 
-  const isBroadcast = activeChat.type === "broadcast";
+  const isBroadcast = activeChat.type === ChatType.BROADCAST;
   const partner = activeChat.participants?.[0];
   const displayName = isBroadcast
-    ? activeChat.chatName || "Broadcast"
+    ? activeChat.chatName || ChatType.BROADCAST
     : partner?.name || formatPhone(String(partner?.number)) || "Unknown";
 
   const displayImage = isBroadcast

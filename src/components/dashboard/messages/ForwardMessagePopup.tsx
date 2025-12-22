@@ -14,6 +14,8 @@ import { useChats } from "@/hooks/chat/useChats";
 
 import { Chat } from "@/types/Chat";
 import { Contact } from "@/types/Contact";
+import { MessagePaylaod } from "@/types/MessagePayload";
+import { MessageType } from "@/types/MessageType";
 
 interface ForwardMessagePopupProps {
   isOpen: boolean;
@@ -46,7 +48,7 @@ export default function ForwardMessagePopup({ isOpen, onClose, message }: Forwar
     searchContacts
   } = useContacts({ sidebarRef });
 
-  const { sendMessage, sendMessageByPhone } = useSendWhatsappMessage();
+  const { sendMessage } = useSendWhatsappMessage();
   const { setNewMessageData } = useChatStore();
 
   // Selection
@@ -121,7 +123,12 @@ export default function ForwardMessagePopup({ isOpen, onClose, message }: Forwar
     // CHAT TAB
     if (activeTab === "chats") {
       for (const chat of selectedChats) {
-        await sendMessage(chat._id!.toString(), forwardText);
+        const messagePayload: MessagePaylaod = {
+          participants: chat?.participants!,
+          messageType: MessageType.TEXT,
+          message: forwardText
+        };
+        await sendMessage(messagePayload);
         setNewMessageData(message, chat);
       }
     }
@@ -129,7 +136,12 @@ export default function ForwardMessagePopup({ isOpen, onClose, message }: Forwar
     // CONTACT TAB
     if (activeTab === "contacts") {
       for (const contact of selectedContacts) {
-        const response = await sendMessageByPhone(contact.phones[0], forwardText);
+        const messagePayload: MessagePaylaod = {
+          participants: [{number: contact.phones[0]}],
+          messageType: MessageType.TEXT,
+          message: forwardText
+        };
+        const response = await sendMessage(messagePayload);
         if (response.success && response.data) {
           const { chat } = response.data;
           setNewMessageData(message, chat);

@@ -6,7 +6,6 @@ import { useMedia } from "../common/useMedia";
 import { Types } from "mongoose";
 import { MessageStatus } from "@/types/MessageStatus";
 import { Message } from "@/types/Message";
-import { useChatStore } from "@/store/chatStore";
 import { useMessageStore } from "@/store/messageStore";
 import { MessageType } from "@/types/MessageType";
 

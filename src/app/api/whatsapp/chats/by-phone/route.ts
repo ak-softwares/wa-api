@@ -4,7 +4,7 @@ import { Chat } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import Contact from "@/models/Contact";
 import { IContact } from "@/types/Contact";
-import { IChat } from "@/types/Chat";
+import { ChatType, IChat } from "@/types/Chat";
 
 export async function GET(req: NextRequest) {
   try {
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       userId: user._id,
       waAccountId: waAccount._id,
       participants: { number: phone },
-      type: { $ne: "broadcast" },
+      type: { $ne: ChatType.BROADCAST },
     })
       .lean<IChat>()  // important
       .exec();
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
         userId: user._id,
         waAccountId: waAccount._id,
         participants: [{ number: phone }], // must be object, not string
-        type: "single"
+        type: ChatType.CHAT
       });
     }
 

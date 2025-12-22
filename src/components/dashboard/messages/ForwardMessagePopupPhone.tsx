@@ -11,6 +11,8 @@ import { useSendWhatsappMessage } from "@/hooks/whatsapp/useSendWhatsappMessage"
 import { useChatStore } from "@/store/chatStore";
 import { useContacts } from "@/hooks/contact/useContacts";
 import { Contact } from "@/types/Contact";
+import { MessagePaylaod } from "@/types/MessagePayload";
+import { MessageType } from "@/types/MessageType";
 
 interface ForwardMessagePopupToPhoneProps {
   isOpen: boolean;
@@ -21,7 +23,7 @@ interface ForwardMessagePopupToPhoneProps {
 export default function ForwardMessagePopupToPhone({ isOpen, onClose, message }: ForwardMessagePopupToPhoneProps) {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
   const { contacts, setContacts, loading, loadingMore, hasMore, refreshContacts, searchContacts, totalContacts } = useContacts({ sidebarRef });
-  const { sendMessageByPhone } = useSendWhatsappMessage();
+  const { sendMessage } = useSendWhatsappMessage();
   const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const { setNewMessageData } = useChatStore();
@@ -78,8 +80,12 @@ export default function ForwardMessagePopupToPhone({ isOpen, onClose, message }:
     onClose();
 
     for (const contact of selectedContacts) {
-      // 2️⃣ Send forward message using backend
-      const response = await sendMessageByPhone(contact.phones[0], forwardText);
+      const messagePayload: MessagePaylaod = {
+        participants: [{number: contact.phones[0]}],
+        messageType: MessageType.TEXT,
+        message: forwardText
+      };
+      const response = await sendMessage(messagePayload);
       if (response.success && response.data) {
         const { chat, waMessageId } = response.data;
         setNewMessageData(message, chat);

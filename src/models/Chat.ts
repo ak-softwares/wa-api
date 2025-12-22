@@ -1,6 +1,6 @@
 // /models/Chat.ts
 import mongoose, { Schema, models } from "mongoose";
-import { IChat, IChatParticipant } from "@/types/Chat";
+import { ChatType, IChat, IChatParticipant } from "@/types/Chat";
 
 export const ChatParticipantSchema = new Schema<IChatParticipant>(
   {
@@ -18,8 +18,8 @@ const ChatSchema = new Schema<IChat>(
     participants: { type: [ChatParticipantSchema], required: true },
     type: {
       type: String,
-      enum: ["single", "broadcast"],
-      default: "single",
+      enum: Object.values(ChatType),
+      default: ChatType.CHAT,
       required: true,
     },
     chatName: { type: String, trim: true },

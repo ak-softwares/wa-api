@@ -1,5 +1,5 @@
 import { Chat } from "@/models/Chat";
-import { IChat } from "@/types/Chat";
+import { ChatType, IChat } from "@/types/Chat";
 import { Types } from "mongoose";
 
 interface GetOrCreateChatArgs {
@@ -28,14 +28,14 @@ export async function getOrCreateChat({
         userId,
         waAccountId,
         "participants.number": phone,
-        type: { $ne: "broadcast" },
+        type: { $ne: ChatType.BROADCAST },
       },
       {
         $setOnInsert: {
           userId,
           waAccountId,
           participants: [{ number: phone }],
-          type: "single",
+          type: ChatType.CHAT,
         },
       },
       {

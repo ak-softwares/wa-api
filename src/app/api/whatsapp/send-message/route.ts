@@ -4,6 +4,7 @@ import { sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
 import { Context } from "@/types/Message";
+import { ChatType } from "@/types/Chat";
 
 interface SendMessageRequest {
   to: string;
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
       userId: user._id,
       waAccountId: waAccount._id,
       participants: { $elemMatch: { number: to } },
-      type: { $ne: "broadcast" },
+      type: { $ne: ChatType.BROADCAST },
     });
 
     if (!chat) {
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
         userId: user._id,
         waAccountId: waAccount._id,
         participants: [{ number: to }],
-        type: "single",
+        type: ChatType.CHAT,
       });
     }
 

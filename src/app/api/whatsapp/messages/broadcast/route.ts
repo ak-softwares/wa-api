@@ -3,6 +3,7 @@ import { Chat } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { sendBroadcastMessage } from "@/lib/messages/sendWhatsAppMessage";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { ChatType } from "@/types/Chat";
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
         permanent_token,
         participants,
         message,
-        tag: "broadcast"
+        tag: ChatType.BROADCAST
     });
       
     // ✅ Update broadcast chat if exists

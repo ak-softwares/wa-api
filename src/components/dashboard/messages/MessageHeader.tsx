@@ -9,7 +9,7 @@ import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
 import { useRouter } from "next/navigation";
 import { useFavourite } from "@/hooks/chat/useFavourite";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
-import { Chat } from "@/types/Chat";
+import { Chat, ChatType } from "@/types/Chat";
 
 interface MessagesHeaderProps {
   onAvatarClick?: () => void;
@@ -64,10 +64,10 @@ export default function MessagesHeader({
   };
 
   // ✅ Determine chat type and details
-  const isBroadcast = activeChat!.type === "broadcast";
+  const isBroadcast = activeChat!.type === ChatType.BROADCAST;
   const partner = activeChat!.participants?.[0];
   const displayName = isBroadcast
-    ? activeChat!.chatName || "Broadcast"
+    ? activeChat!.chatName || ChatType.BROADCAST
     : partner?.name || formatPhone(String(partner?.number)) || "Unknown";
 
   const displayImage = isBroadcast

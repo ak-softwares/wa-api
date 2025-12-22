@@ -5,6 +5,9 @@ import { ApiResponse } from "@/types/apiResponse";
 import { sendBroadcastMessage, sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
 import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 import { Context, Message as IMessage } from "@/types/Message";
+import { ChatType } from "@/types/Chat";
+import { MessagePaylaod } from "@/types/MessagePayload";
+import { handleSendMessage } from "@/lib/messages/handleSendMessage";
 
 export async function GET(req: NextRequest) {
   try {
@@ -57,97 +60,31 @@ export async function GET(req: NextRequest) {
   }
 }
 
-interface SendMessageRequest {
-  chatId: string;
-  message: string;
-  context?: Context;
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    const { phone_number_id, permanent_token } = waAccount;
-
     // Parse request body
-    const { chatId, message: inputMessage, context }: SendMessageRequest = await req.json();
-    if (!chatId || !inputMessage) {
-      const response: ApiResponse = {
-        success: false,
-        message: "Missing required fields: chatId, message",
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
-
-    const chat = await Chat.findOne({ _id: chatId });
-    if (!chat) {
-      const response: ApiResponse = {
-        success: false,
-        message: "Chat not found",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    const participants = chat.participants || [];
-    let sentMessage: IMessage | null = null;
-    let success = false;
-
-    // ✅ Handle different chat types
-    if (chat.type === "broadcast") {
-      const { newMessage } = await sendBroadcastMessage({
-        userId: user._id,
-        chatId: chat._id,
-        phone_number_id,
-        permanent_token,
-        participants,
-        message: inputMessage,
-        tag: "broadcast",
-      });
-      sentMessage = newMessage;
-      success = true;
-    } else if (chat.type === "single") {
-      const to = participants?.[0]?.number;
-      const { newMessage, waMessageId, errorResponse: sendMsgError } = await sendWhatsAppMessage({
-        userId: user._id.toString(),
-        chatId: chat._id,
-        phone_number_id,
-        permanent_token,
-        to,
-        message: inputMessage,
-        context
-      });
-      if (sendMsgError) return sendMsgError; // 🚫 Handles all auth, DB, and token errors
-      sentMessage = newMessage;
-      success = !!waMessageId;
-    }
-
-    // ✅ Update chat with last message
-    chat.lastMessage = sentMessage?.message;
-    chat.lastMessageAt = new Date();
-    await chat.save();
+    const messagePayload: MessagePaylaod = await req.json();
+    const result = await handleSendMessage({
+      messagePayload,
+      userId: user._id,
+      waAccount
+    });
 
     const response: ApiResponse = {
-      success,
-      message: success
-        ? "Message sent successfully"
-        : "Message failed to send",
-      data: sentMessage,
+      success: true,
+      message: "Messages send successfully",
+      data: result,
     };
-
-    return NextResponse.json(response, {
-      status: success ? 200 : 400,
-    });
+    return NextResponse.json(response, { status: 200 });
 
   } catch (error: any) {
     const response: ApiResponse = {
       success: false,
-      message: `Error: ${
-        error?.response?.data
-          ? JSON.stringify(error.response.data)
-          : error.message
-      }`,
+      message: error.message || "Failed sending messages"
     };
-    return NextResponse.json(response, { status: 500 });
+    return NextResponse.json(response, { status: error.statusCode || 500 });
   }
 }

@@ -3,7 +3,7 @@
 import GenericMenu from "@/components/common/DropDownMenu";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import { useChatStore } from "@/store/chatStore";
-import { ChatParticipant } from "@/types/Chat";
+import { ChatParticipant, ChatType } from "@/types/Chat";
 
 interface ContactsMenuProps {
   onContactDetails?: () => void;
@@ -25,7 +25,7 @@ export default function MessagesMenu({
   isBlocked,
 }: ContactsMenuProps) {
   const { activeChat } = useChatStore();
-  const isBroadcast = activeChat?.type === "broadcast";
+  const isBroadcast = activeChat?.type === ChatType.BROADCAST;
 
   // ⭐ Convert activeChat participant → ChatParticipant
   const participant: ChatParticipant | null =

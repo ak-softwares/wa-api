@@ -20,11 +20,9 @@ interface MakeBroadcastPopupProps {
 
 export default function MakeBroadcastPopup({ isOpen, onClose }: MakeBroadcastPopupProps) {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
-  const { contacts, setContacts, loading, loadingMore, hasMore, refreshContacts, searchContacts, totalContacts } = useContacts({ sidebarRef });
-  const { sendMessageByPhone } = useSendWhatsappMessage();
+  const { contacts, loading, loadingMore, hasMore, refreshContacts, searchContacts } = useContacts({ sidebarRef });
   const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const { setNewMessageData } = useChatStore();
   // 🔥 MUST be defined before useBroadcast()
   const handleBroadcastSuccess = () => {
     setSelectedContacts([]);

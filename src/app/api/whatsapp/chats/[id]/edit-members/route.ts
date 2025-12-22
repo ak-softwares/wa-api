@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Chat } from "@/models/Chat";
 import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
-import { ChatParticipant } from "@/types/Chat";
+import { ChatParticipant, ChatType } from "@/types/Chat";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         return NextResponse.json({ success: false, message: "Chat not found" }, { status: 404 });
     }
 
-    if (chat.type !== "broadcast") {
+    if (chat.type !== ChatType.BROADCAST) {
       return NextResponse.json(
         { success: false, message: "Only broadcast chats can have members" },
         { status: 400 }
@@ -100,7 +100,7 @@ export async function DELETE(
       );
     }
 
-    if (chat.type !== "broadcast") {
+    if (chat.type !== ChatType.BROADCAST) {
       return NextResponse.json(
         { success: false, message: "Only broadcast chats can remove members" },
         { status: 400 }
