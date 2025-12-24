@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
+import { UserModel } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { sendMail } from "@/lib/mail";
 import { BaseEmailTemplate } from "@/components/emails/BaseEmailTemplate";
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     }
 
     await connectDB();
-    const user = await User.findOne({ email });
+    const user = await UserModel.findOne({ email });
 
     if (!user) {
       const response: ApiResponse = {

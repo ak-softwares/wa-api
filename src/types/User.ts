@@ -1,6 +1,6 @@
 import mongoose, { Types } from "mongoose";
 
-export interface IUser {
+export type User = {
   _id: mongoose.Types.ObjectId;
   name: string;
   email: string;
@@ -13,6 +13,3 @@ export interface IUser {
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
 }
-
-// ✅ alias interface as a type — so you can use whichever you prefer
-export type User = IUser;

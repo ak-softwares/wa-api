@@ -1,17 +1,18 @@
 import OpenAI from "openai";
-import { Message } from "@/models/Message";
-import { connectDB } from "../mongoose";
-import { Chat } from "@/types/Chat";
-import { AiUsage } from "@/models/AiUsage";
+import { MessageModel } from "@/models/Message";
+import { connectDB } from "../../lib/mongoose";
+import { IChat } from "@/models/Chat";
+import { AiUsageModel } from "@/models/AiUsage";
+import { Types } from "mongoose";
 
 /**
  * Get AI reply from OpenAI for a specific chat
  */
 interface GetAIReplyParams {
-  userId: string;
+  userId: Types.ObjectId;
   prompt: string;
   phone_number_id: string;
-  chat: Chat;
+  chat: IChat;
   user_name?: string;
   user_phone?: string;
 }
@@ -34,7 +35,7 @@ Do NOT overuse the name.
 
   await connectDB();
 
-  const recentMessages = await Message.find({
+  const recentMessages = await MessageModel.find({
     chatId: chat._id,
   })
     .sort({ createdAt: -1 })
@@ -67,7 +68,7 @@ Do NOT overuse the name.
       top_p: 1,
       presence_penalty: 0,
       frequency_penalty: 0,
-      user: userId,
+      user: userId.toString(),
     });
 
     // Extract AI reply
@@ -90,7 +91,7 @@ Do NOT overuse the name.
     const completionCost = (usage.completion_tokens / 1_000_000) * outputPrice;
     const totalCost = promptCost + completionCost;
 
-    const created = await AiUsage.create({
+    const created = await AiUsageModel.create({
       userId,
       chatId: chat._id,
       model: "gpt-4o-mini",

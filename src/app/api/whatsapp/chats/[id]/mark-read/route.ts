@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Chat } from "@/models/Chat";
+import { ChatModel } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
@@ -14,7 +14,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ success: false, message: "chatId is required" }, { status: 400 });
     }
 
-    const chat = await Chat.findOne({ _id: chatId, userId: user._id });
+    const chat = await ChatModel.findOne({ _id: chatId, userId: user._id });
     if (!chat) {
       return NextResponse.json({ success: false, message: "Chat not found" }, { status: 404 });
     }

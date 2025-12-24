@@ -1,8 +1,7 @@
 import { google } from "googleapis";
 import { NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
-import Contact from "@/models/Contact";
-import { IContact } from "@/types/Contact";
+import { ContactModel, IContact } from "@/models/Contact";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function GET(req: Request) {
@@ -67,7 +66,7 @@ export async function GET(req: Request) {
 
     // Check for duplicates by phone
     const allPhones = contactsToInsert.flatMap((c) => c.phones || []);
-    const existingContacts = await Contact.find({
+    const existingContacts = await ContactModel.find({
       userId: user._id,
       waAccountId: waAccount._id,
       phones: { $in: allPhones },
@@ -79,7 +78,7 @@ export async function GET(req: Request) {
     );
 
     if (contactsToInsert.length > 0) {
-      await Contact.insertMany(contactsToInsert, { ordered: false });
+      await ContactModel.insertMany(contactsToInsert, { ordered: false });
     }
 
     const importedCount = contactsToInsert.length;

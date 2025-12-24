@@ -1,7 +1,7 @@
-export interface IAIAgent {
+export type AIAgent = {
   prompt?: string;
   webhookUrl?: string;
   isActive?: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: string;
+  updatedAt?: string;
 }

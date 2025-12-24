@@ -1,6 +1,27 @@
-// /models/Chat.ts
-import mongoose, { Schema, models } from "mongoose";
-import { ChatType, IChat, IChatParticipant } from "@/types/Chat";
+import mongoose, { Schema, Types, models } from "mongoose";
+import { ChatType } from "@/types/Chat";
+
+export interface IChatParticipant {
+  number: string;
+  name?: string;
+  imageUrl?: string;
+}
+
+export interface IChat {
+  _id?: Types.ObjectId;
+  userId: Types.ObjectId;
+  waAccountId: Types.ObjectId;
+  participants: IChatParticipant[];
+  type: ChatType;
+  chatName?: string;
+  chatImage?: string;
+  isFavourite?: boolean
+  lastMessage?: string;
+  lastMessageAt?: Date;
+  unreadCount?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 export const ChatParticipantSchema = new Schema<IChatParticipant>(
   {
@@ -36,4 +57,4 @@ const ChatSchema = new Schema<IChat>(
 ChatSchema.index({ userId: 1, "participants.number": 1 });
 
 // Prevent overwrite in dev
-export const Chat = models.Chat || mongoose.model<IChat>("Chat", ChatSchema);
+export const ChatModel = models.Chat || mongoose.model<IChat>("Chat", ChatSchema);

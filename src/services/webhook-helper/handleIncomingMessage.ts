@@ -1,7 +1,5 @@
-import { Message } from "@/models/Message";
-import { MessageStatus } from "@/types/MessageStatus";
-import { IncomingMessageType, MessageType } from "@/types/MessageType";
-import { Context, IMessage } from "@/types/Message";
+import { MessageStatus, IncomingMessageType, MessageType } from "@/types/MessageType";
+import { MessageModel, IContext, IMessage } from "@/models/Message";
 import { Types } from "mongoose";
 import { resolveContextMessage } from "./resolveContextMessage";
 import { MediaType } from "@/utiles/enums/mediaTypes";
@@ -20,7 +18,7 @@ export async function handleIncomingMessage({
   rowMessageJson
 }: handleIncomingMessageArgs) {
   const from = rowMessageJson.from;
-  let context: Context | undefined = rowMessageJson.context || undefined;
+  let context: IContext | undefined = rowMessageJson.context || undefined;
   const waMessageId = rowMessageJson.id;
 
   // Resolve context message (if present)
@@ -164,7 +162,7 @@ export async function handleIncomingMessage({
   }
   
   // Create the message in database
-  const createdMessage = await Message.create(messageData);
+  const createdMessage = await MessageModel.create(messageData);
   return createdMessage;
 }
 

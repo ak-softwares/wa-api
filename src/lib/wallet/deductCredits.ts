@@ -1,10 +1,10 @@
-import { Wallet } from "@/models/Wallet";
+import { WalletModel } from "@/models/Wallet";
 
 export async function deductCredits(
   userId: string,
   cost: number
 ) {
-  const wallet = await Wallet.findOneAndUpdate(
+  const wallet = await WalletModel.findOneAndUpdate(
     {
       userId,
       balance: { $gte: cost },

@@ -2,15 +2,13 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "@/components/ui/sonner";
-import { Context, Message } from "@/types/Message";
-import { MessageStatus } from "@/types/MessageStatus";
-import { useSendWhatsappMessage } from "@/hooks/whatsapp/useSendWhatsappMessage";
+import { Message } from "@/types/Message";
+import { MessageStatus } from "@/types/MessageType";
 import { ApiResponse } from "@/types/apiResponse";
-import { Types } from "mongoose";
 import { useChatStore } from "@/store/chatStore";
 import { useMessageStore } from "@/store/messageStore";
-import { MessagePaylaod } from "@/types/MessagePayload";
-import { MessageType } from "@/types/MessageType";
+import { MessagePayload } from "@/types/MessageType";
+import { sendMessage } from "@/services/message/sendMessage";
 
 interface UseMessagesProps {
   containerRef?: React.RefObject<HTMLDivElement | null>;
@@ -25,7 +23,6 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [refreshFlag, setRefreshFlag] = useState(0);
-  const { sendMessage } = useSendWhatsappMessage();
   const { newMessage, newChat, setNewMessageData } = useChatStore();
   const { appendMessage, setAppendMessage } = useMessageStore();
 
@@ -145,8 +142,9 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
     return () => container.removeEventListener("scroll", handleScroll);
   }, [containerRef, loading, loadingMore, hasMore]);
 
-  const onSend = async ({ messagePayload }: { messagePayload: MessagePaylaod; }) => {
-    const tempId = new Types.ObjectId();
+  const onSend = async ({ messagePayload }: { messagePayload: MessagePayload; }) => {
+    const tempId = crypto.randomUUID(); // ✅
+    const now = new Date().toISOString();
 
     const tempMessage: Message = {
         _id: tempId,
@@ -155,36 +153,27 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
         to: "",
         from: "me",
         message: messagePayload.message,
+        media: messagePayload.media,
+        template: messagePayload.template,
         status: MessageStatus.Pending,
         participants: [], // ✅ required
-        type: "text" as any,
+        type: messagePayload.messageType,
         context: messagePayload.context,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: now,
+        updatedAt: now,
     };
 
     setMessages((prev) => [tempMessage, ...prev]);
 
-    await sendMessage(
-        messagePayload,
-        (realMessage) => {
-            // 🔥 Replace temp with real message
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg._id === tempId ? realMessage : msg
-              )
-            );
-        },
-        (errorMsg) => {
-            // 🔔 Show toast on error
-            toast.error(errorMsg || "Failed to send message");
-            setMessages((prev) =>
-                prev.map((msg) =>
-                msg._id === tempId ? { ...msg, status: MessageStatus.Failed } : msg
-                )
-            );
-        }
-    );
+    try {
+      const message: Message = await sendMessage({ messagePayload });
+      setMessages((prev) => prev.map((msg) => msg._id === tempId ? message : msg)); // 🔥 Replace temp with real message
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Failed to send message";
+      // 🔔 Show toast on error
+      toast.error(errorMsg);
+      setMessages((prev) => prev.map((msg) => msg._id === tempId ? { ...msg, status: MessageStatus.Failed } : msg ));
+    }
   };
 
   const refreshMessages = () => {

@@ -5,7 +5,7 @@ export enum MediaType {
   AUDIO = "AUDIO",
 }
 
-export interface Media {
+export type Media = {
   id?: string;       // media_id from WhatsApp
   link?: string;     // public URL
   caption?: string;  // only for image/video/document

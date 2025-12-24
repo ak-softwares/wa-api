@@ -1,16 +1,15 @@
 // components/chat/TemplateMessage.tsx
 "use client";
 
-import { ITemplate } from "@/types/Template";
+import { Template } from "@/types/Template";
 import { TemplateComponentType } from "@/utiles/enums/template";
 import { Message } from "@/types/Message";
 import { formatRichText } from "../../common/FormatRichText";
-import MessageMetaInfo from "../messages/MessageMetaInfo";
 import { TemplateMediaPreview } from "./GetTemplateMediaPreview";
 
 interface PreviewTemplateMessageProps {
   message?: Message;
-  template: ITemplate;
+  template: Template;
 }
 
 export default function PreviewTemplateMessage({ message, template }: PreviewTemplateMessageProps) {

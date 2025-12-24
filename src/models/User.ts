@@ -1,6 +1,19 @@
-import mongoose, { Schema, models, model } from "mongoose";
+import mongoose, { Schema, models, model, Types } from "mongoose";
 import bcrypt from "bcryptjs";
-import { IUser } from "@/types/User";
+
+export interface IUser {
+  _id: Types.ObjectId;
+  name: string;
+  email: string;
+  phone: number;
+  company?: string;
+  password: string;
+  defaultWaAccountId?: Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+}
 
 const UserSchema = new Schema<IUser>(
   {
@@ -26,4 +39,4 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-export const User = models.User || model<IUser>("User", UserSchema);
+export const UserModel = models.User || model<IUser>("User", UserSchema);

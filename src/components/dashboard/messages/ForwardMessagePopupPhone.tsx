@@ -7,12 +7,12 @@ import SearchBar from "@/components/common/SearchBar";
 import IconButton from "@/components/common/IconButton";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { Message } from "@/types/Message";
-import { useSendWhatsappMessage } from "@/hooks/whatsapp/useSendWhatsappMessage";
 import { useChatStore } from "@/store/chatStore";
 import { useContacts } from "@/hooks/contact/useContacts";
 import { Contact } from "@/types/Contact";
-import { MessagePaylaod } from "@/types/MessagePayload";
+import { MessagePayload } from "@/types/MessageType";
 import { MessageType } from "@/types/MessageType";
+import { sendMessage } from "@/services/message/sendMessage";
 
 interface ForwardMessagePopupToPhoneProps {
   isOpen: boolean;
@@ -23,7 +23,6 @@ interface ForwardMessagePopupToPhoneProps {
 export default function ForwardMessagePopupToPhone({ isOpen, onClose, message }: ForwardMessagePopupToPhoneProps) {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
   const { contacts, setContacts, loading, loadingMore, hasMore, refreshContacts, searchContacts, totalContacts } = useContacts({ sidebarRef });
-  const { sendMessage } = useSendWhatsappMessage();
   const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const { setNewMessageData } = useChatStore();
@@ -80,12 +79,12 @@ export default function ForwardMessagePopupToPhone({ isOpen, onClose, message }:
     onClose();
 
     for (const contact of selectedContacts) {
-      const messagePayload: MessagePaylaod = {
+      const messagePayload: MessagePayload = {
         participants: [{number: contact.phones[0]}],
         messageType: MessageType.TEXT,
         message: forwardText
       };
-      const response = await sendMessage(messagePayload);
+      const response = await sendMessage({messagePayload});
       if (response.success && response.data) {
         const { chat, waMessageId } = response.data;
         setNewMessageData(message, chat);

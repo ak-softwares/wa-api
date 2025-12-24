@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import Contact from "@/models/Contact";
 import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
-import { IContact } from "@/types/Contact";
+import { ContactModel, IContact } from "@/models/Contact";
 
 // GET contacts (paginated, with optional search functionality)
 export async function GET(req: Request) {
@@ -56,7 +55,7 @@ export async function GET(req: Request) {
         },
       ];
 
-      const [searchResult] = await Contact.aggregate(searchPipeline);
+      const [searchResult] = await ContactModel.aggregate(searchPipeline);
       contacts = searchResult?.data || [];
       total = searchResult?.metadata?.[0]?.total || 0;
     } else {
@@ -64,11 +63,11 @@ export async function GET(req: Request) {
       const query = { userId: user._id, waAccountId: waAccount._id };
 
       [contacts, total] = await Promise.all([
-        Contact.find(query)
+        ContactModel.find(query)
           .sort({ name: 1 })
           .skip(skip)
           .limit(perPage),
-        Contact.countDocuments(query),
+        ContactModel.countDocuments(query),
       ]);
     }
 
@@ -111,7 +110,7 @@ export async function POST(req: Request) {
       return NextResponse.json(response, { status: 400 });
     }
 
-    const newContact = await Contact.create({
+    const newContact = await ContactModel.create({
       userId: user._id,
       waAccountId: waAccount._id,
       name,

@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongoose";
-import { IUser } from "@/types/User";
-import { User } from "@/models/User";
-import { IWaAccount } from "@/types/WaAccount";
+import { UserModel, IUser } from "@/models/User";
+import { ChatModel, IChat } from "@/models/Chat";
+import { WaAccountModel, IWaAccount } from "@/models/WaAccount";
 import { isChatOpen } from "@/lib/activeChats";
 import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
-import { getOrCreateChat } from "@/lib/webhook-helper/getOrCreateChat";
-import { handleIncomingMessage } from "@/lib/webhook-helper/handleIncomingMessage";
-import { IChat } from "@/types/Chat";
-import { Chat } from "@/models/Chat";
-import { handleAIMessage } from "@/lib/webhook-helper/handleAIMessage";
-import { WaAccount } from "@/models/WaAccount";
+import { getOrCreateChat } from "@/services/webhook-helper/getOrCreateChat";
+import { handleIncomingMessage } from "@/services/webhook-helper/handleIncomingMessage";
+import { handleAIMessage } from "@/services/webhook-helper/handleAIMessage";
 
 
 const WA_VERIFY_TOKEN = process.env.WA_VERIFY_TOKEN; // secret token
@@ -51,11 +48,11 @@ export async function POST(req: NextRequest) {
         if (!phone_number_id || messages.length === 0) continue;
 
         // Find user only once per entry
-        const wa: IWaAccount | null = await WaAccount.findOne({ phone_number_id });
-        if (!wa) continue;
+        const waAccount: IWaAccount | null = await WaAccountModel.findOne({ phone_number_id });
+        if (!waAccount) continue;
 
         // Find the owning user
-        const user: IUser | null = await User.findById(wa.userId);
+        const user: IUser | null = await UserModel.findById(waAccount.userId);
         if (!user) continue;
 
         // Local cache for chats to reduce DB calls
@@ -69,7 +66,7 @@ export async function POST(req: NextRequest) {
           // Get or create chat using cache
           const chat: IChat | null = await getOrCreateChat({
             userId: user._id,
-            waAccountId: wa._id!,
+            waAccountId: waAccount._id!,
             phone: from,
             chatCache,
           });
@@ -98,7 +95,7 @@ export async function POST(req: NextRequest) {
             updateFields.unreadCount = (chat.unreadCount || 0) + 1;
           }
 
-          await Chat.updateOne({ _id: chat._id }, { $set: updateFields });
+          await ChatModel.updateOne({ _id: chat._id }, { $set: updateFields });
 
           // handle push notification
           await sendPusherNotification({
@@ -110,8 +107,8 @@ export async function POST(req: NextRequest) {
           
           // handle Ai logics
           await handleAIMessage({
-            userId: user._id.toString(),
-            wa,
+            userId: user._id,
+            waAccount,
             chat,
             change,
             rowMessageJson: msg

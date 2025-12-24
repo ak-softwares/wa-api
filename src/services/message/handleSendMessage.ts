@@ -1,38 +1,45 @@
 import axios from "axios";
-import { Message } from "@/models/Message";
-import { MessageStatus } from "@/types/MessageStatus";
-import { MessageType } from "@/types/MessageType";
-import { ChatType, IChat } from "@/types/Chat";
+import { IMessage, MessageModel } from "@/models/Message";
+import { MessageDTO, MessageStatus, WhatsAppPayload } from "@/types/MessageType";
+import { ChatType } from "@/types/Chat";
 import { ApiError } from "@/types/apiResponse";
-import { MessagePaylaod } from "@/types/MessagePayload";
+import { MessagePayload } from "@/types/MessageType";
 import { Types } from "mongoose";
-import { WaAccount } from "@/types/WaAccount";
 import { getOrCreateChat } from "../webhook-helper/getOrCreateChat";
-import { CREDIT_COST } from "../wallet/credits";
-import { UsageLog } from "@/models/UsageLog";
-import { consumeMessage } from "../wallet/consumeMessage";
-import { commitCredits } from "../wallet/commitCredits";
-import { refundCredits } from "../wallet/refundCredits";
+import { CREDIT_COST } from "../../lib/wallet/credits";
+import { UsageLogModel } from "@/models/UsageLog";
+import { consumeMessage } from "../../lib/wallet/consumeMessage";
+import { commitCredits } from "../../lib/wallet/commitCredits";
+import { refundCredits } from "../../lib/wallet/refundCredits";
+import { IWaAccount } from "@/models/WaAccount";
+import { IChat } from "@/models/Chat";
+import { buildWhatsAppPayload } from "@/lib/messages/whatsappPayloadBuilder";
 
-interface HandelSendTextMessageParams {
-  messagePayload: MessagePaylaod;
+interface HandleSendMessageParams {
+  messagePayload: MessagePayload;
   userId: Types.ObjectId;
-  waAccount: WaAccount;
+  waAccount: IWaAccount;
 }
 
 // Send a WhatsApp message via Cloud API and save in DB
-export async function handelSendTextMessage({
+export async function handleSendMessage({
   messagePayload,
   userId,
   waAccount,
-}: HandelSendTextMessageParams) {
-  const { participants, message, context, chatType, tag } = messagePayload;
+}: HandleSendMessageParams) {
+  const { participants, context, chatType, tag } = messagePayload;
 
-  if (!message) {
-    throw new ApiError(400, "Message text is required");
+  // ✅ Basic validation
+  if (!messagePayload.participants || messagePayload.participants.length === 0) { // TODO: remove after makeing all
+    throw new ApiError(400, "Participants are required");
   }
   
-  if (chatType === ChatType.BROADCAST && !messagePayload.chatId) {
+  if (!messagePayload.messageType) {
+    throw new ApiError(400, "Message type is required");
+  }
+
+  const isBroadcast = chatType === ChatType.BROADCAST;
+  if (isBroadcast && !messagePayload.chatId) {
     throw new ApiError(400, "broadcastId is required when chatType is BROADCAST");
   }
 
@@ -44,7 +51,6 @@ export async function handelSendTextMessage({
 
   const savedMessages = [];
   const failedMessages = [];
-  const contextId: string | undefined = context?.id;
   // Local cache for chats to reduce DB calls
   const chatCache = new Map<string, IChat>();
 
@@ -65,7 +71,7 @@ export async function handelSendTextMessage({
     const COST = CREDIT_COST.SEND_TEXT;
 
     // 1️⃣ Create UsageLog (PENDING)
-    const usageLog = await UsageLog.create({
+    const usageLog = await UsageLogModel.create({
       userId,
       waAccountId: waAccount._id,
       phoneNumber: participant.number,
@@ -82,7 +88,7 @@ export async function handelSendTextMessage({
       billingType = result.type as "FREE" | "PAID";
     } catch (err) {
       // No free quota + no credits
-      await UsageLog.updateOne(
+      await UsageLogModel.updateOne(
         { _id: usageLog._id },
         { status: "FAILED", error: "Insufficient credits" }
       );
@@ -96,20 +102,13 @@ export async function handelSendTextMessage({
       // continue; // move to next participant
     }
 
-
-
     try {
-      const payload = {
-        messaging_product: "whatsapp",
-        to: participant.number,
-        type: "text",
-        text: { body: message },
-        ...(contextId && {
-          context: { message_id: contextId },
-        }),
-      };
+      const whatsAppPayload: WhatsAppPayload = buildWhatsAppPayload({
+        messagePayload,
+        participant: participant.number
+      });
 
-      const fbResponse = await axios.post(url, payload, { headers });
+      const fbResponse = await axios.post(url, whatsAppPayload, { headers });
       waMessageId = fbResponse.data?.messages?.[0]?.id;
       status = waMessageId ? MessageStatus.Sent : MessageStatus.Failed;
 
@@ -119,7 +118,7 @@ export async function handelSendTextMessage({
           await commitCredits(userId.toString(), COST);
         }
 
-        await UsageLog.updateOne(
+        await UsageLogModel.updateOne(
           { _id: usageLog._id },
           {
             status: "SUCCESS",
@@ -141,7 +140,7 @@ export async function handelSendTextMessage({
         await refundCredits(userId.toString(), COST);
       }
 
-      await UsageLog.updateOne(
+      await UsageLogModel.updateOne(
         { _id: usageLog._id },
         {
           status: "FAILED",
@@ -159,15 +158,18 @@ export async function handelSendTextMessage({
     });
 
     // ✅ Save individual message
-    const dbMessage = await Message.create({
+    const dbMessage = await MessageModel.create({
       userId,
       chatId: chat?._id,
       to: participant.number,
       from: waAccount.phone_number_id,
-      message,
+      message: messagePayload.message,
+      media: messagePayload.media,
+      location: messagePayload.location,
+      template: messagePayload.template,
       waMessageId,
       status,
-      type: MessageType.TEXT,
+      type: messagePayload.messageType,
       tag: finalTag,
       context,
     });
@@ -176,27 +178,39 @@ export async function handelSendTextMessage({
   }
 
   // ✅ Save broadcast master message (ONE extra record)
-  if (chatType === ChatType.BROADCAST) {
-    await Message.create({
+  let broadcastMasterMessage = null;
+  if (isBroadcast) {
+    broadcastMasterMessage = await MessageModel.create({
       userId,
       chatId: messagePayload.chatId,
       to: ChatType.BROADCAST,
       participants,
       from: waAccount.phone_number_id,
-      message,
+      message: messagePayload.message,
+      media: messagePayload.media,
+      location: messagePayload.location,
+      template: messagePayload.template,
       status: MessageStatus.Sent,
-      type: MessageType.TEXT,
+      type: messagePayload.messageType,
       tag: finalTag,
     });
   }
 
+  const primaryMessage =
+  isBroadcast
+    ? broadcastMasterMessage
+    : savedMessages.length > 0
+      ? savedMessages[savedMessages.length - 1] // latest sent
+      : failedMessages[failedMessages.length - 1]; // latest failed
+
   const result = {
       sent: savedMessages.length,
       failed: failedMessages.length,
-      messages: {
-        sent: savedMessages,
-        failed: failedMessages,
-      },
+      message: primaryMessage,
+      // messages: {
+      //   sent: savedMessages,
+      //   failed: failedMessages,
+      // },
   };
   return result;
 }

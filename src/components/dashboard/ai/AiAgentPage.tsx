@@ -8,14 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/sonner';
 import { Power, Save, Link, Zap, ShieldCheck, Info } from 'lucide-react';
-import { IAIAgent } from '@/types/AIAgent';
+import { AIAgent } from '@/types/AIAgent';
 import IconButton from '@/components/common/IconButton';
 import { useAiStore } from '@/store/aiStore';
 import APITokenSection from '../settings/ApiTokenSection';
 import { Textarea } from '@/components/ui/textarea';
 
 export default function AIAgentPage() {
-  const [aiAgent, setAiAgent] = useState<IAIAgent>({
+  const [aiAgent, setAiAgent] = useState<AIAgent>({
     webhookUrl: '',
     isActive: false,
     prompt: '',     // ✅ added
@@ -210,7 +210,7 @@ export default function AIAgentPage() {
               {/* Webhook Input */}
               <div className="mb-6">
                 <Label htmlFor="webhookUrl" className="text-sm mb-2 block text-gray-900 dark:text-white">
-                  Webhook URL
+                  {`Webhook URL (POST)`}
                 </Label>
                 <div className="relative">
                   <Input
@@ -237,7 +237,7 @@ export default function AIAgentPage() {
                   className="bg-[#00a884] hover:bg-[#008f74] text-white flex items-center space-x-2"
                 >
                   <Save className="h-4 w-4" />
-                  <span>{isSaving ? 'Saving...' : 'Save Webhook'}</span>
+                  <span>{isSaving ? 'Saving...' : 'Save'}</span>
                 </Button>
                 <Button
                   onClick={handleTestWebhook}
@@ -272,7 +272,7 @@ export default function AIAgentPage() {
             <div className="space-y-3 text-xs text-gray-500 dark:text-gray-400">
               <p>
                 {aiAgent.webhookUrl
-                  ? `Webhook configured: ${aiAgent.webhookUrl}`
+                  ? `Webhook configured POST: ${aiAgent.webhookUrl}`
                   : 'No webhook configured yet.'}
               </p>
               <p>

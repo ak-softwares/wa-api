@@ -1,8 +1,7 @@
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 import { ApiResponse } from "@/types/apiResponse";
 import { NextResponse } from "next/server";
-import Contact from "@/models/Contact";
-import { IContact } from "@/types/Contact";  // <-- your contact type
+import { ContactModel, IContact } from "@/models/Contact";
 
 export async function POST(req: Request) {
   try {
@@ -45,7 +44,7 @@ export async function POST(req: Request) {
     }));
 
     // --- Insert valid contacts only ---
-    const inserted = docs.length > 0 ? await Contact.insertMany(docs) : [];
+    const inserted = docs.length > 0 ? await ContactModel.insertMany(docs) : [];
 
     // --- Final Response ---
     const response: ApiResponse = {

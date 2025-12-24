@@ -1,4 +1,4 @@
-export interface AnalyticsData {
+export type AnalyticsData = {
   totalMessages: number;
   totalSentMessages: number;
   totalAIReplies: number;

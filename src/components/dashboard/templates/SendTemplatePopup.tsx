@@ -1,4 +1,3 @@
-// components/send-message/TemplatePopup.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,42 +15,41 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Tabs,
-  TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Search, MessageSquare, ChevronRight, Copy, X, Upload, Image as ImageIcon, Video, File } from "lucide-react";
-import { Template } from "@/types/Template";
+import { Search, MessageSquare, ChevronRight, X, Upload } from "lucide-react";
+import { Template, TemplateHeaderComponentCreate } from "@/types/Template";
 import { toast } from "@/components/ui/sonner";
-import { useSendTemplate } from "@/hooks/template/useSendTemplate";
-import { Types } from "mongoose";
-import { useMedia } from "@/hooks/common/useMedia";
-import { MediaType } from "@/utiles/enums/mediaTypes";
+import { uploadMediaApi } from "@/services/message/media.service";
+import { MessagePayload, MessageType } from "@/types/MessageType";
+import { useChatStore } from "@/store/chatStore";
+import { ChatType } from "@/types/Chat";
 
 interface TemplatePopupProps {
   isOpen: boolean;
-  chatId: Types.ObjectId;
   onClose: () => void;
-  onSend?: (template: Template, variables: Record<string, string>) => void;
+  onSend: (payload: any) => void; // adjust type to match your onSend
   templates: Template[];
 }
 
 export default function TemplatePopup({
   isOpen,
-  chatId,
   onClose,
   onSend,
   templates,
 }: TemplatePopupProps) {
+  const { activeChat } = useChatStore();
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [variables, setVariables] = useState<Record<string, string>>({});
   const [previewValues, setPreviewValues] = useState<Record<string, string>>({});
-  const { sendTemplate, loading } = useSendTemplate();
-  const { uploadMedia, uploading } = useMedia();
+  const [uploading, setUploading] = useState(false); // ✅ track load errors
 
+  const isBroadcast = activeChat?.type === ChatType.BROADCAST;
+  
   // Reset when popup opens/closes
   useEffect(() => {
     if (isOpen) {
@@ -151,13 +149,12 @@ export default function TemplatePopup({
       return;
     }
 
-    const format = headerComp.format as MediaType;
-
     // ---- Upload directly (no second validation) ----
-    const { mediaId, error: uploadErr } = await uploadMedia(file, format);
-
-    if (uploadErr || !mediaId) {
-      toast.error(uploadErr || "Upload failed");
+    setUploading(true)
+    const mediaId = await uploadMediaApi(file);
+    setUploading(false);
+    if (!mediaId) {
+      toast.error("Upload failed");
       return;
     }
 
@@ -166,19 +163,20 @@ export default function TemplatePopup({
     // ---- Update template header_handle ----
     setSelectedTemplate((prev) => {
       if (!prev) return prev;
-      const comps = prev.components?.map((c) => {
+      const components = prev.components?.map((c) => {
         if (c.type === "HEADER") {
+          const header = c as TemplateHeaderComponentCreate;
           return {
-            ...c,
+            ...header,
             example: {
-              ...(c.example || {}),
+              ...(header.example ?? {}),
               header_handle: mediaId,
             },
           };
         }
         return c;
-      });
-      return { ...prev, components: comps };
+      }) as Template["components"];
+      return { ...prev, components };
     });
 
     return mediaId;
@@ -228,11 +226,16 @@ export default function TemplatePopup({
     }
 
     // Clone & replace variables into component texts
-    const filledTemplate = getFilledTemplate(selectedTemplate, variables);
-    // Use your hook to send. It expects { chatId, template }
-    await sendTemplate({ chatId, template: filledTemplate });
+    const templatePayload = getFilledTemplate(selectedTemplate, variables);
     // Notify parent
-    onSend?.(filledTemplate, variables);
+    const messagePayload: MessagePayload = {
+      participants: activeChat?.participants!,
+      messageType: MessageType.TEMPLATE,
+      template: templatePayload,
+      chatType: isBroadcast ? ChatType.BROADCAST : ChatType.CHAT,
+      chatId: activeChat?._id
+    };
+    onSend({ messagePayload });
     onClose();
   };
 
@@ -491,8 +494,8 @@ export default function TemplatePopup({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSend} disabled={!selectedTemplate || Object.values(variables).some((v) => v.trim() === "") || loading}>
-            {loading ? "Sending..." : "Send Template Message"}
+          <Button onClick={handleSend} disabled={!selectedTemplate || Object.values(variables).some((v) => v.trim() === "")}>
+            Send Template Message
           </Button>
         </DialogFooter>
       </DialogContent>

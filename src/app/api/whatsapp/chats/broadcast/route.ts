@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Chat } from "@/models/Chat";
+import { ChatModel } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 import { ChatParticipant, ChatType } from "@/types/Chat";
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ✅ Create broadcast chat
-    const chat = await Chat.create({
+    const chat = await ChatModel.create({
       userId: user._id,
       waAccountId: waAccount._id,
       participants: participants.map((participant: ChatParticipant) => ({

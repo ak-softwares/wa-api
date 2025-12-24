@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Message } from "@/models/Message";
+import { MessageModel } from "@/models/Message";
 import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
@@ -22,7 +22,7 @@ export async function DELETE(
     }
 
     // 🔍 Find message and ensure it belongs to the user's chat
-    const message = await Message.findOne({ _id: messageId });
+    const message = await MessageModel.findOne({ _id: messageId });
     if (!message) {
       return NextResponse.json(
         { success: false, message: "Message not found" },
@@ -31,7 +31,7 @@ export async function DELETE(
     }
     
     // 🗑️ Delete message
-    await Message.deleteOne({ _id: messageId });
+    await MessageModel.deleteOne({ _id: messageId });
 
     const response: ApiResponse = {
       success: true,

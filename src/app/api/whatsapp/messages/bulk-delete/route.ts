@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
-import { Message } from "@/models/Message";
+import { MessageModel } from "@/models/Message";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ✅ Delete messages belonging to authenticated user
-    const messageDeleteResult = await Message.deleteMany({
+    const messageDeleteResult = await MessageModel.deleteMany({
       _id: { $in: ids },
       userId: user._id,
     });

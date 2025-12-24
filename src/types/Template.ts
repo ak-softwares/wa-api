@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 import { 
   TemplateComponentType, 
   TemplateHeaderType, 
@@ -10,21 +9,19 @@ import {
   TemplateButtonsParametersType
 } from "@/utiles/enums/template";
 
-export interface ITemplate {
-  _id: Types.ObjectId;
+export type Template = {
+  _id: string;
   id?: string;
-  userId: Types.ObjectId;
-  waAccountId: Types.ObjectId;
+  userId: string;
+  waAccountId: string;
   name: string;
   category: TemplateCategory;
   language: string; // e.g. "en"
   components?: TemplateComponent[];
   status?: TemplateStatus | string;
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
+  createdAt?: string;
+  updatedAt?: string;
 }
-
-export type Template = ITemplate;
 
 export type TemplateComponent =
   | TemplateHeaderComponentCreate
@@ -32,7 +29,7 @@ export type TemplateComponent =
   | TemplateFooterComponentCreate
   | TemplateButtonsComponentCreate;
 
-export interface TemplateHeaderComponentCreate {
+export type TemplateHeaderComponentCreate = {
   type: TemplateComponentType.HEADER;
   format: TemplateHeaderType;
   text?: string;
@@ -42,7 +39,7 @@ export interface TemplateHeaderComponentCreate {
   };
 }
 
-export interface TemplateHeaderComponentSend {
+export type TemplateHeaderComponentSend = {
   type: TemplateComponentType.HEADER;
   parameters: TemplateHeaderParameter[];
 }
@@ -56,7 +53,7 @@ export type TemplateHeaderParameter =
   | { type: TemplateHeaderType.LOCATION; location: { latitude: number; longitude: number } }
   | { type: TemplateHeaderType.STICKER; sticker: { link: string } };
 
-export interface TemplateBodyComponentCreate {
+export type TemplateBodyComponentCreate = {
   type: TemplateComponentType.BODY;
   text: string;
   add_security_recommendation?: boolean;
@@ -65,7 +62,7 @@ export interface TemplateBodyComponentCreate {
   };
 }
 
-export interface TemplateBodyComponentSend {
+export type TemplateBodyComponentSend = {
   type: TemplateComponentType.BODY;
   parameters: TemplateBodyParameter[];
 }
@@ -75,12 +72,12 @@ export type TemplateBodyParameter = {
   text: string;
 };
 
-export interface TemplateFooterComponentCreate {
+export type TemplateFooterComponentCreate = {
   type: TemplateComponentType.FOOTER;
   text: string;
 }
 
-export interface TemplateFooterComponentSend {
+export type TemplateFooterComponentSend = {
   type: TemplateComponentType.FOOTER;
   parameters: TemplateFooterParameter[];
 }
@@ -90,7 +87,7 @@ export type TemplateFooterParameter = {
   text: string;
 };
 
-export interface TemplateButtonsComponentCreate {
+export type TemplateButtonsComponentCreate = {
   type: TemplateComponentType.BUTTONS;
   buttons: TemplateButton[];
 }
@@ -134,7 +131,7 @@ export type TemplateButton =
       text: string;
   };
 
-  export interface TemplateButtonsComponentSend {
+  export type TemplateButtonsComponentSend = {
     type: TemplateComponentType.BUTTONS;
     sub_type: TemplateButtonType;
     index: string; // WhatsApp uses string index ("0", "1", ...)

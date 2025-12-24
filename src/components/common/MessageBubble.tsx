@@ -13,8 +13,8 @@ import TemplateMessage from "../dashboard/templates/RenderTemplateMessage";
 import { formatRichText } from "./FormatRichText";
 import MessageMetaInfo from "../dashboard/messages/MessageMetaInfo";
 import MediaMessage from "../dashboard/templates/RenderMediaMessage";
-import { useMedia } from "@/hooks/common/useMedia";
 import LocationMessage from "../dashboard/templates/RenderLocationMessage";
+import { fetchMediaBlob } from "@/services/message/media.service";
 
 interface MessageBubbleProps {
   message: Message;
@@ -26,9 +26,8 @@ interface MessageBubbleProps {
 export default function MessageBubble({ message, onDelete, onReply, onForward }: MessageBubbleProps) {
   const activeChat = useChatStore((s) => s.activeChat);
   const [hovered, setHovered] = useState(false);
-  const { deleteMessage, deleteMessagesBulk, deleting } = useDeleteMessages();
+  const { deleteMessage } = useDeleteMessages();
   const { openChatByContact } = useOpenChat();
-  const { fetchMedia } = useMedia();
   
   const isTemplate: boolean = !!message?.template || message?.type === MessageType.TEMPLATE;
   const isMedia: boolean = !!message?.media || message?.type === MessageType.MEDIA;
@@ -87,7 +86,7 @@ export default function MessageBubble({ message, onDelete, onReply, onForward }:
       if (!mediaId) return;
 
       // fetch actual media URL
-      const mediaUrl = await fetchMedia(mediaId);
+      const mediaUrl = await fetchMediaBlob(mediaId);
       if (!mediaUrl) throw new Error("Media not found");
 
       // trigger download

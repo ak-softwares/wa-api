@@ -20,9 +20,8 @@ import {
   TemplateButtonType
 } from "@/utiles/enums/template";
 import MessagePreviewPage from "../messages/MessagePreviewPage";
-import { Types } from "mongoose";
 import { MessageType } from "@/types/MessageType";
-import { MessageStatus } from "@/types/MessageStatus";
+import { MessageStatus } from "@/types/MessageType";
 import { Message } from "@/types/Message";
 
 export default function CreateTemplatePage() {
@@ -54,22 +53,22 @@ export default function CreateTemplatePage() {
   const [isEdit, setIsEdit] = useState(false);
 
   const fullMessage: Message = {
-    _id: new Types.ObjectId(),
-    userId: new Types.ObjectId(),
-    chatId: new Types.ObjectId(),
+    _id: crypto.randomUUID(),
+    userId: crypto.randomUUID(),
+    chatId: crypto.randomUUID(),
 
     to: "91826XXXXXX",        // you can replace with real example number
     from: "81399XXXXX",
 
     status: MessageStatus.Delivered,
     type: MessageType.TEMPLATE,
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
 
     template: {
-      _id: new Types.ObjectId(),
+      _id: crypto.randomUUID(),
       id: templateId || "temp_preview", // REAL FIELD
-      userId: new Types.ObjectId(),
-      waAccountId: new Types.ObjectId(),
+      userId: crypto.randomUUID(),
+      waAccountId: crypto.randomUUID(),
 
       name: templateName || "Untitled Template", // REAL FIELD
       category: templateCategory,                // REAL FIELD
@@ -108,8 +107,8 @@ export default function CreateTemplatePage() {
           : null
       ].filter(Boolean) as any, // remove empty components
 
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     }
   };
 

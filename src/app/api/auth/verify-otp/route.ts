@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
+import { UserModel } from "@/models/User";
 
 export async function POST(req: Request) {
   try {
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       delete globalThis.otpStore[phone];
         // ✅ Connect DB
         await connectDB();
-        const user = await User.findOne({ phone });
+        const user = await UserModel.findOne({ phone });
         if (!user) {
             const response: ApiResponse = {
                 success: false,

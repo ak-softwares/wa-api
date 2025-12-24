@@ -1,5 +1,20 @@
-import { ITemplate } from "@/types/Template";
-import mongoose, { Schema, model } from "mongoose";
+import { TemplateComponent } from "@/types/Template";
+import { TemplateCategory, TemplateStatus } from "@/utiles/enums/template";
+import mongoose, { Schema, Types, model } from "mongoose";
+
+export interface ITemplate {
+  _id: Types.ObjectId;
+  id?: string;
+  userId: Types.ObjectId;
+  waAccountId: Types.ObjectId;
+  name: string;
+  category: TemplateCategory;
+  language: string; // e.g. "en"
+  components?: TemplateComponent[];
+  status?: TemplateStatus;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
 
 const TemplateSchema = new Schema<ITemplate>({
   id: { type: String },
@@ -11,4 +26,4 @@ const TemplateSchema = new Schema<ITemplate>({
   components: { type: Schema.Types.Mixed },
 }, { timestamps: true });
 
-export const Template = mongoose.models.Template || model<ITemplate>("Template", TemplateSchema);
+export const TemplateModel = mongoose.models.Template || model<ITemplate>("Template", TemplateSchema);

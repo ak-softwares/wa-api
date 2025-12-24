@@ -1,9 +1,35 @@
 import { encrypt, safeDecrypt, hmacHash } from "@/lib/crypto";
-import { IWaAccount } from "@/types/WaAccount";
-import { AIChatSchema } from "./AIChat";
-import { AIAgentSchema } from "./AIAgent";
+import { AIChatSchema, IAIChat } from "./AIChat";
+import { AIAgentSchema, IAIAgent } from "./AIAgent";
 import crypto from "crypto";
 import mongoose, { Schema, model, models } from "mongoose";
+import { Types } from "mongoose";
+
+export interface IWaAccount {
+  _id?: Types.ObjectId;
+  userId: Types.ObjectId;
+  phone_number_id: string;
+  waba_id: string;
+  business_id: string;
+  permanent_token: string;
+  verified_name?: string;
+  display_phone_number?: string;
+  quality_rating?: string;
+  last_onboarded_time?: Date;
+  code_verification_status?: string;
+  is_phone_number_registered?: boolean;
+  is_app_subscribed?: boolean;
+  aiChat?: IAIChat;
+  aiAgent?: IAIAgent;
+  apiToken?: string;
+  apiTokenHashed?: string;
+  apiTokenCreatedAt?: Date;
+  apiTokenUpdatedAt?: Date;
+  phone_number?: string;
+  blockedNumbers?: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 export const WaAccountSchema = new Schema<IWaAccount>(
   {
@@ -70,4 +96,4 @@ WaAccountSchema.methods.generateApiToken = function () {
   return rawToken; // return for user display
 };
 
-export const WaAccount = models.WaAccount || model<IWaAccount>("WaAccount", WaAccountSchema);
+export const WaAccountModel = models.WaAccount || model<IWaAccount>("WaAccount", WaAccountSchema);

@@ -1,5 +1,15 @@
-import { IUsageLog } from "@/types/UsageLog";
 import mongoose, { Schema, model, models } from "mongoose";
+
+export interface IUsageLog {
+  userId: mongoose.Types.ObjectId;
+  waAccountId?: mongoose.Types.ObjectId;
+  phoneNumber?: string;
+  actionType: "SEND_TEXT" | "SEND_MEDIA" | "AI_REPLY" | "TEMPLATE";
+  creditsUsed: number;
+  status: "PENDING" | "SUCCESS" | "FAILED";
+  messageId?: string;
+  error?: string;
+}
 
 const UsageLogSchema = new Schema<IUsageLog>(
   {
@@ -29,4 +39,4 @@ const UsageLogSchema = new Schema<IUsageLog>(
   { timestamps: true }
 );
 
-export const UsageLog = models.UsageLog || model<IUsageLog>("UsageLog", UsageLogSchema);
+export const UsageLogModel = models.UsageLog || model<IUsageLog>("UsageLog", UsageLogSchema);

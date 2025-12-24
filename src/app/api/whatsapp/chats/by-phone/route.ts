@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
-import { Chat } from "@/models/Chat";
+import { ChatModel } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
-import Contact from "@/models/Contact";
-import { IContact } from "@/types/Contact";
-import { ChatType, IChat } from "@/types/Chat";
+import { ContactModel, IContact } from "@/models/Contact";
+import { IChat } from "@/models/Chat"
+import { ChatType } from "@/types/Chat";
 
 export async function GET(req: NextRequest) {
   try {
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(response, { status: 400 });
     }
 
-    let chat = await Chat.findOne({
+    let chat = await ChatModel.findOne({
       userId: user._id,
       waAccountId: waAccount._id,
       participants: { number: phone },
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       .exec();
     
     if (!chat) {
-      chat = await Chat.create({
+      chat = await ChatModel.create({
         userId: user._id,
         waAccountId: waAccount._id,
         participants: [{ number: phone }], // must be object, not string
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const contact = await Contact.findOne({
+    const contact = await ContactModel.findOne({
       userId: user._id,
       phones: phone,
     })

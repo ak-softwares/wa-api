@@ -1,12 +1,12 @@
 import { pusher } from "@/lib/pusher"; // your pusher instance
-import { Chat } from "@/types/Chat";
-import { Message } from "@/types/Message";
+import { IChat } from "@/models/Chat";
+import { IMessage } from "@/models/Message";
 
 interface SendPusherNotificationParams {
   userId: string;
   event: string;
-  chat?: Chat;
-  message?: Message;
+  chat?: IChat;
+  message?: IMessage;
 }
 
 export async function sendPusherNotification({ userId, event, chat, message}: SendPusherNotificationParams) {

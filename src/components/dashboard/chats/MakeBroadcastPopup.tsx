@@ -6,8 +6,6 @@ import ContactAvatar from "../contacts/ContactAvatar";
 import SearchBar from "@/components/common/SearchBar";
 import IconButton from "@/components/common/IconButton";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
-import { useSendWhatsappMessage } from "@/hooks/whatsapp/useSendWhatsappMessage";
-import { useChatStore } from "@/store/chatStore";
 import { useContacts } from "@/hooks/contact/useContacts";
 import { Contact } from "@/types/Contact";
 import { useBroadcast } from "@/hooks/chat/useBroadcast";

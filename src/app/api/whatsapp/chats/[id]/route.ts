@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Chat } from "@/models/Chat";
-import { Message } from "@/models/Message";
+import { ChatModel } from "@/models/Chat";
+import { MessageModel } from "@/models/Message";
 import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
@@ -17,16 +17,16 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     // Find chat
-    const chat = await Chat.findOne({ _id: chatId, userId: user._id });
+    const chat = await ChatModel.findOne({ _id: chatId, userId: user._id });
     if (!chat) {
       return NextResponse.json({ success: false, message: "Chat not found" }, { status: 404 });
     }
 
     // Delete chat
-    await Chat.deleteOne({ _id: chatId });
+    await ChatModel.deleteOne({ _id: chatId });
 
     // Delete all messages for this chat
-    await Message.deleteMany({ chatId: chatId });
+    await MessageModel.deleteMany({ chatId: chatId });
 
     const response: ApiResponse = {
       success: true,

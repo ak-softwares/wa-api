@@ -1,5 +1,11 @@
 import { Schema } from "mongoose";
-import { IAIChat } from "@/types/AIChat";
+
+export interface IAIChat {
+  prompt?: string;
+  isActive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 export const AIChatSchema = new Schema<IAIChat>(
   {

@@ -1,11 +1,11 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
+import { UserModel } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { NextRequest, NextResponse } from "next/server";
 import { hmacHash } from "@/lib/crypto";
-import { WaAccount } from "@/models/WaAccount";
+import { WaAccountModel } from "@/models/WaAccount";
 
 /**
  * Finds a WA account by plain (unencrypted) API token
@@ -15,7 +15,7 @@ export async function findWaAccountByApiToken(token: string) {
 
   const hashed = hmacHash(token);
 
-  return await WaAccount.findOne({ apiTokenHashed: hashed });
+  return await WaAccountModel.findOne({ apiTokenHashed: hashed });
 }
 
 
@@ -45,14 +45,14 @@ export async function fetchAuthenticatedUser() {
 
   // Try session-based authentication
   const session = await getServerSession(authOptions);
-  const email = session?.user?.email;
+  const id = session?.user?.id;
 
-  if (!email) {
-    const response: ApiResponse = { success: false, message: "Unauthorized", data: null };
+  if (!id) {
+    const response: ApiResponse = { success: false, message: "Session not authenticated" };
     return { errorResponse: NextResponse.json(response, { status: 401 }) };
   }
 
-  const user = await User.findOne({ email });
+  const user = await UserModel.findOne({ _id: id });
 
   if (!user) {
     const response: ApiResponse = { success: false, message: "User not found", data: null };
@@ -82,7 +82,7 @@ export async function getDefaultWaAccount(req?: NextRequest) {
     }
 
     // 🔑 Fetch user from waAccount
-    const user = await User.findById(waAccount.userId);
+    const user = await UserModel.findById(waAccount.userId);
 
     if (!user) {
       const response: ApiResponse = {
@@ -120,7 +120,7 @@ export async function getDefaultWaAccount(req?: NextRequest) {
   }
 
   // 2️⃣ Fetch WA account from its own collection
-  const waAccount = await WaAccount.findOne({
+  const waAccount = await WaAccountModel.findOne({
     _id: user.defaultWaAccountId,
     userId: user._id, // security check
   });

@@ -64,7 +64,7 @@ export default function MessagesHeader({
   };
 
   // ✅ Determine chat type and details
-  const isBroadcast = activeChat!.type === ChatType.BROADCAST;
+  const isBroadcast = activeChat?.type === ChatType.BROADCAST
   const partner = activeChat!.participants?.[0];
   const displayName = isBroadcast
     ? activeChat!.chatName || ChatType.BROADCAST

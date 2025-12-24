@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { connectDB } from "../../../../lib/mongoose";
-import { User } from "@/models/User";
+import { UserModel } from "@/models/User";
 import bcrypt from "bcryptjs";
 import Google from "next-auth/providers/google";
 
@@ -20,7 +20,7 @@ export const authOptions: NextAuthOptions = {
                 }
                 try {
                     await connectDB();
-                    const user = await User.findOne({ email : credentials.email });
+                    const user = await UserModel.findOne({ email : credentials.email });
                     if(!user) {
                         throw new Error("User not found");
                     }
@@ -60,7 +60,7 @@ export const authOptions: NextAuthOptions = {
 
                     // OTP is valid → check if user exists
                     await connectDB();
-                    let user = await User.findOne({ phone: credentials.phone });
+                    let user = await UserModel.findOne({ phone: credentials.phone });
 
                     if (!user) {
                         throw new Error("User not found, Please Sign Up");
@@ -90,7 +90,7 @@ export const authOptions: NextAuthOptions = {
             if (account?.provider === "google") {
                 await connectDB();
 
-                const existingUser = await User.findOne({ email: user.email });
+                const existingUser = await UserModel.findOne({ email: user.email });
 
                 if (!existingUser) {
                 // ❌ user not found → redirect to signup page

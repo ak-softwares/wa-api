@@ -10,18 +10,15 @@ import { useForm, Controller } from "react-hook-form"
 import { toast } from "@/components/ui/sonner"
 import { Loader2 } from "lucide-react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useSendWhatsappMessage } from "@/hooks/whatsapp/useSendWhatsappMessage"
 import { sampleMessageSchema } from "@/schemas/sampleMessageSchema";
 import z from "zod"
-import { MessageType } from "@/types/MessageType"
-import { MessagePaylaod } from "@/types/MessagePayload"
+import { MessageType, MessagePayload } from "@/types/MessageType"
+import { sendMessage } from "@/services/message/sendMessage"
 
 type SendMessageForm = z.infer<typeof sampleMessageSchema>;
 
 export default function SendTestMessagePopup() {
   const [preview, setPreview] = useState({ to: "", message: "" })
-  const [testMessageSent, setTestMessageSent] = useState(false)
-  const { isLoading: isLoading_sendMessage, sendMessage } = useSendWhatsappMessage()
 
   const form = useForm<SendMessageForm>({
     resolver: zodResolver(sampleMessageSchema),
@@ -39,21 +36,13 @@ export default function SendTestMessagePopup() {
   )
 
   const onSubmit = async (data: SendMessageForm) => {
-    const messagePayload: MessagePaylaod = {
+    const messagePayload: MessagePayload = {
       participants: [{number: data.to}],
       messageType: MessageType.TEXT,
       message: data.message
     };
-    await sendMessage(
-      messagePayload,
-      () => {
-        toast.success("Message sent successfully 🚀")
-        setTestMessageSent(true)
-      },
-      (errorMsg) => {
-        toast.error(errorMsg || "Failed to send message ❌")
-      }
-    )
+    await sendMessage({messagePayload})
+    toast.success("Test message sent successfully!")
   }
 
   return (
@@ -107,9 +96,9 @@ export default function SendTestMessagePopup() {
           <Button
             type="submit"
             className="w-full bg-green-600 hover:bg-green-700 text-white"
-            disabled={isSubmitting || isLoading_sendMessage}
+            disabled={isSubmitting}
           >
-            {isSubmitting || isLoading_sendMessage ? (
+            {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Sending Test Message...

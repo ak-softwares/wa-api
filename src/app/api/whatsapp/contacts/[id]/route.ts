@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import Contact from "@/models/Contact";
+import { ContactModel } from "@/models/Contact";
 import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
@@ -24,7 +24,7 @@ export async function PUT(
       return NextResponse.json(response, { status: 400 });
     }
 
-    const contact = await Contact.findOneAndUpdate(
+    const contact = await ContactModel.findOneAndUpdate(
       { _id: id, userId: user._id },
       { name, phones, email, tags: tags || [] },
       { new: true }
@@ -66,7 +66,7 @@ export async function DELETE(
     // ⬅️ Await params because it’s a Promise
     const { id } = await params
 
-    const contact = await Contact.findOneAndDelete({ _id: id, userId: user._id });
+    const contact = await ContactModel.findOneAndDelete({ _id: id, userId: user._id });
     if (!contact) {
       const response: ApiResponse = {
         success: false,

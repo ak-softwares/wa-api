@@ -1,7 +1,12 @@
-// /models/AIAgent.ts
-
 import { Schema } from "mongoose";
-import { IAIAgent } from "@/types/AIAgent";
+
+export interface IAIAgent {
+  prompt?: string;
+  webhookUrl?: string;
+  isActive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 export const AIAgentSchema = new Schema<IAIAgent>(
   {

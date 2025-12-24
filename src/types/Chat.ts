@@ -1,6 +1,3 @@
-// /types/Chat.ts
-import { Types } from "mongoose";
-
 export enum ChatType {
   CHAT = "chat",
   GROUP = "group",
@@ -8,30 +5,24 @@ export enum ChatType {
   CAMPAIGN = "campaign",
 }
 
-export interface IChatParticipant {
+export type ChatParticipant = {
   number: string;
   name?: string;
   imageUrl?: string;
 }
 
-// ✅ alias interface as a type — so you can use whichever you prefer
-export type ChatParticipant = IChatParticipant;
-
-export interface IChat {
-  _id?: Types.ObjectId;
-  userId: Types.ObjectId;
-  waAccountId: Types.ObjectId;
-  participants: IChatParticipant[];
+export type Chat = {
+  _id?: string;
+  userId: string;
+  waAccountId: string;
+  participants: ChatParticipant[];
   type: ChatType;
   chatName?: string;
   chatImage?: string;
   isFavourite?: boolean
   lastMessage?: string;
-  lastMessageAt?: Date;
+  lastMessageAt?: string;
   unreadCount?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: string;
+  updatedAt?: string;
 }
-
-// ✅ alias interface as a type — so you can use whichever you prefer
-export type Chat = IChat;

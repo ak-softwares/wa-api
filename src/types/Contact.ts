@@ -1,16 +1,12 @@
-import { Types } from "mongoose";
-
-export interface IContact {
-  _id?: Types.ObjectId;
-  userId: Types.ObjectId;
-  waAccountId: Types.ObjectId;
+export type Contact = {
+  _id?: string;
+  userId: string;
+  waAccountId: string;
   name?: string;
   phones: string[];
   email?: string;
   tags?: string[];
   imageUrl?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: string;
+  updatedAt?: string;
 }
-// ✅ alias interface as a type — so you can use whichever you prefer
-export type Contact = IContact;

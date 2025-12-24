@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Message } from "@/models/Message";
-import { Chat } from "@/models/Chat";
+import { MessageModel } from "@/models/Message";
 import { ApiResponse } from "@/types/apiResponse";
-import { sendBroadcastMessage, sendWhatsAppMessage } from "@/lib/messages/sendWhatsAppMessage";
 import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
-import { Context, Message as IMessage } from "@/types/Message";
-import { ChatType } from "@/types/Chat";
-import { MessagePaylaod } from "@/types/MessagePayload";
-import { handleSendMessage } from "@/lib/messages/handleSendMessage";
+import { MessagePayload } from "@/types/MessageType";
+import { handleSendMessage } from "@/services/message/handleSendMessage";
 
 export async function GET(req: NextRequest) {
   try {
@@ -28,10 +24,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Total messages for pagination
-    const totalMessages = await Message.countDocuments({ userId: user._id, chatId });
+    const totalMessages = await MessageModel.countDocuments({ userId: user._id, chatId });
 
     // Fetch paginated messages
-    const messages = await Message.find({ userId: user._id, chatId })
+    const messages = await MessageModel.find({ userId: user._id, chatId })
       .sort({ createdAt: -1 })
       .skip((page - 1) * per_page)
       .limit(per_page)
@@ -66,7 +62,8 @@ export async function POST(req: NextRequest) {
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     // Parse request body
-    const messagePayload: MessagePaylaod = await req.json();
+    const messagePayload: MessagePayload = await req.json();
+    // console.log(messagePayload)
     const result = await handleSendMessage({
       messagePayload,
       userId: user._id,

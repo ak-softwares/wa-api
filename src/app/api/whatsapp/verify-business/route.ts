@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
+import { UserModel } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { authOptions } from "../../auth/[...nextauth]/authOptions";
 
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     await connectDB();
     
     // Get user from database
-    const user = await User.findOne({ email: session.user.email });
+    const user = await UserModel.findOne({ email: session.user.email });
     
     if (!user) {
       const response: ApiResponse = {
@@ -133,7 +133,7 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
     
-    const user = await User.findOne({ email: session.user.email });
+    const user = await UserModel.findOne({ email: session.user.email });
     
     if (!user) {
       const response: ApiResponse = {

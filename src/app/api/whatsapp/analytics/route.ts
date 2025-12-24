@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { Message } from "@/models/Message";
-import { AiUsage } from "@/models/AiUsage";
+import { MessageModel } from "@/models/Message";
+import { AiUsageModel } from "@/models/AiUsage";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function POST(req: Request) {
@@ -19,13 +19,13 @@ export async function POST(req: Request) {
     const end = endDate ? new Date(endDate) : now;
 
     // 1. Total messages in the date range
-    const totalMessages = await Message.countDocuments({
+    const totalMessages = await MessageModel.countDocuments({
       userId: user._id,
       createdAt: { $gte: start, $lte: end }
     });
 
     // 2. Total sent messages (only those sent BY user)
-    const totalSentMessages = await Message.countDocuments({
+    const totalSentMessages = await MessageModel.countDocuments({
         userId: user._id,
         from: waAccount.phone_number_id,     // messages sent FROM this WA account
         status: { $in: ["sent", "delivered", "read"] },
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     });
 
     // 3. Total AI Replies
-    const totalAIReplies = await AiUsage.countDocuments({
+    const totalAIReplies = await AiUsageModel.countDocuments({
       userId: user._id,
     //   from: waAccount.phone_number_id,   // ensures it's an outgoing AI reply
     //   status: { $in: ["sent", "delivered", "read"] },
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     });
 
     // 4. AI Cost
-    const aiUsage = await AiUsage.aggregate([
+    const aiUsage = await AiUsageModel.aggregate([
       {
         $match: {
           userId: user._id,

@@ -1,24 +1,27 @@
 // /types/Message.ts
-import { Types } from "mongoose";
-import { MessageStatus } from "@/types/MessageStatus";
+import { MessageStatus } from "./MessageType";
 import { MessageType } from "@/types/MessageType";
 import { ChatParticipant } from "@/types/Chat";
 import { Template } from "./Template";
 import { Media } from "@/utiles/enums/mediaTypes";
 
-export interface IContext {
+export type Context = {
   id: string;
   from?: string;
   message?: string;
 }
 
-// ✅ alias interface as a type — so you can use whichever you prefer
-export type Context = IContext;
+export type Location = {
+  latitude: number;
+  longitude: number;
+  name?: string;
+  address?: string;
+}
 
-export interface IMessage {
-  _id?: Types.ObjectId;
-  userId: Types.ObjectId;
-  chatId: Types.ObjectId;
+export type Message = {
+  _id?: string;
+  userId: string;
+  chatId: string;
   to: string;
   from: string;
   message?: string;
@@ -32,16 +35,6 @@ export interface IMessage {
   tag?: string;
   participants?: ChatParticipant[];
   aiUsageId?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-// ✅ alias interface as a type — so you can use whichever you prefer
-export type Message = IMessage;
-
-export interface Location {
-  latitude: number;
-  longitude: number;
-  name?: string;
-  address?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

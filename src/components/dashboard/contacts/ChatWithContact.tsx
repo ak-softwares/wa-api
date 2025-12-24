@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/dialog";
 import { MessageCircle, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { IContact } from "@/types/Contact";
+import { Contact } from "@/types/Contact";
 
 interface ChatTabProps {
-  contact: IContact;
+  contact: Contact;
 }
 
 export default function ChatTab({ contact }: ChatTabProps) {

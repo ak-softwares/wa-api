@@ -1,21 +1,20 @@
 // components/chat/TemplateMessage.tsx
 "use client";
 
-import { ITemplate } from "@/types/Template";
+import { Template } from "@/types/Template";
 import { TemplateComponentType } from "@/utiles/enums/template";
 import React, { useEffect, useState } from "react";
 import { formatRichText } from "../../common/FormatRichText";
 import MessageMetaInfo from "../messages/MessageMetaInfo";
 import { Message } from "@/types/Message";
-import { useMedia } from "@/hooks/common/useMedia";
+import { fetchMediaBlob } from "@/services/message/media.service";
 
 interface TemplateMessageProps {
   message?: Message;
-  template: ITemplate; // You can replace this with Template type if needed
+  template: Template; // You can replace this with Template type if needed
 }
 
 export default function TemplateMessage({ message, template }: TemplateMessageProps) {
-  const { fetchMedia } = useMedia();
   if (!template || !template.components) return null;
 
   return (
@@ -33,7 +32,7 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
           useEffect(() => {
             if (!mediaId) return;
             const load = async () => {
-              const url = await fetchMedia(mediaId);
+              const url = await fetchMediaBlob(mediaId);
               setMediaUrl(url);
             };
             load();

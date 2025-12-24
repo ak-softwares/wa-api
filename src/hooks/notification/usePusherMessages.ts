@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import Pusher from "pusher-js";
 import { toast } from "@/components/ui/sonner";
-import { IMessage } from "@/types/Message";
+import { Message } from "@/types/Message";
 
 export function usePusherGlobalNotifications() {
   const pusherRef = useRef<Pusher | null>(null);
@@ -19,7 +19,7 @@ export function usePusherGlobalNotifications() {
     // ✅ subscribe to a single global channel
     const channel = pusherRef.current.subscribe("global-notifications");
 
-    channel.bind("new-message", (data: { message: IMessage }) => {
+    channel.bind("new-message", (data: { message: Message }) => {
       const msg = data.message;
       console.log("📩 New Pusher message received:", data);
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
+import { UserModel } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { signUpSchema } from "@/schemas/signUpSchema";
 
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     await connectDB();
 
     // ✅ Check if email already exists
-    const existingUserByEmail = await User.findOne({ email });
+    const existingUserByEmail = await UserModel.findOne({ email });
     if (existingUserByEmail) {
       const response: ApiResponse = {
         success: false,
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     }
 
     // ✅ Check if phone already exists
-    const existingUserByPhone = await User.findOne({ phone });
+    const existingUserByPhone = await UserModel.findOne({ phone });
     if (existingUserByPhone) {
       const response: ApiResponse = {
         success: false,
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     }
 
     // ✅ Create new user
-    const user = new User({
+    const user = new UserModel({
       name,
       email,
       phone,

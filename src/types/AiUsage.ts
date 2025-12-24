@@ -1,10 +1,8 @@
-import { Types } from "mongoose";
-
-export interface IAiUsage {
-  _id?: Types.ObjectId;
-  userId: Types.ObjectId;
-  waAccountId?: Types.ObjectId;
-  chatId?: Types.ObjectId;
+export type IAiUsage = {
+  _id?: string;
+  userId: string;
+  waAccountId?: string;
+  chatId?: string;
   model: string;
   promptTokens: number;
   completionTokens: number;
@@ -13,5 +11,3 @@ export interface IAiUsage {
   completionCost?: number;
   totalCost?: number;
 }
-
-export type AiUsage = IAiUsage;

@@ -1,5 +1,17 @@
-import mongoose, { Schema, models } from "mongoose";
-import { IContact } from "@/types/Contact";
+import mongoose, { Schema, Types, models } from "mongoose";
+
+export interface IContact {
+  _id?: Types.ObjectId;
+  userId: Types.ObjectId;
+  waAccountId: Types.ObjectId;
+  name?: string;
+  phones: string[];
+  email?: string;
+  tags?: string[];
+  imageUrl?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 const ContactSchema = new Schema<IContact>(
   {
@@ -20,4 +32,4 @@ const ContactSchema = new Schema<IContact>(
   { timestamps: true }
 );
 
-export default models.Contact || mongoose.model<IContact>("Contact", ContactSchema);
+export const ContactModel = models.Contact || mongoose.model<IContact>("Contact", ContactSchema);

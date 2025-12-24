@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Chat } from "@/models/Chat";
-import Contact from "@/models/Contact";
+import { ChatModel } from "@/models/Chat";
+import { ContactModel } from "@/models/Contact";
 import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     let chats: any[] = [];
     let totalChats = 0;
 
-    const contacts = await Contact.find({ userId: user._id }).lean();
+    const contacts = await ContactModel.find({ userId: user._id }).lean();
 
     if (searchQuery) {
       // 🔹 Use Atlas Search
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
         },
       ];
 
-      const [searchResult] = await Chat.aggregate(searchPipeline);
+      const [searchResult] = await ChatModel.aggregate(searchPipeline);
       chats = searchResult?.data || [];
       totalChats = searchResult?.metadata?.[0]?.total || 0;
     } else {
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
 
       // 🔹 Regular paginated query
       [chats, totalChats] = await Promise.all([
-        Chat.aggregate([
+        ChatModel.aggregate([
           { $match: matchConditions },
           {
             $addFields: {
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
           { $skip: skip },
           { $limit: perPage },
         ]),
-        Chat.countDocuments({ userId: user._id, waAccountId: waAccount._id }),
+        ChatModel.countDocuments({ userId: user._id, waAccountId: waAccount._id }),
       ]);
     }
 

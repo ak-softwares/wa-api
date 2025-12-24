@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
+import { UserModel } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { signInSchema } from "@/schemas/signInSchema";
 import bcrypt from "bcryptjs";
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     // ✅ Connect DB
     await connectDB();
-    const user = await User.findOne({ email });
+    const user = await UserModel.findOne({ email });
 
     if (!user) {
       const response: ApiResponse = {

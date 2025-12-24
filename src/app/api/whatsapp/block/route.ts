@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
-import Contact from "@/models/Contact";
+import { ContactModel } from "@/models/Contact";
 import { ChatParticipant } from "@/types/Chat";
 
 export async function GET(req: NextRequest) {
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const blockedNumbers: string[] = waAccount.blockedNumbers || [];
 
     // Fetch contacts for all blocked numbers
-    const contacts = await Contact.find({
+    const contacts = await ContactModel.find({
       phones: { $in: blockedNumbers }
     }).lean();
 

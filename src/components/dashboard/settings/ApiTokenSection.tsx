@@ -136,14 +136,15 @@ export default function APITokenSection() {
                 </p>
                 <div className="bg-gray-100 dark:bg-[#2E2F2F] p-4 rounded-lg font-mono text-xs space-y-2 text-gray-900 dark:text-gray-300">
                 <p><strong>Method:</strong> POST</p>
-                <p><strong>URL:</strong> {`${baseUrl}/api/whatsapp/send-message`}</p>
+                <p><strong>URL:</strong> {`${baseUrl}/api/whatsapp/messages`}</p>
                 <p className="text-xs break-words whitespace-pre-wrap"><strong>Authorization:</strong> Bearer YOUR_TOKEN</p>
                 <p><strong>Content-Type:</strong> application/json</p>
                 <pre className="bg-white dark:bg-[#1a1b1b] p-2 rounded-md text-gray-900 dark:text-gray-300">
     {`{
-    "to": "1234567890",
-    "message": "Your response message"
-    }`}
+  "participants": [{"number":"918265XXXXXXX"}],
+  "messageType": "text", // media, template, location
+  "message": "Hello from Postman!"
+}`}
                 </pre>
                 </div>
             </div>

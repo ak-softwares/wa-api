@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/mongoose";
-import { User } from "@/models/User";
+import { UserModel } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 
 export async function POST(req: Request) {
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    const user = await User.findOne({
+    const user = await UserModel.findOne({
       email,
       resetPasswordToken: token,
       resetPasswordExpires: { $gt: Date.now() }, // token not expired

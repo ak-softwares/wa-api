@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
-import { Template } from "@/models/Template";
+import { TemplateModel } from "@/models/Template";
 
 // DELETE /api/whatsapp/templates/[name]
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ name: string }> }) {
@@ -40,7 +40,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ n
         /* ------------------------------------------------------------
      * 2️⃣ DELETE TEMPLATE FROM DATABASE
      * ------------------------------------------------------------ */
-    const dbDelete = await Template.findOneAndDelete({
+    const dbDelete = await TemplateModel.findOneAndDelete({
       userId: user._id,
       waAccountId: waAccount._id,
       name: name

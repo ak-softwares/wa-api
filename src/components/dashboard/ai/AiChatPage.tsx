@@ -3,20 +3,19 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Power, Settings, Save, MessageCircle, Zap } from 'lucide-react';
+import { Power, Settings, Save, MessageCircle, Zap } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
-import { IAIChat } from '@/types/AIChat';
+import { AIChat } from '@/types/AIChat';
 import IconButton from '@/components/common/IconButton';
 import { useRouter } from 'next/navigation';
 import { useAiStore } from '@/store/aiStore';
 
 export default function AIChatPage() {
   const router = useRouter();
-  const [aiChat, setAiChat] = useState<IAIChat>({
+  const [aiChat, setAiChat] = useState<AIChat>({
     prompt: '',
     isActive: false,
   });

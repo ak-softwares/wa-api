@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { ApiResponse } from "@/types/apiResponse";
-import { IContact } from "@/types/Contact";
+import { Contact } from "@/types/Contact";
 import { toast } from "@/components/ui/sonner";
 
 interface UseContactsProps {
@@ -10,7 +10,7 @@ interface UseContactsProps {
 }
 
 export function useContacts({ sidebarRef }: UseContactsProps) {
-  const [contacts, setContacts] = useState<IContact[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [totalContacts, setTotalContacts] = useState(0);
   const [page, setPage] = useState(1);
   const [perPage] = useState(10);

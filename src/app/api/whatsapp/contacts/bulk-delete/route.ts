@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
-import Contact from "@/models/Contact";
+import { ContactModel } from "@/models/Contact";
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ✅ Delete all matching contacts belonging to the same user
-    const result = await Contact.deleteMany({
+    const result = await ContactModel.deleteMany({
       _id: { $in: ids },
       userId: user._id,
     });

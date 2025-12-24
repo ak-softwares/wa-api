@@ -1,6 +1,6 @@
-export interface IAIChat {
+export type AIChat = {
   prompt?: string;
   isActive?: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: string;
+  updatedAt?: string;
 }

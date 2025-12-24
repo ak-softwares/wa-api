@@ -2,8 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
-import { Chat } from "@/models/Chat";
-import { Message } from "@/models/Message";
+import { ChatModel } from "@/models/Chat";
+import { MessageModel } from "@/models/Message";
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ✅ Delete chats belonging to the authenticated user
-    const chatDeleteResult = await Chat.deleteMany({
+    const chatDeleteResult = await ChatModel.deleteMany({
       _id: { $in: ids },
       userId: user._id,
     });
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ✅ Delete all related messages for these chats
-    await Message.deleteMany({ chatId: { $in: ids } });
+    await MessageModel.deleteMany({ chatId: { $in: ids } });
 
     const response: ApiResponse = {
       success: true,

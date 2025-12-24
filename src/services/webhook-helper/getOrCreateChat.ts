@@ -1,5 +1,5 @@
-import { Chat } from "@/models/Chat";
-import { ChatType, IChat } from "@/types/Chat";
+import { ChatModel, IChat } from "@/models/Chat";
+import { ChatType } from "@/types/Chat";
 import { Types } from "mongoose";
 
 interface GetOrCreateChatArgs {
@@ -23,7 +23,7 @@ export async function getOrCreateChat({
     }
 
     // 2. Find or create in DB
-    const chat = await Chat.findOneAndUpdate(
+    const chat = await ChatModel.findOneAndUpdate(
       {
         userId,
         waAccountId,

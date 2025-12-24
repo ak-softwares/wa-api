@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Chat } from "@/models/Chat";
+import { ChatModel } from "@/models/Chat";
 import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 import { ChatParticipant, ChatType } from "@/types/Chat";
 
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       );
     }
 
-    const chat = await Chat.findOne({ _id: chatId, userId: user._id });
+    const chat = await ChatModel.findOne({ _id: chatId, userId: user._id });
     if (!chat) {
         return NextResponse.json({ success: false, message: "Chat not found" }, { status: 404 });
     }
@@ -92,7 +92,7 @@ export async function DELETE(
       );
     }
 
-    const chat = await Chat.findOne({ _id: chatId, userId: user._id });
+    const chat = await ChatModel.findOne({ _id: chatId, userId: user._id });
     if (!chat) {
       return NextResponse.json(
         { success: false, message: "Chat not found" },

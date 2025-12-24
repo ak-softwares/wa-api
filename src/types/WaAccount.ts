@@ -1,10 +1,9 @@
-import { IAIChat } from "./AIChat";
-import { IAIAgent } from "./AIAgent";
-import { Types } from "mongoose";
+import { AIAgent } from "./AIAgent";
+import { AIChat } from "./AIChat";
 
-export interface IWaAccount {
-  _id?: Types.ObjectId;
-  userId: Types.ObjectId;
+export type WaAccount = {
+  _id?: string;
+  userId: string;
   phone_number_id: string;
   waba_id: string;
   business_id: string;
@@ -12,21 +11,18 @@ export interface IWaAccount {
   verified_name?: string;
   display_phone_number?: string;
   quality_rating?: string;
-  last_onboarded_time?: Date;
+  last_onboarded_time?: string;
   code_verification_status?: string;
   is_phone_number_registered?: boolean;
   is_app_subscribed?: boolean;
-  aiChat?: IAIChat;
-  aiAgent?: IAIAgent;
+  aiChat?: AIChat;
+  aiAgent?: AIAgent;
   apiToken?: string;
   apiTokenHashed?: string;
-  apiTokenCreatedAt?: Date;
-  apiTokenUpdatedAt?: Date;
+  apiTokenCreatedAt?: string;
+  apiTokenUpdatedAt?: string;
   phone_number?: string;
   blockedNumbers?: string[];
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: string;
+  updatedAt?: string;
 }
-
-// ✅ alias interface as a type — so you can use whichever you prefer
-export type WaAccount = IWaAccount;

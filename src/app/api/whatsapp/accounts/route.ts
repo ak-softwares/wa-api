@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import axios from "axios";
 import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
-import { WaAccount } from "@/models/WaAccount";
+import { WaAccountModel } from "@/models/WaAccount";
 
 // 📌 Full WhatsApp setup: exchange token → register phone → subscribe app
 export async function POST(req: NextRequest) {
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
 
     // ---------------- Step 5: Update & Save User ----------------
     // 5️⃣ Upsert WA Account (SEPARATE COLLECTION)
-    const waAccount = await WaAccount.findOneAndUpdate(
+    const waAccount = await WaAccountModel.findOneAndUpdate(
       { userId: user._id, phone_number_id },
       {
         userId: user._id,
@@ -153,13 +153,13 @@ export async function DELETE(req: Request) {
     } catch {}
 
     // 3️⃣ Delete WA account document
-    await WaAccount.deleteOne({
+    await WaAccountModel.deleteOne({
       _id: waAccount._id,
       userId: user._id,
     });
 
     // 4️⃣ Reset default WA account
-    const nextAccount = await WaAccount.findOne({ userId: user._id }).sort({ createdAt: 1 });
+    const nextAccount = await WaAccountModel.findOne({ userId: user._id }).sort({ createdAt: 1 });
 
     // ✅ Step 5: If deleted account was default, reset defaultWaAccountId
     user.defaultWaAccountId = nextAccount ? nextAccount._id : undefined;

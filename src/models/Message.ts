@@ -1,10 +1,54 @@
 // /models/Message.ts
-import mongoose, { Schema, models } from "mongoose";
-import { IMessage, IContext, Location } from "@/types/Message";
-import { MessageStatus } from "@/types/MessageStatus";
+import mongoose, { Schema, Types, models } from "mongoose";
+import { MessageStatus } from "@/types/MessageType";
 import { MessageType } from "@/types/MessageType";
 import { ChatParticipantSchema } from "@/models/Chat";
-import { Media } from "@/utiles/enums/mediaTypes";
+import { ChatParticipant } from "@/types/Chat";
+import { MediaType } from "@/utiles/enums/mediaTypes";
+import { ITemplate } from "./Template";
+
+export interface IMedia {
+  id?: string;       // media_id from WhatsApp
+  link?: string;     // public URL
+  caption?: string;  // only for image/video/document
+  filename?: string; // only for document
+  mediaType?: MediaType;
+  voice?: boolean;
+}
+
+export interface IContext {
+  id: string;
+  from?: string;
+  message?: string;
+}
+
+export interface ILocation {
+  latitude: number;
+  longitude: number;
+  name?: string;
+  address?: string;
+}
+
+export interface IMessage {
+  _id?: Types.ObjectId;
+  userId: Types.ObjectId;
+  chatId: Types.ObjectId;
+  to: string;
+  from: string;
+  message?: string;
+  template?: ITemplate;
+  media?: IMedia;
+  location?: ILocation;
+  waMessageId?: string;
+  status?: MessageStatus;
+  type?: MessageType;
+  context?: IContext;
+  tag?: string;
+  participants?: ChatParticipant[];
+  aiUsageId?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 // ---- Context Sub-Schema ----
 const ContextSchema = new Schema<IContext>(
@@ -17,7 +61,7 @@ const ContextSchema = new Schema<IContext>(
 );
 
 // ---- Media Sub-Schema ----
-const MediaSchema = new Schema<Media>(
+const MediaSchema = new Schema<IMedia>(
   {
     id: { type: String },        // media_id from WhatsApp
     link: { type: String },      // public URL
@@ -29,7 +73,7 @@ const MediaSchema = new Schema<Media>(
 );
 
 // ---- Location Sub-Schema ----
-const LocationSchema = new Schema<Location>(
+const LocationSchema = new Schema<ILocation>(
   {
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true },
@@ -69,5 +113,5 @@ const MessageSchema = new Schema<IMessage>(
   { timestamps: true }
 );
 
-export const Message = models.Message || mongoose.model<IMessage>("Message", MessageSchema);
+export const MessageModel = models.Message || mongoose.model<IMessage>("Message", MessageSchema);
 

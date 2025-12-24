@@ -5,9 +5,7 @@ import { TemplateComponentType, TemplateHeaderType } from "@/utiles/enums/templa
 /**
  * Convert internal Template -> WhatsApp Send Template JSON
  */
-export function convertTemplateToMetaForSend(
-  template: Template,
-) {
+export function buildMetaTemplatePayload( template: Template ) {
   if (!template) return null;
 
   const components: any[] = [];

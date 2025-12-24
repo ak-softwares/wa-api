@@ -1,7 +1,7 @@
-import { Wallet } from "@/models/Wallet";
+import { WalletModel } from "@/models/Wallet";
 
 export async function commitCredits(userId: string, cost: number) {
-  await Wallet.updateOne(
+  await WalletModel.updateOne(
     { userId },
     {
       $inc: { locked: -cost },

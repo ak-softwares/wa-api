@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
-import { testSendToAIAgent } from "@/lib/ai/webhookService";
+import { testSendToAIAgent } from "@/services/ai/webhookService";
 import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function POST(req: NextRequest) {

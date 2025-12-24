@@ -1,5 +1,19 @@
-import { IAiUsage } from "@/types/AiUsage";
-import mongoose, { Schema, models } from "mongoose";
+import mongoose, { Schema } from "mongoose";
+import { Types } from "mongoose";
+
+export interface IAiUsage {
+  _id?: Types.ObjectId;
+  userId: Types.ObjectId;
+  waAccountId?: Types.ObjectId;
+  chatId?: Types.ObjectId;
+  model: string;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  promptCost?: number;
+  completionCost?: number;
+  totalCost?: number;
+}
 
 const AiUsageSchema = new Schema<IAiUsage>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -14,4 +28,4 @@ const AiUsageSchema = new Schema<IAiUsage>({
   totalCost: { type: Number },
 }, { timestamps: true });
 
-export const AiUsage = mongoose.models.AiUsage || mongoose.model<IAiUsage>("AiUsage", AiUsageSchema);
+export const AiUsageModel = mongoose.models.AiUsage || mongoose.model<IAiUsage>("AiUsage", AiUsageSchema);

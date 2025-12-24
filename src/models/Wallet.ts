@@ -1,5 +1,12 @@
-import { IWallet } from "@/types/Wallet";
-import mongoose, { Schema, models, model } from "mongoose";
+import mongoose, { Schema, models, model, Types } from "mongoose";
+
+export interface IWallet {
+  _id?: Types.ObjectId;
+  userId: Types.ObjectId;
+  waAccountId: Types.ObjectId;
+  balance: number; // credits
+  locked?: number; // optional (for in-flight usage)
+}
 
 const WalletSchema = new Schema<IWallet>(
   {
@@ -11,4 +18,4 @@ const WalletSchema = new Schema<IWallet>(
   { timestamps: true }
 );
 
-export const Wallet = models.Wallet || model<IWallet>("Wallet", WalletSchema);
+export const WalletModel = models.Wallet || model<IWallet>("Wallet", WalletSchema);

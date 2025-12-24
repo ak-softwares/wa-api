@@ -3,16 +3,15 @@
 
 import React, { useEffect, useState } from "react";
 import { Message } from "@/types/Message";
-import { useMedia } from "@/hooks/common/useMedia";
 import { formatRichText } from "@/components/common/FormatRichText";
 import { MediaType } from "@/utiles/enums/mediaTypes";
+import { fetchMediaBlob } from "@/services/message/media.service";
 
 interface MediaMessageProps {
   message: Message;
 }
 
 export default function MediaMessage({ message }: MediaMessageProps) {
-  const { fetchMedia } = useMedia();
 
   const mediaId = message.media?.id || null;
   const mediaType = message.media?.mediaType || "";
@@ -23,7 +22,7 @@ export default function MediaMessage({ message }: MediaMessageProps) {
   useEffect(() => {
     if (!mediaId) return;
     const load = async () => {
-      const url = await fetchMedia(mediaId);
+      const url = await fetchMediaBlob(mediaId);
       setMediaUrl(url);
     };
     load();

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { User } from "@/models/User";
+import { UserModel } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
 
@@ -51,7 +51,7 @@ export async function PUT(req: Request) {
     
     // ✅ Check if email already exists in another account
     if (email !== user.email) {
-      const existingUser = await User.findOne({ 
+      const existingUser = await UserModel.findOne({ 
         email,
         _id: { $ne: user._id }   // 👈 exclude current user's own record 
       });
@@ -66,7 +66,7 @@ export async function PUT(req: Request) {
 
     // ✅ Check if phone is being changed & ensure it's unique
     if (phone !== user.phone) {
-      const existingUser = await User.findOne({ 
+      const existingUser = await UserModel.findOne({ 
         phone,
         _id: { $ne: user._id }   // 👈 exclude current user's own record
       });
@@ -105,7 +105,7 @@ export async function DELETE() {
     const { user, errorResponse } = await fetchAuthenticatedUser();
     if (errorResponse) return errorResponse; // 🚫 Handles auth, DB, and token errors
 
-    await User.findByIdAndDelete(user._id);
+    await UserModel.findByIdAndDelete(user._id);
     
     const response: ApiResponse = {
       success: true,

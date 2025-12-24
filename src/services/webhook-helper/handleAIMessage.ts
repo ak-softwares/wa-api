@@ -1,13 +1,16 @@
-import { IChat } from "@/types/Chat";
-import { IWaAccount } from "@/types/WaAccount";
-import { sendToAIAgent } from "../ai/webhookService";
-import { getAIReply } from "../ai/aiService";
-import { sendWhatsAppMessage } from "../messages/sendWhatsAppMessage";
+import { IChat } from "@/models/Chat";
+import { IWaAccount } from "@/models/WaAccount";
+import { sendToAIAgent } from "@/services/ai/webhookService";
+import { getAIReply } from "@/services/ai/aiService";
+import { sendMessage } from "../../services/message/sendMessage";
 import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
+import { handleSendMessage } from "../message/handleSendMessage";
+import { MessageType } from "@/types/MessageType";
+import { Types } from "mongoose";
 
 interface HandleAIMessageArgs {
-  userId: string; // User document
-  wa: IWaAccount;
+  userId: Types.ObjectId; // User document
+  waAccount: IWaAccount;
   chat: IChat; // Chat document
   change: any; // Single messages payload
   rowMessageJson: any; // Single message payload
@@ -15,7 +18,7 @@ interface HandleAIMessageArgs {
 
 export async function handleAIMessage({
   userId,
-  wa,
+  waAccount,
   chat,
   change,
   rowMessageJson,
@@ -26,20 +29,20 @@ export async function handleAIMessage({
   const from = rowMessageJson.from;
 
   // AI agent via webhook
-  if (wa.aiAgent?.isActive && wa.aiAgent?.webhookUrl) {
+  if (waAccount.aiAgent?.isActive && waAccount.aiAgent?.webhookUrl) {
     await sendToAIAgent({
-      webhookUrl: wa.aiAgent.webhookUrl,
+      webhookUrl: waAccount.aiAgent.webhookUrl,
       payload: change, // single message payload
-      prompt: wa.aiAgent.prompt,
+      prompt: waAccount.aiAgent.prompt,
       user_name: sender_name,
       user_phone: from,
     });
   }
   // AI chat directly
-  else if (wa.aiChat?.isActive) {
+  else if (waAccount.aiChat?.isActive) {
     const { aiGeneratedReply, aiUsageId } = await getAIReply({
       userId: userId,
-      prompt: wa.aiChat?.prompt ?? "",
+      prompt: waAccount.aiChat?.prompt ?? "",
       chat,
       phone_number_id,
       user_name: sender_name,
@@ -47,24 +50,24 @@ export async function handleAIMessage({
     });
 
     if (aiGeneratedReply) {
-      const { newMessage: aiMessage, waMessageId, errorResponse: sendMsgError } = await sendWhatsAppMessage({
+      const messagePayload = {
+        participants: [{ number: from }],
+        messageType: MessageType.TEXT,
+        message: aiGeneratedReply
+      };
+      const result = await handleSendMessage({
+        messagePayload,
         userId: userId,
-        chatId: chat._id!.toString(),
-        phone_number_id,
-        permanent_token: wa.permanent_token,
-        to: from,
-        message: aiGeneratedReply,
-        tag: "aichat",
-        aiUsageId,
+        waAccount
       });
 
-      if (waMessageId) {
+      if (result.sent > 0 && result.message) {
         // Trigger message for specific user (listener)
         await sendPusherNotification({
-          userId: userId,
+          userId: userId.toString(),
           event: "new-message",
           chat,
-          message: aiMessage,
+          message: result.message,
         });
       }
     }

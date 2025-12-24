@@ -1,6 +1,9 @@
-export const formatTime = (date?: Date) => {
+export const formatTime = (date?: string) => {
   if (!date) return "";
+
   const d = new Date(date);
+  if (isNaN(d.getTime())) return ""; // guard against invalid dates
+
   const now = new Date();
 
   // Check if it's the same day
@@ -15,12 +18,13 @@ export const formatTime = (date?: Date) => {
     const minutes = d.getMinutes().toString().padStart(2, "0");
     const ampm = hours >= 12 ? "PM" : "AM";
     hours = hours % 12 || 12;
+
     return `${hours}:${minutes} ${ampm}`;
-  } else {
-    // Format as date (e.g., "12 Oct")
-    return d.toLocaleDateString("en-US", {
-      day: "2-digit",
-      month: "short",
-    });
   }
+
+  // Format as date (e.g., "12 Oct")
+  return d.toLocaleDateString("en-US", {
+    day: "2-digit",
+    month: "short",
+  });
 };

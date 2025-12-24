@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
-import { Template } from "@/models/Template";
+import { TemplateModel } from "@/models/Template";
 import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
 
 export async function GET(req: NextRequest) {
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ✅ Save in DB
-    const newTemplate = await Template.create({
+    const newTemplate = await TemplateModel.create({
       id: fbResponse.data.id, // Save FB template ID
       userId: user._id,
       waAccountId: waAccount._id,
@@ -190,7 +190,7 @@ export async function PUT(req: NextRequest) {
     }
 
     // Update DB template
-    const updatedTemplate = await Template.findOneAndUpdate(
+    const updatedTemplate = await TemplateModel.findOneAndUpdate(
       {
         id: id,
         userId: user._id,

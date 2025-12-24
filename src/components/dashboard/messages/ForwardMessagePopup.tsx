@@ -7,15 +7,15 @@ import SearchBar from "@/components/common/SearchBar";
 import IconButton from "@/components/common/IconButton";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { Message } from "@/types/Message";
-import { useSendWhatsappMessage } from "@/hooks/whatsapp/useSendWhatsappMessage";
 import { useChatStore } from "@/store/chatStore";
 import { useContacts } from "@/hooks/contact/useContacts";
 import { useChats } from "@/hooks/chat/useChats";
 
 import { Chat } from "@/types/Chat";
 import { Contact } from "@/types/Contact";
-import { MessagePaylaod } from "@/types/MessagePayload";
+import { MessagePayload } from "@/types/MessageType";
 import { MessageType } from "@/types/MessageType";
+import { sendMessage } from "@/services/message/sendMessage";
 
 interface ForwardMessagePopupProps {
   isOpen: boolean;
@@ -48,7 +48,6 @@ export default function ForwardMessagePopup({ isOpen, onClose, message }: Forwar
     searchContacts
   } = useContacts({ sidebarRef });
 
-  const { sendMessage } = useSendWhatsappMessage();
   const { setNewMessageData } = useChatStore();
 
   // Selection
@@ -123,12 +122,12 @@ export default function ForwardMessagePopup({ isOpen, onClose, message }: Forwar
     // CHAT TAB
     if (activeTab === "chats") {
       for (const chat of selectedChats) {
-        const messagePayload: MessagePaylaod = {
+        const messagePayload: MessagePayload = {
           participants: chat?.participants!,
           messageType: MessageType.TEXT,
           message: forwardText
         };
-        await sendMessage(messagePayload);
+        await sendMessage({messagePayload});
         setNewMessageData(message, chat);
       }
     }
@@ -136,12 +135,12 @@ export default function ForwardMessagePopup({ isOpen, onClose, message }: Forwar
     // CONTACT TAB
     if (activeTab === "contacts") {
       for (const contact of selectedContacts) {
-        const messagePayload: MessagePaylaod = {
+        const messagePayload: MessagePayload = {
           participants: [{number: contact.phones[0]}],
           messageType: MessageType.TEXT,
           message: forwardText
         };
-        const response = await sendMessage(messagePayload);
+        const response = await sendMessage({messagePayload});
         if (response.success && response.data) {
           const { chat } = response.data;
           setNewMessageData(message, chat);

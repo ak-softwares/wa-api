@@ -5,26 +5,27 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { useChatStore } from "@/store/chatStore";
 import { RotateCw, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMessages } from "@/hooks/message/useMessages";
-import { MediaSelection } from "./MessagePage";
-import { MediaType } from "@/utiles/enums/mediaTypes";
+import { MediaSelection } from "@/types/MessageType";
+import { Media, MediaType } from "@/utiles/enums/mediaTypes";
 import MessagesHeader from "./MessageHeader";
 import IconButton from "@/components/common/IconButton";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import { useTheme } from "next-themes";
-import { useSendMedia } from "@/hooks/message/useSendMedia";
 import { ChatType } from "@/types/Chat";
+import { MessagePayload, MessageType } from "@/types/MessageType";
+import { toast } from "@/components/ui/sonner";
+import { uploadMediaApi } from "@/services/message/media.service";
 
 interface MediaSendPageProps {
   mediaList: MediaSelection[];
-  chatId: string;
+  onSend: (payload: any) => void; // adjust type to match your onSend
   onClose: () => void;
   onSendSuccess?: () => void;
 }
 
-export default function MediaSendPage({ mediaList, chatId, onClose, onSendSuccess }: MediaSendPageProps) {
+export default function MediaSendPage({ mediaList, onSend, onClose, onSendSuccess }: MediaSendPageProps) {
   const { theme } = useTheme(); // or use your theme context
   const { activeChat } = useChatStore();
-  const { onSend } = useMessages({ chatId });
   const [captions, setCaptions] = useState<string[]>(mediaList.map(() => ""));
   const [isSending, setIsSending] = useState(false);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
@@ -35,7 +36,6 @@ export default function MediaSendPage({ mediaList, chatId, onClose, onSendSucces
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [mediaListState, setMediaList] = useState(mediaList);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { sendMedia, isSending: isSendingMedia } = useSendMedia();
 
   const detectMediaType = (file: File): MediaType => {
     if (file.type.startsWith("image/")) return MediaType.IMAGE;
@@ -113,13 +113,29 @@ export default function MediaSendPage({ mediaList, chatId, onClose, onSendSucces
       for (let i = 0; i < mediaListState.length; i++) {
         const media = mediaListState[i];
         if (!media.file) continue;
+        
+        // ---------------------------------------
+        // 1) Upload Media to WhatsApp (media API)
+        // ---------------------------------------
+        const mediaId = await uploadMediaApi(media.file);
+        
+        const mediaType: MediaType = detectMediaType(media.file)
 
-        await sendMedia({
-          chatId,
-          file: media.file,
+        const mediaPayload: Media = {
+          id: mediaId,
           caption: captions[i] || "",
-          mediaType: detectMediaType(media.file),
-        });
+          mediaType: mediaType,
+          filename: mediaType === MediaType.DOCUMENT ? media.file.name : undefined,
+        };
+
+        const messagePayload: MessagePayload = {
+          participants: activeChat?.participants!,
+          messageType: MessageType.MEDIA,
+          media: mediaPayload,
+          chatType: isBroadcast ? ChatType.BROADCAST : ChatType.CHAT,
+          chatId: activeChat?._id
+        };
+        onSend({ messagePayload });
 
         // Optional delay
         if (i < mediaListState.length - 1) {
@@ -129,6 +145,7 @@ export default function MediaSendPage({ mediaList, chatId, onClose, onSendSucces
 
       onSendSuccess ? onSendSuccess() : onClose();
     } catch (error) {
+      toast.error("error");
     } finally {
       setIsSending(false);
     }

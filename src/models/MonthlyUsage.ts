@@ -19,4 +19,4 @@ const MonthlyUsageSchema = new Schema<IMonthlyUsage>(
 
 MonthlyUsageSchema.index({ userId: 1, year: 1, month: 1 }, { unique: true });
 
-export const MonthlyUsage = models.MonthlyUsage || model<IMonthlyUsage>("MonthlyUsage", MonthlyUsageSchema);
+export const MonthlyUsageModel = models.MonthlyUsage || model<IMonthlyUsage>("MonthlyUsage", MonthlyUsageSchema);
