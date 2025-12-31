@@ -2,7 +2,7 @@
 "use client";
 
 import { Template } from "@/types/Template";
-import { TemplateComponentType } from "@/utiles/enums/template";
+import { TemplateCategory, TemplateComponentType } from "@/utiles/enums/template";
 import { Message } from "@/types/Message";
 import { formatRichText } from "../../common/FormatRichText";
 import { TemplateMediaPreview } from "./GetTemplateMediaPreview";
@@ -14,6 +14,39 @@ interface PreviewTemplateMessageProps {
 
 export default function PreviewTemplateMessage({ message, template }: PreviewTemplateMessageProps) {
   if (!template || !template.components) return null;
+
+  // Special handling for AUTHENTICATION templates
+  if (template.category === TemplateCategory.AUTHENTICATION) {
+    return ( 
+      <div className="flex flex-col gap-1 mb-1 w-[200px]">
+        <p className="text-[14px] whitespace-pre-line">
+          123456 is your verification code.
+        </p>
+
+        {/* ---------------- BUTTON ---------------- */}
+        <div className="flex flex-col -mb-2 -mx-3">
+          <div className="flex flex-col w-full">
+            <div className="flex items-center justify-center py-2 border-t gap-2 cursor-default">
+              {/* ICON */}
+              <img
+                src={`/assets/icons/${getButtonIcon("OTP")}`}
+                className="w-4 h-4"
+              />
+
+              {/* TEXT */}
+              <span className="text-blue-500 dark:text-[#21C063] text-sm">
+                COPY
+              </span>
+            </div>
+          </div>
+
+        </div>
+        {/* ---------------- END BUTTON ---------------- */}
+      </div>
+    );
+  }
+
+
   return (
     <div className="flex flex-col gap-1 mb-1 w-[200px]">
 
@@ -22,17 +55,19 @@ export default function PreviewTemplateMessage({ message, template }: PreviewTem
         {/* STATIC HEADER + MEDIA */}
         {template.components
         .filter((c) => c.type === TemplateComponentType.HEADER)
-        .map((h, idx) => (
+        .map((h, idx) => {
+          const finalText = replaceHeaderVariables(h.text ?? "", h.example);
+          return (
             <div key={idx}>
             {h.format === "TEXT" ? (
                 <div className="text-sm font-semibold opacity-90">
-                {h.text}
+                {finalText}
                 </div>
             ) : (
                 TemplateMediaPreview(h)
             )}
             </div>
-        ))}
+        )})}
 
       {/* ---------------- END HEADER ---------------- */}
 
@@ -42,7 +77,7 @@ export default function PreviewTemplateMessage({ message, template }: PreviewTem
       {template.components
         .filter((c) => c.type === TemplateComponentType.BODY)
         .map((b, idx) => {
-          const finalText = replaceBodyVariables(b.text, b.example);
+          const finalText = replaceBodyVariables(b.text ?? "", b.example);
           return (
             <p
               key={idx}
@@ -90,6 +125,7 @@ export default function PreviewTemplateMessage({ message, template }: PreviewTem
                   <img
                     src={`/assets/icons/${getButtonIcon(btn.type)}`}
                     className="w-4 h-4"
+                    style={{filter: "var(--icon-filter)"}}
                   />
 
                   {/* TEXT */}
@@ -111,6 +147,23 @@ export default function PreviewTemplateMessage({ message, template }: PreviewTem
 /* -----------------------------------
   Replace Template Variables
 ------------------------------------*/
+function replaceHeaderVariables(text: string, example?: any) {
+  if (!text) return text;
+
+  const vars = example?.header_text?.[0];
+  if (!vars || !Array.isArray(vars)) return text;
+
+  let updated = text;
+  vars.forEach((value: string, idx: number) => {
+    updated = updated.replace(
+      new RegExp(`\\{\\{${idx + 1}\\}\\}`, "g"),
+      value
+    );
+  });
+
+  return updated;
+}
+
 function replaceBodyVariables(text: string, example?: any) {
   if (!text) return text;
 
@@ -133,7 +186,8 @@ function getButtonIcon(type: string) {
     case "URL": return "launch.svg";
     case "PHONE_NUMBER": return "call.svg";
     case "QUICK_REPLY": return "reply.svg";
-    case "OTP": return "shield.svg";
+    case "OTP": return "copy.svg";
+    case "COPY_CODE": return "copy.svg";
     default: return "btn.svg";
   }
 }

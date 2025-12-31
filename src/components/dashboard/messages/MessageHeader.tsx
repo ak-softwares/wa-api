@@ -8,22 +8,24 @@ import { CountryCode, parsePhoneNumberFromString } from "libphonenumber-js";
 import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
 import { useRouter } from "next/navigation";
 import { useFavourite } from "@/hooks/chat/useFavourite";
-import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import { Chat, ChatType } from "@/types/Chat";
 
 interface MessagesHeaderProps {
   onAvatarClick?: () => void;
   onBack?: () => void;
+  isBlocked?: boolean;
+  onBlockToggle?: () => void;
 }
 
 export default function MessagesHeader({
   onAvatarClick,
   onBack,
+  onBlockToggle,
+  isBlocked,
 }: MessagesHeaderProps) {
   const {activeChat, setActiveChat} = useChatStore();
   const { deleteChat } = useDeleteChats();
-  const { toggleFavourite, loading: favouriteLoading } = useFavourite();
-  const { isBlocked, toggleBlock, confirmBlockDialog } = useBlockedContacts();
+  const { toggleFavourite } = useFavourite();
   
   const router = useRouter();
   
@@ -124,11 +126,10 @@ export default function MessagesHeader({
           onDeleteChat={handleDelete}
           isFavourite={isFavourite ?? false}
           onToggleFavourite={() => handleUpdateChat(activeChat._id!.toString(), { isFavourite: !activeChat.isFavourite })}
-          onBlockToggle={() => toggleBlock(partner)}
-          isBlocked={isBlocked(partner)}
+          isBlocked={isBlocked}
+          onBlockToggle={onBlockToggle}
         />
       </div>
-      {confirmBlockDialog()}
     </div>
   );
 }

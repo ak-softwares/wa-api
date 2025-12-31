@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { ApiResponse } from "@/types/apiResponse";
-import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 
 // 📌 Subscribe App to WABA
 export async function POST(req: NextRequest) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { testSendToAIAgent } from "@/services/ai/webhookService";
-import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
+import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 
 export async function POST(req: NextRequest) {
   try {

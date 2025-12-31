@@ -23,6 +23,8 @@ import MessagesHeader from "@/components/dashboard/messages/MessageHeader";
 import { MediaSelection, MessagePayload } from "@/types/MessageType";
 import { MessageType } from "@/types/MessageType";
 import { ChatType } from "@/types/Chat";
+import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
+import SendTemplatePage from "@/components/dashboard/templates/SendTemplatePage";
 
 export default function MessagePage() {
   const { theme } = useTheme(); // or use your theme context
@@ -40,11 +42,10 @@ export default function MessagePage() {
   const [isForwardMessageOpen, setIsForwardMessageOpen] = useState(false);
   const [forwardMessage, setForwardMessage] = useState<Message | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const { templates: fetchedTemplates, loading: templatesLoading } = useTemplates();
+  const [isSendTemplate, setIsSendTemplate] = useState(false);
   // Update state to handle different media types
   const [mediaSelections, setMediaSelections] = useState<MediaSelection[]>([]);
+  const blocked = useBlockedContacts();
   
   // Refs for different file inputs
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -52,6 +53,7 @@ export default function MessagePage() {
   const [intendedType, setIntendedType] = useState<MediaType | null>(null);
 
   const isBroadcast = activeChat?.type === ChatType.BROADCAST
+  const partner = activeChat?.participants?.[0];
 
   // Handle different media type selections
   const handleMediaSelection = (type: MediaType) => {
@@ -177,7 +179,6 @@ export default function MessagePage() {
     setShowContactDetails(true);
   };
 
-
   const handleDeleteMessage = (MessageId: string) => {
     setMessages((prev) => prev.filter(message => String(message._id) !== MessageId));
   };
@@ -186,13 +187,6 @@ export default function MessagePage() {
   useEffect(() => {
     setShowContactDetails(false);
   }, [activeChat]);
-
-  const handleOpenPopup = () => {
-    if (templatesLoading) return; // optional safeguard
-
-    setTemplates(fetchedTemplates || []);
-    setIsPopupOpen(true);
-  };
 
   if(!activeChat){
     return <DefaultMessagePage />
@@ -206,6 +200,15 @@ export default function MessagePage() {
         onSend={onSend}
         onClose={handleCloseMediaSend}
         onSendSuccess={() => handleCloseMediaSend()}
+      />
+    );
+  }
+
+  if (isSendTemplate) {
+    return (
+      <SendTemplatePage
+        onSend={onSend}
+        onClose={() => setIsSendTemplate(false)}
       />
     );
   }
@@ -225,7 +228,12 @@ export default function MessagePage() {
         {/* Chat area */}
         <div className={`flex flex-col min-w-0 ${showContactDetails ? 'flex-1' : 'w-full'}`}>
           {/* Header */}
-          <MessagesHeader onAvatarClick={handleAvatarClick} onBack={backFromChat} />
+          <MessagesHeader 
+            onAvatarClick={handleAvatarClick} 
+            onBack={backFromChat}
+            onBlockToggle={() => blocked.toggleBlock(partner)}
+            isBlocked={blocked.isBlocked(partner)}
+          />
           <div
             className="flex flex-col flex-1 overflow-hidden bg-[#FAF7F4] dark:bg-[#161717]"
             style={{
@@ -364,7 +372,7 @@ export default function MessagePage() {
                     onVideo={() => handleMediaSelection(MediaType.VIDEO)}
                     onAudio={() => handleMediaSelection(MediaType.AUDIO)}
                     onDocument={() => handleMediaSelection(MediaType.DOCUMENT)}
-                    onTemplate={handleOpenPopup}
+                    onTemplate={() => setIsSendTemplate(true)}
                   />
 
                   <IconButton
@@ -442,24 +450,23 @@ export default function MessagePage() {
         {/* Contact Details Panel */}
         <ContactDetails
           isOpen={showContactDetails} 
-          onClose={() => setShowContactDetails(false)} 
+          onClose={() => setShowContactDetails(false)}
+          onBlockToggle={() => blocked.toggleBlock(partner)}
+          isBlocked={blocked.isBlocked(partner)}
         />
       </div>
       {/* New Chat Popup */}
-      <ForwardMessagePopup
-        isOpen={isForwardMessageOpen}
-        onClose={() => {
-          setIsForwardMessageOpen(false);
-          setForwardMessage(null);
-        }}
-        message={forwardMessage!}
-      />
-      <TemplatePopup
-        isOpen={isPopupOpen}
-        onSend={onSend}
-        onClose={() => setIsPopupOpen(false)}
-        templates={templates}
-      />
+      {isForwardMessageOpen && (
+        <ForwardMessagePopup
+          isOpen={isForwardMessageOpen}
+          onClose={() => {
+            setIsForwardMessageOpen(false);
+            setForwardMessage(null);
+          }}
+          message={forwardMessage!}
+        />
+      )}
+      {blocked.confirmBlockDialog()}
     </div>
   );
 }

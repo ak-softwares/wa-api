@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { ApiResponse } from "@/types/apiResponse";
-import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 
 // DELETE /api/whatsapp/templates/bulk
 export async function DELETE(req: NextRequest) {

@@ -1,7 +1,7 @@
 // ✅ POST /api/whatsapp/messages/bulk-delete
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
-import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
+import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 import { MessageModel } from "@/models/Message";
 
 export async function POST(req: NextRequest) {

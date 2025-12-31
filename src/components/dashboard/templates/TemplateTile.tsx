@@ -2,7 +2,7 @@ import { Calendar, FileText, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Template,
-  TemplateComponent,
+  TemplateComponentCreate,
   TemplateHeaderComponentCreate,
 } from "@/types/Template";
 import TemplateMenu from "./TemplateMenu";
@@ -16,6 +16,7 @@ interface TemplateTileProps {
   isSelected?: boolean;
   isSelectionMode?: boolean;
   isActive?: boolean; // NEW: same as ContactAvatar
+  isSearchSelect?: boolean; // NEW: indicates if used in search select
 }
 
 export function TemplateTile({
@@ -27,6 +28,7 @@ export function TemplateTile({
   isSelected = false,
   isSelectionMode = false,
   isActive = false, // NEW
+  isSearchSelect = false, // NEW
 }: TemplateTileProps) {
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -43,7 +45,7 @@ export function TemplateTile({
 
   const getHeaderFormat = () => {
     const headerComponent = template?.components?.find(
-      (c: TemplateComponent) => c.type === "HEADER"
+      (c: TemplateComponentCreate) => c.type === "HEADER"
     ) as TemplateHeaderComponentCreate | undefined;
 
     return headerComponent?.format || "TEXT";
@@ -53,10 +55,10 @@ export function TemplateTile({
     <div
       onClick={onClick}
       className={`
-        w-full px-3 py-4 rounded-lg flex items-center justify-between cursor-pointer select-none
+        w-full pl-1 pr-2 py-4 rounded-lg flex items-center justify-between cursor-pointer select-none
         transition-colors duration-200
         ${isActive
-          ? "bg-gray-200 dark:bg-[#2A2A2A]"
+          ? `${isSearchSelect ? "bg-gray-100 dark:bg-[#2E2F2F]" : "bg-gray-200 dark:bg-[#2A2A2A]"}`
           : "hover:bg-gray-100 dark:hover:bg-[#2E2F2F]"
         }
         ${isActive ? "border-l-4 border-green-500 pl-[calc(0.75rem-4px)]" : ""}
@@ -97,9 +99,11 @@ export function TemplateTile({
               {template.name}
             </span>
 
-            <Badge variant={getStatusVariant(template.status ?? "")} className="text-xs shrink-0">
-              {template.status}
-            </Badge>
+            {!isSearchSelect && (
+              <Badge variant={getStatusVariant(template.status ?? "")} className="text-xs shrink-0">
+                {template.status}
+              </Badge>
+            )}
           </div>
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground truncate mt-0.5">
@@ -126,13 +130,16 @@ export function TemplateTile({
       </div>
 
       {/* Right Menu */}
-      {!isSelectionMode && (
+      {!isSelectionMode && !isSearchSelect && (
         <TemplateMenu
           template={template}
           onDelete={() => onDelete?.(template.name)}
           onDuplicateClick={() => onDuplicate?.(template)}
           onEdit={() => onEdit?.(template)}
         />
+      )}
+      {isSearchSelect && isActive && (
+        <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
       )}
     </div>
   );

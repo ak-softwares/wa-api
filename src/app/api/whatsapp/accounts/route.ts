@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import axios from "axios";
-import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { WaAccountModel } from "@/models/WaAccount";
 
 // 📌 Full WhatsApp setup: exchange token → register phone → subscribe app

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ChatModel } from "@/models/Chat";
 import { MessageModel } from "@/models/Message";
 import { ApiResponse } from "@/types/apiResponse";
-import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
+import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 
 // DELETE /api/whatsapp/chats/[id]
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

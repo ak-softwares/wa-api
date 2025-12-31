@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { ApiResponse } from "@/types/apiResponse";
-import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { TemplateModel } from "@/models/Template";
 
 // DELETE /api/whatsapp/templates/[name]

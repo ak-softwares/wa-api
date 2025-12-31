@@ -1,7 +1,7 @@
 import { Media, MediaType } from "@/utiles/enums/mediaTypes";
 import { ChatParticipant, ChatType } from "./Chat";
-import { Template } from "./Template";
-import { Context } from "./Message";
+import { Template, TemplatePayload } from "./Template";
+import { Context, LocationType } from "./Message";
 
 export enum MessageType {
   TEXT = "text",
@@ -40,9 +40,9 @@ export type MessagePayload = {
   participants: ChatParticipant[];
   messageType: MessageType;
   message?: string;
-  template?: Template;
+  template?: Template | TemplatePayload;
   media?: Media;
-  location?: Location;
+  location?: LocationType;
   context?: Context;
   chatType?: ChatType;
   chatId?: string;

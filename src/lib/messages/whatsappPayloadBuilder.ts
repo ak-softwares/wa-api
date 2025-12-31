@@ -4,15 +4,16 @@ import {
   MessageType,
   WhatsAppPayload,
 } from "@/types/MessageType";
-import { buildMetaTemplatePayload } from "../mapping/convertTemplateToMeta";
+import { IWaAccount } from "@/models/WaAccount";
 
 interface HandleSendTextMessageParams {
   messagePayload: MessagePayload;
   participant: string;
+  waAccount: IWaAccount;
 }
 
 export function buildWhatsAppPayload({
-  messagePayload, participant
+  messagePayload, participant, waAccount
 }: HandleSendTextMessageParams): WhatsAppPayload {
   const { messageType, message, media, context, template, location } = messagePayload;
 
@@ -66,21 +67,24 @@ export function buildWhatsAppPayload({
   // TEMPLATE MESSAGE
   // -----------------------------
   if (messageType === MessageType.TEMPLATE) {
-    if (!template) throw new Error("Template missing");
-
-    const metaTemplate = buildMetaTemplatePayload(template);
-    return {
-      ...basePayload,
-      type: "template",
-      template: metaTemplate.template,
-    };
+    if (!template) throw new Error("Template payload missing");
+    try {
+      // const metaTemplate = validateAndPrepareTemplate({ templatePayload: template, waAccount });
+      return {
+        ...basePayload,
+        type: "template",
+        template: template,
+      };
+    } catch (err) {
+      throw new Error("Template validation failed");
+    }
   }
 
   // -----------------------------
   // LOCATION MESSAGE
   // -----------------------------
   if (messageType === MessageType.LOCATION) {
-    if (!location) throw new Error("Location missing");
+    if (!location) throw new Error("Location payload missing");
 
     return {
       ...basePayload,

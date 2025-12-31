@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ChatModel } from "@/models/Chat";
-import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
+import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 import { ChatParticipant, ChatType } from "@/types/Chat";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

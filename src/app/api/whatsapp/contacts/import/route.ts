@@ -1,4 +1,4 @@
-import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { ApiResponse } from "@/types/apiResponse";
 import { NextResponse } from "next/server";
 import { ContactModel, IContact } from "@/models/Contact";

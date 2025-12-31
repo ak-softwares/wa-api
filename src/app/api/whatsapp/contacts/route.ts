@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
-import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { ContactModel, IContact } from "@/models/Contact";
 
 // GET contacts (paginated, with optional search functionality)

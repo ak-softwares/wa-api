@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { ApiResponse } from "@/types/apiResponse";
-import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
+import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 
 export async function POST(req: Request) {
   try {

@@ -5,7 +5,7 @@ import { ApiResponse } from "@/types/apiResponse";
 import { toast } from "@/components/ui/sonner";
 import { Template } from "@/types/Template";
 
-export function useTemplates() {
+export function useTemplates({isSend}: {isSend?: boolean} = {}) {
   const [allTemplates, setAllTemplates] = useState<Template[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(false);
@@ -22,8 +22,15 @@ export function useTemplates() {
       const json: ApiResponse = await res.json();
 
       if (json.success && json.data) {
+        // 🔥 FILTER ONLY APPROVED WHEN isSend = true
+        const visibleTemplates = isSend
+          ? json.data.filter(
+              (t: Template) => t.status === "APPROVED" // 👈 adjust if needed
+            )
+          : json.data;
+          
         setAllTemplates(json.data);
-        setTemplates(json.data);
+        setTemplates(visibleTemplates);
       } else {
         setAllTemplates([]);
         setTemplates([]);
@@ -33,7 +40,7 @@ export function useTemplates() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isSend]);
 
   useEffect(() => {
     fetchTemplates();

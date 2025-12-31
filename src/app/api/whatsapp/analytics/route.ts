@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { MessageModel } from "@/models/Message";
 import { AiUsageModel } from "@/models/AiUsage";
-import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 
 export async function POST(req: Request) {
   try {

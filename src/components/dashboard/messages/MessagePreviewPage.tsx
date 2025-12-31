@@ -10,9 +10,9 @@ interface MessagePreviewPageProps {
 
 export default function MessagePreviewPage({ messages, isMine = false }: MessagePreviewPageProps) {
   return (
-    <div className="flex justify-center items-center mx-h-[600px] bg-gray-200 dark:bg-[#1F1F1F] border border-[#E5DED6] dark:border-[#2C2C2C] rounded-3xl p-1">
+    <div className="flex justify-center items-center mx-h-[800px] w-[300px] bg-gray-200 dark:bg-[#1F1F1F] border border-[#E5DED6] dark:border-[#2C2C2C] rounded-3xl p-1">
       {/* Mobile phone container */}
-      <div className="w-[300px] h-[600px] rounded-3xl shadow-lg flex flex-col overflow-hidden bg-white dark:bg-[#1F1F1F]">
+      <div className="w-[300px] h-[500px] rounded-3xl shadow-lg flex flex-col overflow-hidden bg-white dark:bg-[#1F1F1F]">
         
         {/* Header */}
         <div className="h-14 flex items-center px-4 bg-gray-100 dark:bg-[#1F1F1F]">

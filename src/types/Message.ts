@@ -11,7 +11,7 @@ export type Context = {
   message?: string;
 }
 
-export type Location = {
+export type LocationType = {
   latitude: number;
   longitude: number;
   name?: string;
@@ -27,7 +27,7 @@ export type Message = {
   message?: string;
   template?: Template;
   media?: Media;
-  location?: Location;
+  location?: LocationType;
   waMessageId?: string;
   status?: MessageStatus;
   type?: MessageType;

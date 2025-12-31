@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ContactModel } from "@/models/Contact";
 import { ApiResponse } from "@/types/apiResponse";
-import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
+import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 
 // ✅ Update a contact
 export async function PUT(

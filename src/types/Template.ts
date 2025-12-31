@@ -17,17 +17,29 @@ export type Template = {
   name: string;
   category: TemplateCategory;
   language: string; // e.g. "en"
-  components?: TemplateComponent[];
+  components?: TemplateComponentCreate[];
   status?: TemplateStatus | string;
   createdAt?: string;
   updatedAt?: string;
 }
 
-export type TemplateComponent =
+export type TemplatePayload = {
+  name: string;
+  language: { code: string };
+  components?: TemplateComponentSend[];
+}
+
+export type TemplateComponentCreate =
   | TemplateHeaderComponentCreate
   | TemplateBodyComponentCreate
   | TemplateFooterComponentCreate
   | TemplateButtonsComponentCreate;
+
+export type TemplateComponentSend =
+  | TemplateHeaderComponentSend
+  | TemplateBodyComponentSend
+  | TemplateFooterComponentSend
+  | TemplateButtonsComponentSend;
 
 export type TemplateHeaderComponentCreate = {
   type: TemplateComponentType.HEADER;
@@ -46,7 +58,7 @@ export type TemplateHeaderComponentSend = {
 
 export type TemplateHeaderParameter =
   | { type: TemplateHeaderType.TEXT; text: string }
-  | { type: TemplateHeaderType.IMAGE; image: { link: string } }
+  | { type: TemplateHeaderType.IMAGE; image: { link?: string, id?: string } }
   | { type: TemplateHeaderType.DOCUMENT; document: { link: string; filename?: string } }
   | { type: TemplateHeaderType.VIDEO; video: { link: string } }
   | { type: TemplateHeaderType.AUDIO; audio: { link: string } }
@@ -55,7 +67,7 @@ export type TemplateHeaderParameter =
 
 export type TemplateBodyComponentCreate = {
   type: TemplateComponentType.BODY;
-  text: string;
+  text?: string;
   add_security_recommendation?: boolean;
   example?: {
     body_text?: string[][];
@@ -104,6 +116,11 @@ export type TemplateButton =
       text: string;
     }
   | {
+      type: TemplateButtonType.COPY_CODE;
+      text: string;
+      example?: [ string ];
+    }
+  | {
       type: TemplateButtonType.PHONE_NUMBER;
       text: string;
       phone_number: string;
@@ -116,11 +133,11 @@ export type TemplateButton =
     }
   | {
       type: TemplateButtonType.OTP;
-      text: string;
-      otp_type: "COPY_CODE" | "ONE_TAP";
-      autofill_text: "Autofill";
-      package_name: string;
-      signature_hash: string;
+      text?: string;
+      otp_type?: "COPY_CODE" | "ONE_TAP";
+      autofill_text?: "Autofill";
+      package_name?: string;
+      signature_hash?: string;
   }
   | {
       type: TemplateButtonType.CATALOG;
@@ -132,7 +149,7 @@ export type TemplateButton =
   };
 
   export type TemplateButtonsComponentSend = {
-    type: TemplateComponentType.BUTTONS;
+    type: TemplateComponentType.BUTTON;
     sub_type: TemplateButtonType;
     index: string; // WhatsApp uses string index ("0", "1", ...)
     parameters: TemplateButtonsParameter[];

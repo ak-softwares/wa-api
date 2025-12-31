@@ -9,6 +9,8 @@ import { useChatStore } from "@/store/chatStore";
 import { useMessageStore } from "@/store/messageStore";
 import { MessagePayload } from "@/types/MessageType";
 import { sendMessage } from "@/services/message/sendMessage";
+import { convertToMetaSendTemplate } from "@/lib/mapping/convertToMetaSendTemplate";
+import { console } from "inspector/promises";
 
 interface UseMessagesProps {
   containerRef?: React.RefObject<HTMLDivElement | null>;

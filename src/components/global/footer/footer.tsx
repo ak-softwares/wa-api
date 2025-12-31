@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
           
           <p className="text-xs text-muted-foreground">
-            © 2025 WA-API of Companies. All rights reserved.
+            © 2025 WA-API. A service of Ara Corporation. All rights reserved.
           </p>
 
           {/* Center Section */}

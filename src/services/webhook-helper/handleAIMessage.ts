@@ -53,7 +53,8 @@ export async function handleAIMessage({
       const messagePayload = {
         participants: [{ number: from }],
         messageType: MessageType.TEXT,
-        message: aiGeneratedReply
+        message: aiGeneratedReply,
+        tag: "aichat",
       };
       const result = await handleSendMessage({
         messagePayload,

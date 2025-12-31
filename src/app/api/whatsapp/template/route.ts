@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { TemplateModel } from "@/models/Template";
-import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 
 export async function GET(req: NextRequest) {
   try {
@@ -63,6 +63,7 @@ export async function POST(req: NextRequest) {
 
     // Parse request
     const { name, category, language, components } = await req.json();
+    // console.log("Received template creation request:", JSON.stringify({ components }));
     if (!name || !category || !language || !components)
       return NextResponse.json({ success: false, message: "Missing required fields" }, { status: 400 });
 

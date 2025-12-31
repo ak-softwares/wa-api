@@ -18,6 +18,7 @@ export enum TemplateComponentType {
   BODY = "BODY",
   FOOTER = "FOOTER",
   BUTTONS = "BUTTONS",
+  BUTTON = "BUTTON",
 }
 
 // All header formats
@@ -44,6 +45,7 @@ export enum TemplateButtonType {
   CALL_TO_ACTION = "CALL_TO_ACTION",
   URL = "URL",
   PHONE_NUMBER = "PHONE_NUMBER",
+  COPY_CODE = "COPY_CODE",
   OTP = "OTP",
   CATALOG = "CATALOG",
   MPM = "MPM",

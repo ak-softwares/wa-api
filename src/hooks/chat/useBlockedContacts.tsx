@@ -92,15 +92,16 @@ export function useBlockedContacts() {
 
   // Check if a participant is blocked
   const isBlocked = useCallback(
-    (participant: ChatParticipant | string): boolean => {
-      const number = typeof participant === "string" ? participant : participant.number;
+    (participant?: ChatParticipant | string): boolean => {
+      const number = typeof participant === "string" ? participant : participant?.number;
       return blockedList.some((blocked) => blocked.number === number);
     },
     [blockedList]
   );
 
   // Toggle block
-  const toggleBlock = async (participant: ChatParticipant) => {
+  const toggleBlock = async (participant?: ChatParticipant) => {
+    if (!participant) return;
     if (isBlocked(participant)) {
       setDialogState({ open: true, participant, action: "unblock" });
     } else {

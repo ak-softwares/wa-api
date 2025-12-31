@@ -1,7 +1,7 @@
 // ✅ POST /api/whatsapp/chats/bulk-delete
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
-import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
+import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 import { ChatModel } from "@/models/Chat";
 import { MessageModel } from "@/models/Message";
 

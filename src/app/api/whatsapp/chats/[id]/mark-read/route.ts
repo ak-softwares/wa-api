@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ChatModel } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
-import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
+import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 
 // PATCH /api/whatsapp/chats/[id]
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

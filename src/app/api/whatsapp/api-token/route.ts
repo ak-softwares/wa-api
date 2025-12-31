@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
-import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 
 export async function POST() {
   try {

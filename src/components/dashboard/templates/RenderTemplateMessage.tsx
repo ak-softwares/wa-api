@@ -8,6 +8,7 @@ import { formatRichText } from "../../common/FormatRichText";
 import MessageMetaInfo from "../messages/MessageMetaInfo";
 import { Message } from "@/types/Message";
 import { fetchMediaBlob } from "@/services/message/media.service";
+import { toast } from "@/components/ui/sonner";
 
 interface TemplateMessageProps {
   message?: Message;
@@ -16,6 +17,15 @@ interface TemplateMessageProps {
 
 export default function TemplateMessage({ message, template }: TemplateMessageProps) {
   if (!template || !template.components) return null;
+
+  const isUrl = (value: string) => {
+    try {
+      new URL(value);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   return (
     <div className="flex flex-col gap-1 mb-1 min-w-[200px]">
@@ -31,6 +41,10 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
 
           useEffect(() => {
             if (!mediaId) return;
+            if (isUrl(mediaId)) {
+              setMediaUrl(mediaId);
+              return;
+            }
             const load = async () => {
               const url = await fetchMediaBlob(mediaId);
               setMediaUrl(url);
@@ -131,7 +145,7 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
             <div key={idx} className="flex flex-col w-full">
               {btnGroup.buttons.map((btn: any, bIndex: number) => {
                 // ---------------- URL BUTTON ----------------
-                if (btn.type === "URL") {
+                if (btn.type === "URL" && template.category !== "AUTHENTICATION") {
                   return (
                     <div
                       key={bIndex}
@@ -205,14 +219,33 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
                   );
                 }
 
-                if (btn.type === "OTP") {
+                if (template.category === "AUTHENTICATION" || btn.type === "OTP") {
+                  const otpCode = btn.text;
+                  const handleCopy = async () => {
+                    await navigator.clipboard.writeText(otpCode);
+                    toast.success(`OTP copied to clipboard ${otpCode}`);
+                  };
                   return (
-                    <button
-                      key={bIndex}
-                      className="px-3 py-2 gap-2 justify-center bg-green-500 text-white rounded-md text-sm border-t"
-                    >
-                      {btn.text}
-                    </button>
+                      <div
+                        key={bIndex}
+                        onClick={handleCopy}
+                        className="flex items-center justify-center py-2 cursor-pointer border-t gap-2"
+                      >
+                        <img
+                          src="/assets/icons/copy.svg"
+                          alt="copy-icon"
+                          style={{
+                            filter: "var(--icon-filter)",
+                          }}
+                          className="w-4 h-4 object-contain"
+                        />
+
+                        <span
+                          className="text-blue-500 dark:text-[#21C063] text-sm leading-none"
+                        >
+                          {btn.text}
+                        </span>
+                      </div>
                   );
                 }
 

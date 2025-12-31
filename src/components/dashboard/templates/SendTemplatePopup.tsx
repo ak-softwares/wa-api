@@ -227,6 +227,7 @@ export default function TemplatePopup({
 
     // Clone & replace variables into component texts
     const templatePayload = getFilledTemplate(selectedTemplate, variables);
+    // console.log("Prepared Template Payload:", templatePayload);
     // Notify parent
     const messagePayload: MessagePayload = {
       participants: activeChat?.participants!,

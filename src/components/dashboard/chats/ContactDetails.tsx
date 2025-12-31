@@ -2,7 +2,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Star, Ban, Trash2, CheckCircle2 } from "lucide-react";
+import { Star, Ban, Trash2 } from "lucide-react";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { useChatStore } from "@/store/chatStore";
 import ContactAvatar from "../contacts/ContactAvatar";
@@ -14,18 +14,18 @@ import { useState } from "react";
 import AddContactsToBroadcastPopup from "./AddContactsToBroadcastPopup";
 import ViewAllMembersPopup from "./ViewAllMembersPopup";
 import MembersMenu from "./MembersMenu";
-import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import { ChatType } from "@/types/Chat";
 
 interface ContactDetailsProps {
   isOpen: boolean;
   onClose: () => void;
+  isBlocked?: boolean;
+  onBlockToggle?: () => void;
 }
 
-export default function ContactDetails({ isOpen, onClose }: ContactDetailsProps) {
+export default function ContactDetails({ isOpen, onClose, isBlocked, onBlockToggle }: ContactDetailsProps) {
   const { activeChat } = useChatStore();
   const { deleteChat } = useDeleteChats();
-  const { isBlocked, confirmBlock, confirmUnblock, confirmBlockDialog } = useBlockedContacts();
   const { openAddContactDialog, AddContactDialog } = useAddContact();
   const [showAddMembersPopup, setShowAddMembersPopup] = useState(false);
   const [showViewAllMembers, setShowViewAllMembers] = useState(false);
@@ -63,9 +63,6 @@ export default function ContactDetails({ isOpen, onClose }: ContactDetailsProps)
     : partner?.imageUrl;
 
   const phoneNumber = isBroadcast ? "" : partner?.number;
-
-  // ⭐ Determine block/unblock for UI
-  const isUserBlocked = partner ? isBlocked(partner) : false;
 
   return (
     <div className="w-100 bg-white dark:bg-[#161717] border-l flex flex-col h-full">
@@ -234,15 +231,15 @@ export default function ContactDetails({ isOpen, onClose }: ContactDetailsProps)
             <Button
               variant="ghost"
               className={`w-full justify-start ${
-                isUserBlocked ? "" : "text-red-600"
+                isBlocked ? "" : "text-red-600"
               }`}
               onClick={() =>
-                isUserBlocked
-                  ? confirmUnblock(partner)
-                  : confirmBlock(partner)
+                isBlocked
+                  ? onBlockToggle?.()
+                  : onBlockToggle?.()
               }
             >
-              {isUserBlocked ? (
+              {isBlocked ? (
                 <>
                   <Ban className="h-4 w-4 mr-3" />
                   Unblock Contact
@@ -261,7 +258,6 @@ export default function ContactDetails({ isOpen, onClose }: ContactDetailsProps)
           </Button>
         </div>
       </div>
-      {confirmBlockDialog()}
     </div>
   );
 }

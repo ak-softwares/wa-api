@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
-import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 
 // GET - Fetch AI Agent configuration from the user document
 export async function GET() {

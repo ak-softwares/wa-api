@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { ChatModel } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { ContactModel, IContact } from "@/models/Contact";

@@ -1,4 +1,4 @@
-import { TemplateComponent } from "@/types/Template";
+import { TemplateComponentCreate } from "@/types/Template";
 import { TemplateCategory, TemplateStatus } from "@/utiles/enums/template";
 import mongoose, { Schema, Types, model } from "mongoose";
 
@@ -10,7 +10,7 @@ export interface ITemplate {
   name: string;
   category: TemplateCategory;
   language: string; // e.g. "en"
-  components?: TemplateComponent[];
+  components?: TemplateComponentCreate[];
   status?: TemplateStatus;
   createdAt?: string | Date;
   updatedAt?: string | Date;

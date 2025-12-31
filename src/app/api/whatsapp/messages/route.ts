@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MessageModel } from "@/models/Message";
 import { ApiResponse } from "@/types/apiResponse";
-import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { MessagePayload } from "@/types/MessageType";
 import { handleSendMessage } from "@/services/message/handleSendMessage";
 
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     // Parse request body
     const messagePayload: MessagePayload = await req.json();
-    // console.log(messagePayload)
+    // console.log("Building template payload:", JSON.stringify(messagePayload.template));
     const result = await handleSendMessage({
       messagePayload,
       userId: user._id,

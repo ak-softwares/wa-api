@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { UserModel } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
-import { fetchAuthenticatedUser } from "@/lib/apiHelper/getDefaultWaAccount";
+import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 
 // GET profile
 export async function GET() {

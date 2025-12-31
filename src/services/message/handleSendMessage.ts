@@ -1,6 +1,6 @@
 import axios from "axios";
-import { IMessage, MessageModel } from "@/models/Message";
-import { MessageDTO, MessageStatus, WhatsAppPayload } from "@/types/MessageType";
+import { MessageModel } from "@/models/Message";
+import { MessageStatus, MessageType, WhatsAppPayload } from "@/types/MessageType";
 import { ChatType } from "@/types/Chat";
 import { ApiError } from "@/types/apiResponse";
 import { MessagePayload } from "@/types/MessageType";
@@ -12,8 +12,12 @@ import { consumeMessage } from "../../lib/wallet/consumeMessage";
 import { commitCredits } from "../../lib/wallet/commitCredits";
 import { refundCredits } from "../../lib/wallet/refundCredits";
 import { IWaAccount } from "@/models/WaAccount";
-import { IChat } from "@/models/Chat";
+import { ChatModel, IChat } from "@/models/Chat";
 import { buildWhatsAppPayload } from "@/lib/messages/whatsappPayloadBuilder";
+import { generateLastMessageText } from "@/lib/messages/generateLastMessageText";
+import { getTemplateByName } from "../template/getTemplateByName";
+import { ITemplate } from "@/models/Template";
+import { replaceActualTemplateValue } from "@/lib/mapping/replaceActualTemplateValue";
 
 interface HandleSendMessageParams {
   messagePayload: MessagePayload;
@@ -62,6 +66,13 @@ export async function handleSendMessage({
         : "broadcast"
       : tag;
 
+  const isTemplate = messagePayload.messageType === MessageType.TEMPLATE;
+  let template;
+  if(isTemplate) {
+    const metaTemplate: ITemplate = await getTemplateByName({ templateName: messagePayload.template?.name!, waAccount });
+    template = replaceActualTemplateValue({metaTemplate: metaTemplate, messagePayload: messagePayload.template!});
+  }
+
   // ✅ Send to each participant
   for (const participant of participants) {
     let waMessageId: string | undefined;
@@ -105,7 +116,8 @@ export async function handleSendMessage({
     try {
       const whatsAppPayload: WhatsAppPayload = buildWhatsAppPayload({
         messagePayload,
-        participant: participant.number
+        participant: participant.number,
+        waAccount,
       });
 
       const fbResponse = await axios.post(url, whatsAppPayload, { headers });
@@ -132,7 +144,7 @@ export async function handleSendMessage({
       }
 
     } catch (err: any) {
-      errorMessage = err?.response?.data?.error?.message || "Send failed";
+      errorMessage = err?.response?.data?.error?.message || err.message || "Send failed";
       status = MessageStatus.Failed;
 
       // Refund ONLY if PAID
@@ -147,6 +159,13 @@ export async function handleSendMessage({
           error: errorMessage || "WhatsApp send failed",
         }
       );
+      // 🚨 If single participant AND chat type is CHAT → return error
+      if (participants.length === 1 && !isBroadcast) {
+        throw new ApiError(400, errorMessage || "Failed to send message");
+      }
+
+      // Otherwise continue to next participant
+      continue;
     }
 
     // Get or create chat using cache
@@ -166,7 +185,7 @@ export async function handleSendMessage({
       message: messagePayload.message,
       media: messagePayload.media,
       location: messagePayload.location,
-      template: messagePayload.template,
+      template,
       waMessageId,
       status,
       type: messagePayload.messageType,
@@ -174,6 +193,13 @@ export async function handleSendMessage({
       context,
     });
 
+
+    // handle lastMessage
+    const updateFields: Partial<IChat> = {
+      lastMessage: generateLastMessageText(messagePayload),
+      lastMessageAt: new Date(),
+    };
+    await ChatModel.updateOne({ _id: chat?._id }, { $set: updateFields });
     status === MessageStatus.Sent ? savedMessages.push(dbMessage) : failedMessages.push(dbMessage);
   }
 
@@ -189,11 +215,17 @@ export async function handleSendMessage({
       message: messagePayload.message,
       media: messagePayload.media,
       location: messagePayload.location,
-      template: messagePayload.template,
+      template,
       status: MessageStatus.Sent,
       type: messagePayload.messageType,
       tag: finalTag,
     });
+    // handle lastMessage
+    const updateFields: Partial<IChat> = {
+      lastMessage: generateLastMessageText(messagePayload),
+      lastMessageAt: new Date(),
+    };
+    await ChatModel.updateOne({ _id: messagePayload.chatId }, { $set: updateFields });
   }
 
   const primaryMessage =

@@ -24,6 +24,7 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<ChatFilterType>("all");
   const { activeChat, setActiveChat, newMessage, newChat, setNewMessageData } = useChatStore();
+  // console.trace("fetchChats called");
 
   useEffect(() => {
     if (!newChat) return;

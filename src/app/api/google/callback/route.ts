@@ -2,7 +2,7 @@ import { google } from "googleapis";
 import { NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { ContactModel, IContact } from "@/models/Contact";
-import { getDefaultWaAccount } from "@/lib/apiHelper/getDefaultWaAccount";
+import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 
 export async function GET(req: Request) {
   try {
