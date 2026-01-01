@@ -14,15 +14,36 @@ import {
 export function convertToMetaSendTemplate({ template }: { template: Template; }) {
   const components: TemplateComponentSend[] = [];
 
+  const handleValue = (handle?: string | string[]) => {
+    if (!handle) return null;
+    return Array.isArray(handle) ? handle[0] : handle;
+  };
+
   for (const comp of template.components || []) {
     // ===== HEADER =====
     if (comp.type === TemplateComponentType.HEADER) {
-      // IMAGE HEADER
-      if (comp.format === TemplateHeaderType.IMAGE) {
-        const handle = comp.example?.header_handle;
-        if (!handle) continue;
+      // TEXT HEADER ({{1}})
+      if (comp.format === TemplateHeaderType.TEXT) {
+        const headerValue = comp.example?.header_text?.[0];
+        if (headerValue) {
+          components.push({
+            type: TemplateComponentType.HEADER,
+            parameters: [
+              {
+                type: TemplateHeaderType.TEXT,
+                text: headerValue,
+              },
+            ],
+          });
+        }
+      }
 
-        const value = Array.isArray(handle) ? handle[0] : handle;
+      // --------------------------------------------------
+      // IMAGE HEADER
+      // --------------------------------------------------
+      if (comp.format === TemplateHeaderType.IMAGE) {
+        const value = handleValue(comp.example?.header_handle);
+        if (!value) continue;
 
         components.push({
           type: TemplateComponentType.HEADER,
@@ -40,21 +61,73 @@ export function convertToMetaSendTemplate({ template }: { template: Template; })
         });
       }
 
-      // TEXT HEADER ({{1}})
-      if (comp.format === TemplateHeaderType.TEXT) {
-        const headerValue = comp.example?.header_text?.[0]?.[0];
+      // --------------------------------------------------
+      // VIDEO HEADER
+      // --------------------------------------------------
+      if (comp.format === TemplateHeaderType.VIDEO) {
+        const value = handleValue(comp.example?.header_handle);
+        if (!value) continue;
 
-        if (headerValue) {
-          components.push({
-            type: TemplateComponentType.HEADER,
-            parameters: [
-              {
-                type: TemplateHeaderType.TEXT,
-                text: headerValue,
+        components.push({
+          type: TemplateComponentType.HEADER,
+          parameters: [
+            value.startsWith("http")
+              ? {
+                  type: TemplateHeaderType.VIDEO,
+                  video: { link: value },
+                }
+              : {
+                  type: TemplateHeaderType.VIDEO,
+                  video: { id: value },
+                },
+          ],
+        });
+      }
+
+      // --------------------------------------------------
+      // DOCUMENT HEADER
+      // --------------------------------------------------
+      if (comp.format === TemplateHeaderType.DOCUMENT) {
+        const value = handleValue(comp.example?.header_handle);
+        if (!value) continue;
+
+        components.push({
+          type: TemplateComponentType.HEADER,
+          parameters: [
+            value.startsWith("http")
+              ? {
+                  type: TemplateHeaderType.DOCUMENT,
+                  document: { link: value },
+                }
+              : {
+                  type: TemplateHeaderType.DOCUMENT,
+                  document: { id: value },
+                },
+          ],
+        });
+      }
+
+      // --------------------------------------------------
+      // LOCATION HEADER
+      // --------------------------------------------------
+      if (comp.format === TemplateHeaderType.LOCATION) {
+        const location = comp.example?.location;
+        if (!location) continue;
+
+        components.push({
+          type: TemplateComponentType.HEADER,
+          parameters: [
+            {
+              type: TemplateHeaderType.LOCATION,
+              location: {
+                latitude: location.latitude,
+                longitude: location.longitude,
+                name: location.name,
+                address: location.address,
               },
-            ],
-          });
-        }
+            },
+          ],
+        });
       }
     }
 
@@ -85,8 +158,8 @@ export function convertToMetaSendTemplate({ template }: { template: Template; })
             index: String(index), // ✅ array index → string
             parameters: [
               {
-                type: TemplateButtonsParametersType.TEXT,
-                text: code,
+                type: TemplateButtonsParametersType.COUPON_CODE,
+                coupon_code: code,
               },
             ],
           });
@@ -112,6 +185,7 @@ export function convertToMetaSendTemplate({ template }: { template: Template; })
       });
     }
   }
+
   const templatePayload: TemplatePayload = {
     name: template.name,
     language: {

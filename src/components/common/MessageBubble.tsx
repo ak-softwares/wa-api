@@ -21,9 +21,10 @@ interface MessageBubbleProps {
   onDelete?: (messageId: string) => void; // new callback
   onReply?: () => void; // new callback
   onForward?: () => void; // new callback
+  isPreviewMode?: boolean; // new prop
 }
 
-export default function MessageBubble({ message, onDelete, onReply, onForward }: MessageBubbleProps) {
+export default function MessageBubble({ message, onDelete, onReply, onForward, isPreviewMode }: MessageBubbleProps) {
   const activeChat = useChatStore((s) => s.activeChat);
   const [hovered, setHovered] = useState(false);
   const { deleteMessage } = useDeleteMessages();
@@ -212,13 +213,15 @@ export default function MessageBubble({ message, onDelete, onReply, onForward }:
           )}
         </div>
 
-        <div
-          className={`absolute top-0 right-0 transition-opacity ${
-            hovered ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <MessageMenu isMine={isMine} items={menuItems} />
-        </div>
+        {!isPreviewMode && (
+          <div
+            className={`absolute top-0 right-0 transition-opacity ${
+              hovered ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <MessageMenu isMine={isMine} items={menuItems} />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Template, TemplateBodyComponentCreate, TemplateButtonsComponentCreate, TemplateHeaderComponentCreate } from "@/types/Template";
 import { toast } from "@/components/ui/sonner";
 import { fetchMediaBlob, uploadMediaApi } from "@/services/message/media.service";
@@ -10,7 +10,6 @@ import { ChatType } from "@/types/Chat";
 import MessagesHeader from "../messages/MessageHeader";
 import IconButton from "@/components/common/IconButton";
 import { useTemplates } from "@/hooks/template/useTemplate";
-import { CenterLoader } from "@/components/common/Loader";
 import MessagePreviewPage from "../messages/MessagePreviewPage";
 import { Message } from "@/types/Message";
 import TemplateSearchSelect from "./widgets/SearchableTemplateSelect";
@@ -19,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { TemplateButtonType, TemplateComponentType, TemplateHeaderType } from "@/utiles/enums/template";
+import TemplateMediaPreview from "./TemplateMediaPreview";
 
 interface SendTemplatePageProps {
   onClose: () => void;
@@ -32,11 +32,42 @@ export default function SendTemplatePage({
   const { activeChat } = useChatStore();
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [uploading, setUploading] = useState(false);
-  const { templates, loading: templateLoading, refreshTemplates, searchTemplates } = useTemplates({ isSend: true });
+  const { templates, loading: templateLoading, searchTemplates } = useTemplates({ isSend: true });
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
-  const [buttonVariables, setButtonVariables] = useState<Record<string, string>>({});
   const [isSending, setIsSending] = useState(false);
   const isBroadcast = activeChat?.type === ChatType.BROADCAST;
+
+  const sanitizeTemplateForSend = (template: Template) => {
+    if (!template?.components) return;
+
+    for (const comp of template.components) {
+      // ===== HEADER (MEDIA) =====
+      if (
+        comp.type === TemplateComponentType.HEADER &&
+        comp.format !== TemplateHeaderType.TEXT
+      ) {
+        // Remove default media example
+        if (comp.example?.header_handle) {
+          delete comp.example.header_handle;
+        }
+      }
+
+      // ===== BUTTONS =====
+      if (comp.type === TemplateComponentType.BUTTONS) {
+        for (const button of comp.buttons || []) {
+          // URL button with variable → remove default value
+          if (
+            button.type === TemplateButtonType.URL &&
+            /{{\d+}}/.test(button.url || "")
+          ) {
+            if (button.example) {
+              delete button.example;
+            }
+          }
+        }
+      }
+    }
+  };
 
   // Create preview message with dynamic values
   const fullMessage: Message = {
@@ -320,12 +351,163 @@ export default function SendTemplatePage({
     setSelectedTemplate({ ...selectedTemplate });
   };
 
+  const extractHeaderLocation = () => {
+    if (!selectedTemplate) return null;
+
+    const headerComp = selectedTemplate.components?.find(
+      (c) =>
+        c.type === TemplateComponentType.HEADER &&
+        c.format === TemplateHeaderType.LOCATION
+    ) as TemplateHeaderComponentCreate | undefined;
+
+    if (!headerComp) return null;
+
+    const location = headerComp.example?.location;
+
+    return {
+      latitude: location?.latitude ?? "",
+      longitude: location?.longitude ?? "",
+      name: location?.name ?? "",
+      address: location?.address ?? "",
+    };
+  };
+
+  const updateHeaderLocation = (
+    field: "latitude" | "longitude" | "name" | "address",
+    value: string
+  ) => {
+    if (!selectedTemplate) return;
+
+    const headerComp = selectedTemplate.components?.find(
+      (c) =>
+        c.type === TemplateComponentType.HEADER &&
+        c.format === TemplateHeaderType.LOCATION
+    ) as TemplateHeaderComponentCreate | undefined;
+
+    if (!headerComp) return;
+
+    headerComp.example ??= {};
+    // ✅ Create location with required fields
+    if (!headerComp.example.location) {
+      headerComp.example.location = {
+        latitude: 0,
+        longitude: 0,
+      };
+    }
+
+    if (field === "latitude" || field === "longitude") {
+      headerComp.example.location[field] = value === "" ? 0 : Number(value);
+    } else {
+      headerComp.example.location[field] = value;
+    }
+
+    setSelectedTemplate({ ...selectedTemplate });
+  };
+
+  const validateTemplateBeforeSend = (): boolean => {
+    if (!selectedTemplate) {
+      toast.error("No template selected");
+      return false;
+    }
+
+    for (const comp of selectedTemplate.components || []) {
+      // ================= HEADER =================
+      if (comp.type === TemplateComponentType.HEADER) {
+        // TEXT
+        if (comp.format === TemplateHeaderType.TEXT) {
+          const value = comp.example?.header_text?.[0];
+          if (!value || value.trim() === "") {
+            toast.error("Header text variable is required");
+            return false;
+          }
+        }
+
+        // MEDIA
+        if (
+          [TemplateHeaderType.IMAGE, TemplateHeaderType.VIDEO, TemplateHeaderType.DOCUMENT].includes(
+            comp.format as any
+          )
+        ) {
+          const handle = comp.example?.header_handle?.[0];
+          if (!handle) {
+            toast.error("Header media is required");
+            return false;
+          }
+        }
+
+        // LOCATION
+        if (comp.format === TemplateHeaderType.LOCATION) {
+          const loc = comp.example?.location;
+          if (
+            !loc ||
+            typeof loc.latitude !== "number" ||
+            typeof loc.longitude !== "number"
+          ) {
+            toast.error("Location latitude and longitude are required");
+            return false;
+          }
+
+          if (loc.latitude < -90 || loc.latitude > 90) {
+            toast.error("Latitude must be between -90 and 90");
+            return false;
+          }
+
+          if (loc.longitude < -180 || loc.longitude > 180) {
+            toast.error("Longitude must be between -180 and 180");
+            return false;
+          }
+        }
+      }
+
+      // ================= BODY =================
+      if (comp.type === TemplateComponentType.BODY) {
+        const bodyValues = comp.example?.body_text?.[0] || [];
+
+        const variableCount =
+          (comp.text?.match(/{{\d+}}/g) || []).length;
+
+        if (bodyValues.length < variableCount) {
+          toast.error("All body variables are required");
+          return false;
+        }
+
+        if (bodyValues.some((v: string) => !v || v.trim() === "")) {
+          toast.error("All body variables must be filled");
+          return false;
+        }
+      }
+
+      // ================= BUTTONS =================
+      if (comp.type === TemplateComponentType.BUTTONS) {
+        for (const button of comp.buttons || []) {
+          // COPY_CODE
+          if (button.type === TemplateButtonType.COPY_CODE) {
+            if (!button.example?.[0]) {
+              toast.error("Copy code value is required");
+              return false;
+            }
+          }
+
+          // URL (only dynamic)
+          if (
+            button.type === TemplateButtonType.URL &&
+            /{{\d+}}/.test(button.url || "")
+          ) {
+            if (!button.example?.[0]) {
+              toast.error("Button URL variable is required");
+              return false;
+            }
+          }
+        }
+      }
+    }
+
+    return true;
+  };
+
   // Handle send
   const handleSend = async () => {
-    if (!selectedTemplate) {
-      toast.error("Please select a template");
-      return;
-    }
+    if (!validateTemplateBeforeSend()) return;
 
     setIsSending(true);
 
@@ -334,7 +516,7 @@ export default function SendTemplatePage({
       const messagePayload: MessagePayload = {
         participants: activeChat?.participants!,
         messageType: MessageType.TEMPLATE,
-        template: selectedTemplate,
+        template: selectedTemplate!,
         chatType: isBroadcast ? ChatType.BROADCAST : ChatType.CHAT,
         chatId: activeChat?._id
       };
@@ -360,13 +542,19 @@ export default function SendTemplatePage({
         <div className="flex-6">
 
           <div className="flex gap-2 items-center">
+            <IconButton
+              className="flex-1"
+              IconSrc="/assets/icons/arrow-left.svg"
+              label="Back"
+              onClick={onClose}
+            />
             {/* Template search select */}
             <TemplateSearchSelect
               templates={templates}
               selectedTemplate={selectedTemplate || undefined}
               onChange={(template) => {
                 setSelectedTemplate(template);
-                setButtonVariables({});
+                sanitizeTemplateForSend(template!);
               }}
               onSearch={searchTemplates}
               loading={templateLoading}
@@ -375,7 +563,7 @@ export default function SendTemplatePage({
               className="flex-1"
               IconSrc="/assets/icons/close.svg"
               label="Close"
-              onClick={onClose}
+              onClick={() => setSelectedTemplate(null)}
             />
           </div>
           
@@ -415,6 +603,69 @@ export default function SendTemplatePage({
                       }
                       return null;
                     })()}
+                    
+                    {/* Header LOCATION */}
+                    {(() => {
+                      const headerComp = selectedTemplate.components?.find(
+                        (c) =>
+                          c.type === TemplateComponentType.HEADER &&
+                          c.format === TemplateHeaderType.LOCATION
+                      ) as TemplateHeaderComponentCreate | undefined;
+
+                      const location = extractHeaderLocation();
+                      if (!headerComp || !location) return null;
+
+                      return (
+                        <div className="grid gap-3">
+                          <Label className="font-medium">
+                            Location
+                            <span className="text-red-500 ml-1">*</span>
+                          </Label>
+
+                          <input
+                            type="number"
+                            step="any"
+                            placeholder="Latitude*"
+                            value={location.latitude}
+                            onChange={(e) =>
+                              updateHeaderLocation("latitude", e.target.value)
+                            }
+                            className="w-full border rounded-md px-3 py-2 text-sm"
+                          />
+
+                          <input
+                            type="number"
+                            step="any"
+                            placeholder="Longitude*"
+                            value={location.longitude}
+                            onChange={(e) =>
+                              updateHeaderLocation("longitude", e.target.value)
+                            }
+                            className="w-full border rounded-md px-3 py-2 text-sm"
+                          />
+
+                          <input
+                            type="text"
+                            placeholder="Location name (optional)"
+                            value={location.name}
+                            onChange={(e) =>
+                              updateHeaderLocation("name", e.target.value)
+                            }
+                            className="w-full border rounded-md px-3 py-2 text-sm"
+                          />
+
+                          <input
+                            type="text"
+                            placeholder="Address (optional)"
+                            value={location.address}
+                            onChange={(e) =>
+                              updateHeaderLocation("address", e.target.value)
+                            }
+                            className="w-full border rounded-md px-3 py-2 text-sm"
+                          />
+                        </div>
+                      );
+                    })()}
 
                     {/* Header Media Upload */}
                     {(() => {
@@ -437,13 +688,13 @@ export default function SendTemplatePage({
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
                                   {headerFormat === "IMAGE" && (
-                                    <img src="/assets/icons/image.svg" className="w-5 h-5" alt="Image" />
+                                    <img src="/assets/icons/camera.svg" className="w-5 h-5" alt="Image" />
                                   )}
                                   {headerFormat === "VIDEO" && (
-                                    <img src="/assets/icons/video.svg" className="w-5 h-5" alt="Video" />
+                                    <img src="/assets/icons/image.svg" className="w-5 h-5" alt="Video" />
                                   )}
                                   {headerFormat === "DOCUMENT" && (
-                                    <img src="/assets/icons/document.svg" className="w-5 h-5" alt="Document" />
+                                    <img src="/assets/icons/document-icon.svg" className="w-5 h-5" alt="Document" />
                                   )}
                                   <span className="text-sm font-medium truncate">
                                     {headerFormat.toLowerCase()} uploaded
@@ -459,15 +710,10 @@ export default function SendTemplatePage({
                                   <div className="w-4 h-4 flex items-center justify-center">✕</div>
                                 </Button>
                               </div>
-                              {headerFormat === "IMAGE" && hasMediaUploaded && (
-                                <div className="mt-2 flex justify-center">
-                                  <img
-                                    src={mediaUrl || hasMediaUploaded || "/placeholder.png"}
-                                    alt="Header preview"
-                                    className="rounded-md max-w-70 max-h-64 object-cover"
-                                  />
-                                </div>
-                              )}
+                              {/* {TemplateMediaPreview(headerComp)} */}
+                              <div className="mt-2 flex justify-center">
+                                <TemplateMediaPreview h={headerComp} />
+                              </div>
                             </div>
                           ) : (
                             <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
@@ -513,6 +759,7 @@ export default function SendTemplatePage({
                         </div>
                       ) : null;
                     })()}
+
                   </CardContent>
                 </Card>
               )}

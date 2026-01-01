@@ -53,4 +53,5 @@ export enum TemplateButtonType {
 
 export enum TemplateButtonsParametersType {
   TEXT = "TEXT",
+  COUPON_CODE = "COUPON_CODE"
 }

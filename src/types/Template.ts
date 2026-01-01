@@ -48,6 +48,12 @@ export type TemplateHeaderComponentCreate = {
   example?: {
     header_text?: string[];
     header_handle?: string[];
+    location?: {
+      latitude: number;
+      longitude: number;
+      name?: string;
+      address?: string;
+    };
   };
 }
 
@@ -58,12 +64,10 @@ export type TemplateHeaderComponentSend = {
 
 export type TemplateHeaderParameter =
   | { type: TemplateHeaderType.TEXT; text: string }
-  | { type: TemplateHeaderType.IMAGE; image: { link?: string, id?: string } }
-  | { type: TemplateHeaderType.DOCUMENT; document: { link: string; filename?: string } }
-  | { type: TemplateHeaderType.VIDEO; video: { link: string } }
-  | { type: TemplateHeaderType.AUDIO; audio: { link: string } }
-  | { type: TemplateHeaderType.LOCATION; location: { latitude: number; longitude: number } }
-  | { type: TemplateHeaderType.STICKER; sticker: { link: string } };
+  | { type: TemplateHeaderType.IMAGE; image: { id?: string, link?: string } }
+  | { type: TemplateHeaderType.DOCUMENT; document: { id?: string, link?: string; filename?: string } }
+  | { type: TemplateHeaderType.VIDEO; video: { id?: string, link?: string } }
+  | { type: TemplateHeaderType.LOCATION; location: { latitude: number; longitude: number; name?: string; address?: string } }
 
 export type TemplateBodyComponentCreate = {
   type: TemplateComponentType.BODY;
@@ -148,14 +152,20 @@ export type TemplateButton =
       text: string;
   };
 
-  export type TemplateButtonsComponentSend = {
-    type: TemplateComponentType.BUTTON;
-    sub_type: TemplateButtonType;
-    index: string; // WhatsApp uses string index ("0", "1", ...)
-    parameters: TemplateButtonsParameter[];
-  }
+export type TemplateButtonsComponentSend = {
+  type: TemplateComponentType.BUTTON;
+  sub_type: TemplateButtonType;
+  index: string;
+  parameters: TemplateButtonsParameter[];
+}
 
-  export type TemplateButtonsParameter = {
-    type: TemplateButtonsParametersType.TEXT;
-    text: string;
-  };
+export type TemplateButtonsParameter =
+  | {
+      type: TemplateButtonsParametersType.TEXT;
+      text: string;
+    }
+  | {
+      type: TemplateButtonsParametersType.COUPON_CODE;
+      coupon_code: string;
+    };
+

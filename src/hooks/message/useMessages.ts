@@ -11,6 +11,7 @@ import { MessagePayload } from "@/types/MessageType";
 import { sendMessage } from "@/services/message/sendMessage";
 import { convertToMetaSendTemplate } from "@/lib/mapping/convertToMetaSendTemplate";
 import { console } from "inspector/promises";
+import { Template } from "@/types/Template";
 
 interface UseMessagesProps {
   containerRef?: React.RefObject<HTMLDivElement | null>;
@@ -156,7 +157,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
         from: "me",
         message: messagePayload.message,
         media: messagePayload.media,
-        template: messagePayload.template,
+        template: messagePayload.template as Template || undefined,
         status: MessageStatus.Pending,
         participants: [], // ✅ required
         type: messagePayload.messageType,

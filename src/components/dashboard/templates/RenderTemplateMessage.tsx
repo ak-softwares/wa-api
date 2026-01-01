@@ -2,13 +2,13 @@
 "use client";
 
 import { Template } from "@/types/Template";
-import { TemplateComponentType } from "@/utiles/enums/template";
-import React, { useEffect, useState } from "react";
+import { TemplateButtonType, TemplateCategory, TemplateComponentType } from "@/utiles/enums/template";
+import React from "react";
 import { formatRichText } from "../../common/FormatRichText";
 import MessageMetaInfo from "../messages/MessageMetaInfo";
 import { Message } from "@/types/Message";
-import { fetchMediaBlob } from "@/services/message/media.service";
 import { toast } from "@/components/ui/sonner";
+import TemplateMediaPreview from "./TemplateMediaPreview";
 
 interface TemplateMessageProps {
   message?: Message;
@@ -33,76 +33,23 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
       {template.components
         .filter((c: any) => c.type === TemplateComponentType.HEADER)
         .map((h: any, idx: number) => {
-
-          const mediaId = h.example?.header_handle;
-
-          // Local states for preview URLs
-          const [mediaUrl, setMediaUrl] = useState<string | null>(null);
-
-          useEffect(() => {
-            if (!mediaId) return;
-            if (isUrl(mediaId)) {
-              setMediaUrl(mediaId);
-              return;
-            }
-            const load = async () => {
-              const url = await fetchMediaBlob(mediaId);
-              setMediaUrl(url);
-            };
-            load();
-          }, [mediaId]);
-
           // TEXT HEADER
           if (h.format === "TEXT") {
+            const finalText = replaceHeaderVariables(h.text ?? "", h.example);
             return (
               <div key={idx} className="text-sm font-semibold opacity-90">
-                {h.text}
+                {finalText}
               </div>
             );
           }
 
-          // IMAGE HEADER
-          if (h.format === "IMAGE") {
-            return (
-              <div key={idx} className="-ml-2 -mr-2 -mt-1">
-                <img
-                  src={mediaUrl || "/placeholder.png"}
-                  alt="header-image"
-                  className="rounded-md w-full max-h-48 object-cover"
-                />
-              </div>
-            );
-          }
-
-          // VIDEO HEADER
-          if (h.format === "VIDEO") {
-            return (
-              <div key={idx} className="-ml-2 -mr-2 -mt-1">
-                <video controls className="rounded-md w-full max-h-48">
-                  <source src={mediaUrl || ""} />
-                </video>
-              </div>
-            );
-          }
-
-          // DOCUMENT HEADER
-          if (h.format === "DOCUMENT") {
-            return (
-              <a
-                key={idx}
-                href={mediaUrl || "#"}
-                target="_blank"
-                className="text-blue-600 underline dark:text-[#21C063]"
-              >
-                Download Document
-              </a>
-            );
-          }
-
-          return null;
-        })
-      }
-
+          // MEDIA HEADER (IMAGE | VIDEO | DOCUMENT)
+          return (
+            <div key={idx}>
+              <TemplateMediaPreview h={h} />
+            </div>
+          );
+        })}
 
       {/* ---------------- BODY ---------------- */}
       {template.components
@@ -145,7 +92,7 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
             <div key={idx} className="flex flex-col w-full">
               {btnGroup.buttons.map((btn: any, bIndex: number) => {
                 // ---------------- URL BUTTON ----------------
-                if (btn.type === "URL" && template.category !== "AUTHENTICATION") {
+                if (btn.type === TemplateButtonType.URL && template.category !== TemplateCategory.AUTHENTICATION) {
                   return (
                     <div
                       key={bIndex}
@@ -170,7 +117,7 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
                     </div>
                   );
                 }
-                if (btn.type === "PHONE_NUMBER") {
+                if (btn.type === TemplateButtonType.PHONE_NUMBER) {
                   return (
                     <div
                       key={bIndex}
@@ -194,7 +141,7 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
                   );
                 }
 
-                if (btn.type === "QUICK_REPLY") {
+                if (btn.type === TemplateButtonType.QUICK_REPLY) {
                   return (
                     <div
                       key={bIndex}
@@ -219,11 +166,11 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
                   );
                 }
 
-                if (template.category === "AUTHENTICATION" || btn.type === "OTP") {
-                  const otpCode = btn.text;
+                if (template.category === TemplateCategory.AUTHENTICATION || btn.type === TemplateButtonType.COPY_CODE) {
+                  const otpCode = btn.example?.[0];
                   const handleCopy = async () => {
                     await navigator.clipboard.writeText(otpCode);
-                    toast.success(`OTP copied to clipboard ${otpCode}`);
+                    toast.success(`Copied to clipboard ${otpCode}`);
                   };
                   return (
                       <div
@@ -256,6 +203,22 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
       </div>
     </div>
   );
+}
+
+/* -----------------------------------
+  Replace Template Variables
+------------------------------------*/
+function replaceHeaderVariables(
+  text: string,
+  example?: { header_text?: string[] }
+) {
+  if (!text) return text;
+
+  const value = example?.header_text?.[0];
+  if (!value) return text;
+
+  // Header supports only {{1}}
+  return text.replace(new RegExp(`\\{\\{${1}\\}\\}`, "g"), value);
 }
 
 function replaceBodyVariables(text: string, example?: any) {

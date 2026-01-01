@@ -1,6 +1,6 @@
 "use client";
 
-import PreviewMessageBubble from "@/components/common/PreviewMessageBubble";
+import MessageBubble from "@/components/common/MessageBubble";
 import { Message } from "@/types/Message";
 
 interface MessagePreviewPageProps {
@@ -45,10 +45,10 @@ export default function MessagePreviewPage({ messages, isMine = false }: Message
         >
           <div className="space-y-3 space-y-reverse flex flex-col-reverse">
             {messages.map((message) => (
-              <PreviewMessageBubble
+              <MessageBubble
                 key={message._id?.toString()}
                 message={message}
-                isMine={isMine}
+                isPreviewMode={true}
               />
             ))}
           </div>
