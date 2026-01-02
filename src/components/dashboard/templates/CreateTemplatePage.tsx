@@ -192,6 +192,38 @@ export default function CreateTemplatePage() {
     }
   }, [duplicateTemplateData, setDuplicateTemplateData]);
 
+    // Reset header media when format changes
+  useEffect(() => {
+    if (headerFormat === TemplateHeaderType.TEXT || headerFormat === TemplateHeaderType.LOCATION) {
+      // Clear media if switching to non-media header type
+      removeMedia();
+    }
+  }, [headerFormat]);
+
+  useEffect(() => {
+    if (!isVariableAddedInButtonUrl || !urlSampleValues) return;
+
+    setButtons((prev) =>
+      prev.map((btn) =>
+        btn.type === TemplateButtonType.URL
+          ? { ...btn, example: [urlSampleValues] }
+          : btn
+      )
+    );
+  }, [urlSampleValues, isVariableAddedInButtonUrl]);
+
+  useEffect(() => {
+    if (!copyCodeSampleValues) return;
+
+    setButtons((prev) =>
+      prev.map((btn) =>
+        btn.type === TemplateButtonType.COPY_CODE
+          ? { ...btn, example: [copyCodeSampleValues] }
+          : btn
+      )
+    );
+  }, [copyCodeSampleValues]);
+
   // Handle media upload
   const handleMediaUpload = async (file: File) => {
     setIsUploading(true);
@@ -258,6 +290,14 @@ export default function CreateTemplatePage() {
     });
   };
 
+  function toMetaTemplateName(input: string): string {
+    return input
+      .toLowerCase()
+      .replace(/\s+/g, "_")       // space → underscore immediately
+      .replace(/[^a-z0-9_]/g, "")
+      .replace(/_+/g, "_");
+  }
+
   // Get accepted file types based on header format
   const getAcceptedFileTypes = () => {
     switch (headerFormat) {
@@ -269,6 +309,148 @@ export default function CreateTemplatePage() {
         return ".pdf,.doc,.docx,.xls,.xlsx";
       default:
         return "*";
+    }
+  };
+
+  // Extract variables from body text
+  const extractVariables = (text: string) => {
+    const regex = /{{(\d+)}}/g;
+    const matches = [...text.matchAll(regex)];
+    return matches.map(match => parseInt(match[1])).sort((a, b) => a - b);
+  };
+
+  const headerVariables = extractVariables(headerText);
+  const bodyVariables = extractVariables(bodyText);
+
+  // Update sample values when variables change
+  const updateSampleValues = (newVariables: number[]) => {
+    const newSampleValues = [...bodySampleValues];
+    
+    if (newSampleValues.length > newVariables.length) {
+      newSampleValues.splice(newVariables.length);
+    }
+    
+    while (newSampleValues.length < newVariables.length) {
+      newSampleValues.push(`Sample ${newSampleValues.length + 1}`);
+    }
+    
+    setBodySampleValues(newSampleValues);
+  };
+
+  // Handle body text change
+  const handleBodyTextChange = (value: string) => {
+    setBodyText(value);
+    const newVariables = extractVariables(value);
+    updateSampleValues(newVariables);
+  };
+
+  // Add variable to body text
+  const addVariableInBody = () => {
+    const nextVarNumber = bodyVariables.length > 0 ? Math.max(...bodyVariables) + 1 : 1;
+    const newBodyText = `${bodyText} {{${nextVarNumber}}}`;
+    setBodyText(newBodyText);
+    updateSampleValues([...bodyVariables, nextVarNumber]);
+  };
+
+  // Add variable to header text
+  const addVariableInHeader = () => {
+    const nextVarNumber = headerVariables.length > 0 ? Math.max(...headerVariables) + 1 : 1;
+    const newHeaderText = `${headerText} {{${nextVarNumber}}}`;
+    setHeaderText(newHeaderText);
+    // updateSampleValues([...headerVariables, nextVarNumber]);
+  };
+
+  const addVariableInUrlButton = (index: number) => {
+    setIsVariableAddedInButtonUrl(true);
+
+    const button = buttons[index];
+    if (button.type !== TemplateButtonType.URL) return;
+    const currentUrl = button.url || "";
+    if (currentUrl.includes("{{1}}")) return;
+    updateButton(index, "url", `${currentUrl}{{1}}`);
+
+  };
+
+  const removeVariableInUrlButton = (index: number) => {
+    const button = buttons[index];
+    if (button.type !== TemplateButtonType.URL) return;
+
+    const updatedUrl = button.url.replace(/\{\{1\}\}/g, "");
+    updateButton(index, "url", updatedUrl);
+
+    setIsVariableAddedInButtonUrl(false);
+    setUrlSampleValues("");
+  };
+
+  // Button management
+  const addButton = () => {
+    if (buttons.length < 3) { // WhatsApp allows max 3 buttons
+      setButtons([...buttons, { type: TemplateButtonType.QUICK_REPLY, text: "" }]);
+    }
+  };
+
+  const updateButton = (index: number, field: string, value: string) => {
+    const updatedButtons = [...buttons];
+    
+    // 🚫 Prevent invalid keys like "URL"
+    if (field === "URL") return;
+
+    if (field === "type") {
+      // Reset button data when type changes
+      updatedButtons[index] = {
+        type: value as TemplateButtonType.URL | TemplateButtonType.QUICK_REPLY | TemplateButtonType.PHONE_NUMBER | TemplateButtonType.COPY_CODE,
+        text: updatedButtons[index].text,
+        ...(value === TemplateButtonType.URL ? { url: "" } : 
+            value === TemplateButtonType.PHONE_NUMBER ? { phone_number: "" } : {})
+      } as TemplateButton;
+    } else {
+      updatedButtons[index] = {
+        ...updatedButtons[index],
+        [field]: value
+      };
+    }
+    
+    // ✅ URL button → add example when variable exists
+    if ( updatedButtons[index].type === TemplateButtonType.URL && isVariableAddedInButtonUrl && urlSampleValues) {
+      updatedButtons[index] = {
+        ...updatedButtons[index],
+        example: [urlSampleValues],
+      };
+    } else if (updatedButtons[index].type === TemplateButtonType.URL) {
+      // remove example if variable removed
+      delete (updatedButtons[index] as any).example;
+    }
+
+    // ✅ COPY_CODE button → always add example
+    if (updatedButtons[index].type === TemplateButtonType.COPY_CODE && copyCodeSampleValues && field === "copy_code") {
+      updatedButtons[index] = {
+        ...updatedButtons[index],
+        example: [copyCodeSampleValues],
+      };
+    } else if (updatedButtons[index].type === TemplateButtonType.COPY_CODE) {
+      // remove example if variable removed
+      delete (updatedButtons[index] as any).example;
+    }
+
+    setButtons(updatedButtons);
+  };
+
+  const removeButton = (index: number) => {
+    setButtons(buttons.filter((_, i) => i !== index));
+  };
+
+
+  // Get header icon based on format
+  const getHeaderIcon = () => {
+    switch (headerFormat) {
+      case TemplateHeaderType.IMAGE:
+        return <ImageIcon className="w-4 h-4" />;
+      case TemplateHeaderType.VIDEO:
+        return <Video className="w-4 h-4" />;
+      case TemplateHeaderType.DOCUMENT:
+        return <File className="w-4 h-4" />;
+      default:
+        return null;
     }
   };
 
@@ -312,7 +494,7 @@ export default function CreateTemplatePage() {
             buttons: [
               {
                 type: TemplateButtonType.OTP,
-                otp_type: "COPY_CODE",
+                otp_type: TemplateButtonType.COPY_CODE,
               },
             ],
           }
@@ -477,169 +659,6 @@ export default function CreateTemplatePage() {
     }
   };
 
-  // Extract variables from body text
-  const extractVariables = (text: string) => {
-    const regex = /{{(\d+)}}/g;
-    const matches = [...text.matchAll(regex)];
-    return matches.map(match => parseInt(match[1])).sort((a, b) => a - b);
-  };
-
-  const headerVariables = extractVariables(headerText);
-  const bodyVariables = extractVariables(bodyText);
-
-  // Update sample values when variables change
-  const updateSampleValues = (newVariables: number[]) => {
-    const newSampleValues = [...bodySampleValues];
-    
-    if (newSampleValues.length > newVariables.length) {
-      newSampleValues.splice(newVariables.length);
-    }
-    
-    while (newSampleValues.length < newVariables.length) {
-      newSampleValues.push(`Sample ${newSampleValues.length + 1}`);
-    }
-    
-    setBodySampleValues(newSampleValues);
-  };
-
-  // Handle body text change
-  const handleBodyTextChange = (value: string) => {
-    setBodyText(value);
-    const newVariables = extractVariables(value);
-    updateSampleValues(newVariables);
-  };
-
-  // Add variable to body text
-  const addVariableInBody = () => {
-    const nextVarNumber = bodyVariables.length > 0 ? Math.max(...bodyVariables) + 1 : 1;
-    const newBodyText = `${bodyText} {{${nextVarNumber}}}`;
-    setBodyText(newBodyText);
-    updateSampleValues([...bodyVariables, nextVarNumber]);
-  };
-
-  // Add variable to header text
-  const addVariableInHeader = () => {
-    const nextVarNumber = headerVariables.length > 0 ? Math.max(...headerVariables) + 1 : 1;
-    const newHeaderText = `${headerText} {{${nextVarNumber}}}`;
-    setHeaderText(newHeaderText);
-    // updateSampleValues([...headerVariables, nextVarNumber]);
-  };
-
-  const addVariableInUrlButton = () => {
-    setIsVariableAddedInButtonUrl(true);
-  };
-
-  const removeVariableInUrlButton = () => {
-    setIsVariableAddedInButtonUrl(false);
-    setUrlSampleValues("");
-  };
-
-  // Button management
-  const addButton = () => {
-    if (buttons.length < 3) { // WhatsApp allows max 3 buttons
-      setButtons([...buttons, { type: TemplateButtonType.QUICK_REPLY, text: "" }]);
-    }
-  };
-
-  const updateButton = (index: number, field: string, value: string) => {
-    const updatedButtons = [...buttons];
-    
-    // 🚫 Prevent invalid keys like "URL"
-    if (field === "URL") return;
-
-    if (field === "type") {
-      // Reset button data when type changes
-      updatedButtons[index] = {
-        type: value as TemplateButtonType.URL | TemplateButtonType.QUICK_REPLY | TemplateButtonType.PHONE_NUMBER | TemplateButtonType.COPY_CODE,
-        text: updatedButtons[index].text,
-        ...(value === TemplateButtonType.URL ? { url: "" } : 
-            value === TemplateButtonType.PHONE_NUMBER ? { phone_number: "" } : {})
-      } as TemplateButton;
-    } else {
-      updatedButtons[index] = {
-        ...updatedButtons[index],
-        [field]: value
-      };
-    }
-    
-    // ✅ URL button → add example when variable exists
-    if ( updatedButtons[index].type === TemplateButtonType.URL && isVariableAddedInButtonUrl && urlSampleValues) {
-      updatedButtons[index] = {
-        ...updatedButtons[index],
-        example: [urlSampleValues],
-      };
-    } else if (updatedButtons[index].type === TemplateButtonType.URL) {
-      // remove example if variable removed
-      delete (updatedButtons[index] as any).example;
-    }
-
-    // ✅ COPY_CODE button → always add example
-    if (updatedButtons[index].type === TemplateButtonType.COPY_CODE && copyCodeSampleValues && field === "copy_code") {
-      updatedButtons[index] = {
-        ...updatedButtons[index],
-        example: [copyCodeSampleValues],
-      };
-    } else if (updatedButtons[index].type === TemplateButtonType.COPY_CODE) {
-      // remove example if variable removed
-      delete (updatedButtons[index] as any).example;
-    }
-
-    setButtons(updatedButtons);
-  };
-
-  const removeButton = (index: number) => {
-    setButtons(buttons.filter((_, i) => i !== index));
-  };
-
-
-  // Get header icon based on format
-  const getHeaderIcon = () => {
-    switch (headerFormat) {
-      case TemplateHeaderType.IMAGE:
-        return <ImageIcon className="w-4 h-4" />;
-      case TemplateHeaderType.VIDEO:
-        return <Video className="w-4 h-4" />;
-      case TemplateHeaderType.DOCUMENT:
-        return <File className="w-4 h-4" />;
-      default:
-        return null;
-    }
-  };
-
-  // Reset header media when format changes
-  useEffect(() => {
-    if (headerFormat === TemplateHeaderType.TEXT || headerFormat === TemplateHeaderType.LOCATION) {
-      // Clear media if switching to non-media header type
-      removeMedia();
-    }
-  }, [headerFormat]);
-
-  useEffect(() => {
-    if (!isVariableAddedInButtonUrl || !urlSampleValues) return;
-
-    setButtons((prev) =>
-      prev.map((btn) =>
-        btn.type === TemplateButtonType.URL
-          ? { ...btn, example: [urlSampleValues] }
-          : btn
-      )
-    );
-  }, [urlSampleValues, isVariableAddedInButtonUrl]);
-
-  useEffect(() => {
-    if (!copyCodeSampleValues) return;
-
-    setButtons((prev) =>
-      prev.map((btn) =>
-        btn.type === TemplateButtonType.COPY_CODE
-          ? { ...btn, example: [copyCodeSampleValues] }
-          : btn
-      )
-    );
-  }, [copyCodeSampleValues]);
-
-
-
   return (
     <div className="flex flex-col h-full">
       <div className="p-5 flex items-center justify-between">
@@ -697,7 +716,7 @@ export default function CreateTemplatePage() {
                 <div className="relative group">
                   <Input
                     value={templateName}
-                    onChange={(e) => setTemplateName(e.target.value)}
+                  onChange={(e) => setTemplateName(toMetaTemplateName(e.target.value))}
                     placeholder="e.g. order_update_code"
                     className="pr-10"
                   />
@@ -921,7 +940,7 @@ export default function CreateTemplatePage() {
           )}
 
           {/* Footer Section */}
-          {templateCategory !== TemplateCategory.AUTHENTICATION && footerText.trim() && (
+          {templateCategory !== TemplateCategory.AUTHENTICATION && (
             <Card>
               <CardHeader>
                 <CardTitle>Footer (Optional)</CardTitle>
@@ -1011,7 +1030,7 @@ export default function CreateTemplatePage() {
                                   variant="outline"
                                   size="sm"
                                   disabled={isVariableAddedInButtonUrl}
-                                  onClick={addVariableInUrlButton}
+                                    onClick={() => addVariableInUrlButton(index)}
                                 >
                                   Add variable
                                 </Button>
@@ -1030,7 +1049,7 @@ export default function CreateTemplatePage() {
                                         <Button
                                           variant="ghost"
                                           size="icon"
-                                          onClick={removeVariableInUrlButton}
+                                          onClick={() => removeVariableInUrlButton(index)}
                                           className="text-red-500 hover:text-red-600 hover:bg-red-50"
                                         >
                                           <Trash2 className="w-4 h-4" />
@@ -1080,7 +1099,7 @@ export default function CreateTemplatePage() {
 
         {/* Right Section - WhatsApp Preview */}
         <div className="flex-3 w-full md:w-[360px] self-start sticky top-10">
-          <MessagePreviewPage messages={[fullMessage]} isMine={true} />
+          <MessagePreviewPage messages={[fullMessage]} />
         </div>
       </div>
     </div>

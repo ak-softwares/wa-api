@@ -34,7 +34,6 @@ export default function MessageBubble({ message, onDelete, onReply, onForward, i
   const isMedia: boolean = !!message?.media || message?.type === MessageType.MEDIA;
   const isLocation: boolean = !!message?.location || message?.type === MessageType.LOCATION;
 
-
   const isMine = !activeChat?.participants?.some(
     (p: ChatParticipant) => p.number === message.from
   );
@@ -57,8 +56,6 @@ export default function MessageBubble({ message, onDelete, onReply, onForward, i
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
   }, []);
-
-  if (!activeChat) return null;
 
   const handleDelete = async () => {
     if (!message._id) return;
@@ -158,7 +155,7 @@ export default function MessageBubble({ message, onDelete, onReply, onForward, i
         }`}
       >
         {/* PREFIX buttons (left side inside input) */}
-        {message.context?.id && (
+        {message.context?.id && !isPreviewMode && (
           <div 
           className={`-mx-2 -mt-1 mb-1 px-2 py-2
             rounded-md border-l-4 flex justify-between items-start
@@ -181,7 +178,7 @@ export default function MessageBubble({ message, onDelete, onReply, onForward, i
                       : "text-[#4198BD] dark:text-[#53BDEB]"
                   }
                 `}>
-                { isMineContext ? "You" : activeChat.participants[0].name}
+                { isMineContext ? "You" : activeChat?.participants[0].name}
               </p>
               <p className="text-gray-700 dark:text-gray-400 text-sm line-clamp-1">
                 {message.context?.message}

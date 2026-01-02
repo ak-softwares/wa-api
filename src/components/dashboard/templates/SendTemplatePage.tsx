@@ -212,6 +212,8 @@ export default function SendTemplatePage({
     return null;
   };
 
+  const headerVariable = extractHeaderVariable();
+
   // Extract variables from template body
   const extractBodyVariables = () => {
     if (!selectedTemplate) return null;
@@ -414,7 +416,7 @@ export default function SendTemplatePage({
       // ================= HEADER =================
       if (comp.type === TemplateComponentType.HEADER) {
         // TEXT
-        if (comp.format === TemplateHeaderType.TEXT) {
+        if (comp.format === TemplateHeaderType.TEXT && headerVariable) {
           const value = comp.example?.header_text?.[0];
           if (!value || value.trim() === "") {
             toast.error("Header text variable is required");
@@ -839,7 +841,7 @@ export default function SendTemplatePage({
 
         {/* Right Section - WhatsApp Preview */}
         <div className="flex-3 w-full md:w-[360px] self-start sticky top-10">
-          <MessagePreviewPage messages={[fullMessage]} isMine={true} />
+          <MessagePreviewPage messages={[fullMessage]} />
         </div>
       </div>
     </div>

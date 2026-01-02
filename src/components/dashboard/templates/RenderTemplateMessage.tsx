@@ -93,6 +93,10 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
               {btnGroup.buttons.map((btn: any, bIndex: number) => {
                 // ---------------- URL BUTTON ----------------
                 if (btn.type === TemplateButtonType.URL && template.category !== TemplateCategory.AUTHENTICATION) {
+                  const variable = btn.example?.[0];
+                  const resolvedUrl = variable
+                        ? btn.url.replace(/{{\s*1\s*}}/g, variable)
+                        : btn.url;
                   return (
                     <div
                       key={bIndex}
@@ -108,7 +112,7 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
                       />
 
                       <a
-                        href={btn.url}
+                        href={resolvedUrl}
                         target="_blank"
                         className="text-blue-500 dark:text-[#21C063] text-sm leading-none text-center"
                       >

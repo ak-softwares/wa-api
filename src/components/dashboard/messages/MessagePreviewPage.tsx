@@ -5,10 +5,9 @@ import { Message } from "@/types/Message";
 
 interface MessagePreviewPageProps {
   messages: Message[];   // ✅ plural
-  isMine?: boolean;      // optional, applies to all messages if needed
 }
 
-export default function MessagePreviewPage({ messages, isMine = false }: MessagePreviewPageProps) {
+export default function MessagePreviewPage({ messages }: MessagePreviewPageProps) {
   return (
     <div className="flex justify-center items-center mx-h-[800px] w-[300px] bg-gray-200 dark:bg-[#1F1F1F] border border-[#E5DED6] dark:border-[#2C2C2C] rounded-3xl p-1">
       {/* Mobile phone container */}
