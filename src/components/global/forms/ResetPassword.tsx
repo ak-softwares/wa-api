@@ -19,19 +19,14 @@ import * as z from "zod";
 import { AxiosError } from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ApiResponse } from "@/types/apiResponse";
-import { signIn } from "next-auth/react";
-import { useState } from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+
 import FooterTerms from "@/components/global/footer/footerTerms";
 import { useSearchParams } from "next/navigation";
 
 export default function ResetPasswordForm() {
-  const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { data: session, status } = useSession();
 
     // ✅ get email & token from URL
   const email = searchParams.get("email");

@@ -35,7 +35,7 @@ export default function LoginPage() {
   // Always call hooks unconditionally
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/dashboard");
+      router.replace("/dashboard");
     }
   }, [status, router]);
 

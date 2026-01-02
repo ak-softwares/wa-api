@@ -33,10 +33,9 @@ export default function SignUpForm() {
   // ✅ redirect safely after render
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/dashboard");
+      router.replace("/dashboard");
     }
   }, [status, router]);
-  
 
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),

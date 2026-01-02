@@ -1,32 +1,18 @@
-"use client";
+import { redirect } from 'next/navigation'
+import { getServerSession } from 'next-auth'
+import DashboardClientLayout from '@/components/dashboard/layout/DashboardClientLayout';
+import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions';
 
-import PusherListener from "@/components/common/PusherListener";
-import Sidebar from "@/components/dashboard/sidebar/Sidebar";
-import { usePusherGlobalNotifications } from "@/hooks/notification/usePusherMessages";
-
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  // Initialize global Pusher notifications
-  usePusherGlobalNotifications();
-  return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Sidebar */}
-      <Sidebar />
+  const session = await getServerSession(authOptions)
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Topbar */}
-        {/* <Topbar /> */}
+  if (!session) {
+    redirect('/auth/login')
+  }
 
-        {/* Dynamic Page Content */}
-        <main className="flex-1 overflow-y-auto">
-          {children}
-          <PusherListener /> {/* ✅ always active after login */}
-        </main>
-      </div>
-    </div>
-  );
+  return <DashboardClientLayout>{children}</DashboardClientLayout>
 }

@@ -18,6 +18,7 @@ import { generateLastMessageText } from "@/lib/messages/generateLastMessageText"
 import { getTemplateByName } from "../template/getTemplateByName";
 import { ITemplate } from "@/models/Template";
 import { replaceActualTemplateValue } from "@/lib/mapping/replaceActualTemplateValue";
+import { TemplatePayload } from "@/types/Template";
 
 interface HandleSendMessageParams {
   messagePayload: MessagePayload;
@@ -67,10 +68,10 @@ export async function handleSendMessage({
       : tag;
 
   const isTemplate = messagePayload.messageType === MessageType.TEMPLATE;
-  let template;
+  let template: ITemplate | undefined = undefined;
   if(isTemplate) {
     const metaTemplate: ITemplate = await getTemplateByName({ templateName: messagePayload.template?.name!, waAccount });
-    template = replaceActualTemplateValue({metaTemplate: metaTemplate, messagePayload: messagePayload.template!});
+    template = replaceActualTemplateValue({metaTemplate: metaTemplate, messagePayload: messagePayload.template! as TemplatePayload});
   }
 
   // ✅ Send to each participant
