@@ -29,21 +29,19 @@ export default function PusherListener() {
       const msg = data.message;
 
       setNewMessageData(msg, chat);
+      
+      const isAIMessage = msg?.tag === MESSAGE_TAGS.AI_CHAT || msg?.tag === MESSAGE_TAGS.AI_AGENT;
 
       // 🛑 Skip notification for AI messages
-      if (msg?.tag === MESSAGE_TAGS.AI_CHAT || msg?.tag === MESSAGE_TAGS.AI_AGENT) {
-        return;
-      }
+      if (isAIMessage) return;
       
       // ✅ Detect chat page properly even during client-side navigation
       const isOnChatPage = pathname === "/dashboard/chats" || pathname.startsWith("/dashboard/chats/");
       // 🚫 Skip toast if on chat page or currently viewing the same chat
-      // if (isOnChatPage || (activeChat && chat._id === activeChat._id)) return;
       if (isOnChatPage) return;
 
       const fullMessage = msg.message || "";
-      const shortMessage =
-        fullMessage.length > 60 ? fullMessage.substring(0, 57).trim() + "..." : fullMessage;
+      const shortMessage = fullMessage.length > 60 ? fullMessage.substring(0, 57).trim() + "..." : fullMessage;
 
       // Reusable for toast button
       const openChatFromToast = () => {

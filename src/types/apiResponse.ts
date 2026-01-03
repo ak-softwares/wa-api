@@ -1,14 +1,22 @@
-export type ApiResponse = {
-    success: boolean;
-    message: string;
-    data?: any;
-    pagination?: {
-        total: number;
-        page: number;
-        perPage: number;
-        totalPages: number;
+export type ApiResponse<T = any> = {
+  success: boolean;
+  message: string;
+  data?: T;
+  pagination?: {
+    // Cursor-based (Facebook)
+    cursors?: {
+      before?: string;
+      after?: string;
     };
-}
+    next?: string;
+
+    // Page-based (optional / future)
+    page?: number;
+    perPage?: number;
+    total?: number;
+    totalPages?: number;
+  };
+};
 
 export class ApiError extends Error {
   statusCode: number;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTemplates } from "@/hooks/template/useTemplate";
 import { Skeleton } from "@/components/ui/skeleton";
 import TemplatesMenu from "@/components/dashboard/templates/TemplatesMenu";
@@ -13,7 +13,8 @@ import { useTemplateStore } from "@/store/templateStore";
 import { useDeleteTemplate } from "@/hooks/template/useDeleteTemplate";
 
 export default function TemplateListPage() {
-  const { templates, loading, refreshTemplates, searchTemplates } = useTemplates();
+  const sidebarRef = useRef<HTMLDivElement | null>(null);
+  const { templates, loading, refreshTemplates, searchTemplates, hasMore, loadingMore } = useTemplates({ sidebarRef });
 
   const [selectedTemplates, setSelectedTemplates] = useState<Template[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -98,7 +99,7 @@ export default function TemplateListPage() {
       />
 
       {/* Template List */}
-      <div className="space-y-2 mt-3 mx-3">
+      <div ref={sidebarRef} className="flex-1 overflow-y-auto mt-3">
         {loading ? (
           Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex items-center p-4 mx-3 mb-1">
@@ -137,6 +138,19 @@ export default function TemplateListPage() {
             />
           ))
         )}
+
+        {hasMore &&
+          loadingMore &&
+          Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="flex items-center p-4 mx-3 mb-1">
+              <Skeleton className="w-12 h-12 rounded-full mr-3" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <Skeleton className="h-5 w-32 rounded" />
+                <Skeleton className="h-4 w-48 rounded" />
+              </div>
+              <Skeleton className="h-4 w-10 ml-2 rounded" />
+            </div>
+          ))}
       </div>
       {DeleteDialogs}
     </div>

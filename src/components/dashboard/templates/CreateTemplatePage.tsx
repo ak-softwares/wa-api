@@ -530,7 +530,7 @@ export default function CreateTemplatePage() {
           formData.append('file', headerMedia.file);
           
           try {
-            const uploadResponse = await fetch('/api/whatsapp/template/upload-media', {
+            const uploadResponse = await fetch('/api/whatsapp/templates/upload-media', {
               method: 'POST',
               body: formData,
             });
@@ -614,7 +614,7 @@ export default function CreateTemplatePage() {
 
       let res;
       if (isEdit) {
-        res = await fetch("/api/whatsapp/template", {
+        res = await fetch("/api/whatsapp/templates", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -622,7 +622,7 @@ export default function CreateTemplatePage() {
           body: JSON.stringify(templateData),
         });
       }else {
-        res = await fetch("/api/whatsapp/template", {
+        res = await fetch("/api/whatsapp/templates", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

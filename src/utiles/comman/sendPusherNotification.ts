@@ -14,6 +14,6 @@ export async function sendPusherNotification({ userId, event, chat, message}: Se
 
     await pusher.trigger(`user-${userId}`, event, {
       chat,
-      message,
+      message
     });
 }

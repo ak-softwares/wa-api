@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { TemplateModel } from "@/models/Template";
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
+import { ApiResponse } from "@/types/apiResponse";
 
 export async function GET(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const { waba_id, permanent_token } = waAccount;
@@ -29,15 +30,15 @@ export async function GET(req: NextRequest) {
     const templates = fbResponse.data?.data || [];
     const paging = fbResponse.data?.paging || {};
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Templates fetched successfully from Facebook",
-        data: templates,
-        pagination: paging, // includes 'next' and 'cursors' if available
-      },
-      { status: 200 }
-    );
+    const response: ApiResponse = {
+      success: true,
+      message: "Templates fetched successfully from Facebook",
+      data: templates,
+      pagination: paging, // { cursors, next }
+    };
+
+    return NextResponse.json(response, { status: 200 });
+
   } catch (error: any) {
 
     return NextResponse.json(
@@ -52,7 +53,6 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-
 
 export async function POST(req: NextRequest) {
   try {

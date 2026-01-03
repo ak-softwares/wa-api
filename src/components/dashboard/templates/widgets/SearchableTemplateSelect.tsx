@@ -1,47 +1,41 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Template } from "@/types/Template";
 import { ChevronDown, Search, Check, FileText, Tag, Globe } from "lucide-react";
 import SearchBar from "@/components/common/SearchBar";
 import { TemplateTile } from "../TemplateTile";
-import { CenterLoader } from "@/components/common/Loader";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTemplates } from "@/hooks/template/useTemplate";
 
 interface TemplateSearchSelectProps {
-  templates: Template[];
   selectedTemplate?: Template;
   onChange: (template: Template | null) => void;
-  onSearch?: (value: string) => void; // ✅ ADD THIS
   placeholder?: string;
-  loading?: boolean;
 }
 
 export default function TemplateSearchSelect({
-  templates,
   selectedTemplate,
   onChange,
-  onSearch,
   placeholder = "Select a template",
-  loading = false,
 }: TemplateSearchSelectProps) {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement | null>(null);
+  const { templates, loading, searchTemplates, hasMore, loadingMore } = useTemplates({ sidebarRef, isSend: true });
+  
 
   // Close on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setOpen(false);
-        setQuery("");
       }
     }
     
     function handleEscape(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setOpen(false);
-        setQuery("");
       }
     }
     
@@ -57,7 +51,6 @@ export default function TemplateSearchSelect({
   // Clear search when closing
   const handleClose = () => {
     setOpen(false);
-    setQuery("");
   };
 
   return (
@@ -118,13 +111,13 @@ export default function TemplateSearchSelect({
               {/* Search Bar */}
               <SearchBar
                   placeholder="Search templates..."
-                  onSearch={onSearch}
+                  onSearch={searchTemplates}
               />
 
           </div>
 
           {/* Template List */}
-          <div className="max-h-72 overflow-y-auto">
+          <div ref={sidebarRef} className="max-h-72 overflow-y-auto">
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex items-center p-4 mx-3 mb-1">
@@ -159,12 +152,24 @@ export default function TemplateSearchSelect({
                     onClick={() => {
                       onChange(template);
                       setOpen(false);
-                      setQuery("");
                     }}
                   />
                 ))}
               </div>
             )}
+
+            {hasMore &&
+              loadingMore &&
+              Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="flex items-center p-4 mx-3 mb-1">
+                  <Skeleton className="w-12 h-12 rounded-full mr-3" />
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <Skeleton className="h-5 w-32 rounded" />
+                    <Skeleton className="h-4 w-48 rounded" />
+                  </div>
+                  <Skeleton className="h-4 w-10 ml-2 rounded" />
+                </div>
+              ))}
           </div>
 
           {/* Footer */}

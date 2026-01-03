@@ -64,7 +64,7 @@ export function useDeleteTemplate(onDeleteSuccess?: () => void) {
     setSingleDeleting(true);
 
     try {
-      const res = await fetch(`/api/whatsapp/template/${templateToDelete}`, {
+      const res = await fetch(`/api/whatsapp/templates/${templateToDelete}`, {
         method: "DELETE",
       });
 
@@ -93,7 +93,7 @@ export function useDeleteTemplate(onDeleteSuccess?: () => void) {
     setBulkDeleting(true);
 
     try {
-      const res = await fetch(`/api/whatsapp/template/bulk-delete`, {
+      const res = await fetch(`/api/whatsapp/templates/bulk-delete`, {
         method: "DELETE",
         body: JSON.stringify({ names: selectedTemplates }),
         headers: { "Content-Type": "application/json" },

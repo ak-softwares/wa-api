@@ -4,6 +4,8 @@ import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { MessagePayload } from "@/types/MessageType";
 import { handleSendMessage } from "@/services/message/handleSendMessage";
+import { MESSAGE_TAGS } from "@/utiles/enums/messageTags";
+import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
 
 export async function GET(req: NextRequest) {
   try {
@@ -70,6 +72,16 @@ export async function POST(req: NextRequest) {
       waAccount
     });
 
+    // handle push notification if message send by ai
+    if (result.message.tag === MESSAGE_TAGS.AI_AGENT ){
+      await sendPusherNotification({
+        userId: user._id.toString(),
+        event: "new-message",
+        chat: result.chat ?? undefined,
+        message: result.message,
+      });
+    }
+   
     const response: ApiResponse = {
       success: true,
       message: "Messages send successfully",

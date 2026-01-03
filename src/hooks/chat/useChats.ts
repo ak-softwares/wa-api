@@ -128,32 +128,37 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
     return () => container.removeEventListener("scroll", handleScroll);
   }, [sidebarRef, loading, loadingMore, hasMore]);
 
+  // 1️⃣ Runs on mount (handles toast → page navigation case)
   useEffect(() => {
-    const chatId = activeChat?._id;
-    if (!chatId) return;
+    if (!activeChat?._id) return;
+    markChatAsRead(activeChat);
+  }, []);
 
-    // Instantly update UI
+  // 2️⃣ Runs when activeChat changes (handles in-page clicks)
+  useEffect(() => {
+    if (!activeChat?._id) return;
+    markChatAsRead(activeChat);
+  }, [activeChat]);
+
+  const markChatAsRead = (chat: Chat) => {
+    const chatId = chat._id;
+
+    // instant UI update
     setChats(prev =>
       prev.map(c =>
         c._id === chatId ? { ...c, unreadCount: 0 } : c
       )
     );
 
-    // Update database if unread messages exist
-    if ((activeChat?.unreadCount ?? 0) > 0) {
-      (async () => {
-        try {
-          await fetch(`/api/whatsapp/chats/${chatId}/mark-read`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ unreadCount: 0 }),
-          });
-        } catch (err) {
-          console.error("Failed to mark chat as read:", err);
-        }
-      })();
+    if ((chat.unreadCount ?? 0) > 0) {
+      fetch(`/api/whatsapp/chats/${chatId}/mark-read`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ unreadCount: 0 }),
+      }).catch(console.error);
     }
-  }, [activeChat]);
+  };
+
 
 
   const refreshChats = () => {

@@ -56,6 +56,7 @@ export async function handleSendMessage({
 
   const savedMessages = [];
   const failedMessages = [];
+  let singleChat: IChat | null = null;
   // Local cache for chats to reduce DB calls
   const chatCache = new Map<string, IChat>();
 
@@ -176,6 +177,11 @@ export async function handleSendMessage({
       phone: participant.number,
       chatCache,
     });
+    
+    // ✅ Only store chat if exactly ONE participant
+    if (!isBroadcast && participants.length === 1) {
+      singleChat = chat;
+    }
 
     // ✅ Save individual message
     const dbMessage = await MessageModel.create({
@@ -230,15 +236,16 @@ export async function handleSendMessage({
   }
 
   const primaryMessage =
-  isBroadcast
-    ? broadcastMasterMessage
-    : savedMessages.length > 0
-      ? savedMessages[savedMessages.length - 1] // latest sent
-      : failedMessages[failedMessages.length - 1]; // latest failed
+      isBroadcast
+        ? broadcastMasterMessage
+        : savedMessages.length > 0
+          ? savedMessages[savedMessages.length - 1] // latest sent
+          : failedMessages[failedMessages.length - 1]; // latest failed
 
   const result = {
       sent: savedMessages.length,
       failed: failedMessages.length,
+      chat: singleChat,
       message: primaryMessage,
       // messages: {
       //   sent: savedMessages,

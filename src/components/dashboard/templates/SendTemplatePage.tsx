@@ -9,7 +9,6 @@ import { useChatStore } from "@/store/chatStore";
 import { ChatType } from "@/types/Chat";
 import MessagesHeader from "../messages/MessageHeader";
 import IconButton from "@/components/common/IconButton";
-import { useTemplates } from "@/hooks/template/useTemplate";
 import MessagePreviewPage from "../messages/MessagePreviewPage";
 import { Message } from "@/types/Message";
 import TemplateSearchSelect from "./widgets/SearchableTemplateSelect";
@@ -32,7 +31,6 @@ export default function SendTemplatePage({
   const { activeChat } = useChatStore();
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [uploading, setUploading] = useState(false);
-  const { templates, loading: templateLoading, searchTemplates } = useTemplates({ isSend: true });
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const isBroadcast = activeChat?.type === ChatType.BROADCAST;
@@ -552,14 +550,11 @@ export default function SendTemplatePage({
             />
             {/* Template search select */}
             <TemplateSearchSelect
-              templates={templates}
               selectedTemplate={selectedTemplate || undefined}
               onChange={(template) => {
                 setSelectedTemplate(template);
                 sanitizeTemplateForSend(template!);
               }}
-              onSearch={searchTemplates}
-              loading={templateLoading}
             />
             <IconButton
               className="flex-1"
