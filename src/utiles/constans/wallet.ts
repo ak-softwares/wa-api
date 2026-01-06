@@ -1,1 +1,2 @@
+export const PRICE_PER_MESSAGE = 0.002;
 export const FREE_MONTHLY_MESSAGES = 10000;

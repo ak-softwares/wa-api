@@ -1,12 +1,14 @@
 "use client";
 
 import { AnalyticsData } from "@/types/Analytics";
-import { useState, useCallback } from "react";
+import { DateRangeEnum } from "@/utiles/enums/dateRangeEnum";
+import { dateRanges } from "@/utiles/helper/dateRangePresetsHelper";
+import { useState, useCallback, useEffect } from "react";
 
 export function useAnalytics() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
-
+  
   const fetchAnalytics = useCallback(async (range: { start: Date; end: Date }) => {
     setLoading(true);
     try {
@@ -22,6 +24,11 @@ export function useAnalytics() {
       setLoading(false);
     }
   }, []); // 👈 Memoized once
+
+  useEffect(() => {
+    const { start, end } = dateRanges[DateRangeEnum.THIS_MONTH]();
+    fetchAnalytics({ start, end });
+  }, []);
 
   return { data, loading, fetchAnalytics };
 }

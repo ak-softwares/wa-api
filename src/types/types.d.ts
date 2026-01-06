@@ -1,4 +1,8 @@
 import { Connection } from "mongoose"
+import type {
+  RazorpayOptions,
+  RazorpayInstance,
+} from '@/types/razorpay';
 
 declare global {
     var mongoose: {
@@ -7,7 +11,18 @@ declare global {
     }
 
     // extend globalThis with otpStore
-    var otpStore: Record<string, { code: string; expiresAt: number }>;}
+    var otpStore: Record<string, { code: string; expiresAt: number }>;
+
+    // Razorpay typings
+    interface Window {
+        Razorpay: RazorpayConstructor;
+    }
+
+    interface RazorpayConstructor {
+        new (options: RazorpayOptions): RazorpayInstance;
+    }
+
+}
 
 export {}
 

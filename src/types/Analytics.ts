@@ -3,4 +3,5 @@ export type AnalyticsData = {
   totalSentMessages: number;
   totalAIReplies: number;
   totalAICost: number;
+  creditSpend?: number;
 }

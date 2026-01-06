@@ -147,16 +147,16 @@ export default function WhatsAppSetupCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <CheckCircle2 className="h-5 w-5 text-green-600" />
+          <CheckCircle2 className="h-5 w-5 text-emerald-600" />
           WhatsApp Connected
         </CardTitle>
         <CardDescription>Your number is ready to use</CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4 text-sm">
-        <div className="flex items-center gap-2 p-3 border border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800 rounded-lg">
-          <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <span className="text-sm text-green-800 dark:text-green-200">
+        <div className="flex items-center gap-2 p-3 border border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20 dark:border-green-800 rounded-lg">
+          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+          <span className="text-sm text-emerald-800 dark:text-emerald-200">
             WhatsApp is connected and ready to use!
           </span>
         </div>

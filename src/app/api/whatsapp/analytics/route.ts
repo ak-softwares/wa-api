@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { MessageModel } from "@/models/Message";
 import { AiUsageModel } from "@/models/AiUsage";
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
+import { AnalyticsData } from "@/types/Analytics";
 
 export async function POST(req: Request) {
   try {
@@ -58,15 +59,18 @@ export async function POST(req: Request) {
 
     const totalAICost = aiUsage.length > 0 ? aiUsage[0].totalCost : 0;
 
+    const data: AnalyticsData = {
+      totalMessages,
+      totalSentMessages,
+      totalAIReplies,
+      totalAICost,
+    };
+
     return NextResponse.json({
       success: true,
-      data: {
-        totalMessages,
-        totalSentMessages,
-        totalAIReplies,
-        totalAICost
-      }
+      data,
     });
+
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err.message },

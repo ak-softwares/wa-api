@@ -17,7 +17,6 @@ export function useTemplates({ sidebarRef, isSend }: UseTemplatesProps = {}) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [after, setAfter] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  const [query, setQuery] = useState("");
 
   const PER_PAGE = "10";
 
@@ -103,7 +102,6 @@ export function useTemplates({ sidebarRef, isSend }: UseTemplatesProps = {}) {
   // SEARCH
   // -------------------------------
   const searchTemplates = (value: string) => {
-    setQuery(value);
 
     if (!value.trim()) {
       setTemplates(allTemplates);
@@ -122,7 +120,6 @@ export function useTemplates({ sidebarRef, isSend }: UseTemplatesProps = {}) {
   // REFRESH
   // -------------------------------
   const refreshTemplates = () => {
-    setQuery("");
     setAfter(null);
     setHasMore(true);
     fetchTemplates(false);

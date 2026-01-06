@@ -50,7 +50,9 @@ export default function Header() {
             Login
           </Link>
 
-          <ThemeToggle />
+          <div className="md:inline-block hidden">
+            <ThemeToggle />
+          </div>
 
           {/* Mobile menu button */}
           <button

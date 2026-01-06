@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
+import { FREE_MONTHLY_MESSAGES, PRICE_PER_MESSAGE } from "@/utiles/constans/wallet";
 
 type Currency = 'USD' | 'EUR' | 'GBP' | 'INR';
 
@@ -70,7 +71,7 @@ export default function PricingPage() {
       period: "forever",
       description: "Perfect for testing and small businesses",
       features: [
-        "Up to 100 messages/month",
+        `Up to ${FREE_MONTHLY_MESSAGES} messages/month`,
         "Basic automation",
         "1 WhatsApp number",
         "Basic analytics",
@@ -83,7 +84,7 @@ export default function PricingPage() {
     {
       id: "pay-as-you-go",
       name: "Pay-As-You-Go",
-      usdPrice: "0.002",
+      usdPrice: PRICE_PER_MESSAGE,
       period: "per message",
       description: "Best for growing businesses with variable volume",
       features: [
@@ -131,7 +132,7 @@ export default function PricingPage() {
 
   const faqs = [
     {
-      question: "How does the $0.002 per message pricing work?",
+      question: "How does the ${0.002} per message pricing work?",
       answer: "You're charged $0.002 for every message sent through our platform. This includes both outbound messages (campaigns, notifications) and automated AI replies. There are no monthly subscriptions or hidden fees - you only pay for what you use."
     },
     {

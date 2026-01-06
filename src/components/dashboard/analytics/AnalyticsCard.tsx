@@ -14,7 +14,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { BarChart } from "lucide-react";
+import { BarChart, CreditCard, DollarSign, Lock, MessageSquare, Send, Sparkles, TrendingUp, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAnalytics } from "@/hooks/analytics/useAnalytics";
 
@@ -27,14 +27,6 @@ export default function AnalyticsCard() {
   const [selectedRange, setSelectedRange] = useState<DateRangeEnum>(
     DateRangeEnum.THIS_MONTH
   );
-
-  // -------------------------------
-  // 🔹 Fetch default (This Month)
-  // -------------------------------
-  useEffect(() => {
-    const { start, end } = dateRanges[DateRangeEnum.THIS_MONTH]();
-    fetchAnalytics({ start, end });
-  }, []);
 
   // -------------------------------
   // 🔹 When dropdown changes
@@ -50,7 +42,7 @@ export default function AnalyticsCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <BarChart className="h-4 w-4 text-blue-500" />
+          <BarChart className="h-4 w-4 text-emerald-500" />
           Analytics
         </CardTitle>
         <CardDescription className="text-sm">
@@ -79,30 +71,65 @@ export default function AnalyticsCard() {
           <MetricCard
             label="Total Messages"
             value={loading ? "..." : data?.totalMessages ?? 0}
+            icon={<MessageSquare className="h-4 w-4 text-blue-500" />}// CreditCard
+            // trend={demoAnalytics.creditsSpentTrend}
           />
           <MetricCard
             label="Sent"
             value={loading ? "..." : data?.totalSentMessages ?? 0}
-          />
-          <MetricCard
-            label="AI Replies"
-            value={loading ? "..." : data?.totalAIReplies ?? 0}
+            icon={<Send className="h-4 w-4 text-green-500" />}
+            // trend={demoAnalytics.creditsAddedTrend}
           />
           <MetricCard
             label="AI Cost ($)"
             value={loading ? "..." : (data?.totalAICost ?? 0).toFixed(4)}
+            icon={<DollarSign className="h-4 w-4 text-purple-500" />}
           />
+          <MetricCard
+            label="AI Replies"
+            value={loading ? "..." : data?.totalAIReplies ?? 0}
+            icon={<Sparkles className="h-4 w-4 text-amber-500" />}
+          />
+          {/* <MetricCard
+            label="Credit Spend"
+            value={loading ? "..." : data?.totalAIReplies ?? 0}
+            icon={<CreditCard className="h-4 w-4 text-amber-500" />}
+          /> */}
         </div>
       </CardContent>
     </Card>
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: any }) {
+function MetricCard({
+  label,
+  value,
+  icon,
+  trend,
+}: {
+  label: string;
+  value: any;
+  icon?: React.ReactNode;
+  trend?: number;
+}) {
   return (
     <div className="p-3 border rounded-lg">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-xl font-bold">{value}</p>
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        {icon}
+      </div>
+      <div className="flex items-end justify-between">
+        <p className="text-xl font-bold">{value}</p>
+        {trend !== undefined && (
+          <span
+            className={`text-xs ${
+              trend >= 0 ? "text-green-500" : "text-red-500"
+            }`}
+          >
+            {trend >= 0 ? "↑" : "↓"} {Math.abs(trend)}%
+          </span>
+        )}
+      </div>
     </div>
   );
 }

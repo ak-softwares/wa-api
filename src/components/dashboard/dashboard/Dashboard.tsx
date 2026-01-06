@@ -3,13 +3,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Zap, 
-  Shield, 
-  Headphones
-} from 'lucide-react';
 import WhatsAppSetupCard from '../setup/WhatsAppSetupCard';
 import AnalyticsCard from '../analytics/AnalyticsCard';
+import CreditStatsDemo from '../wallet/WalletCard';
 
 export default function DashboardPage() {
 
@@ -34,7 +30,7 @@ export default function DashboardPage() {
   return (
     <div>
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <StatsCard
           title="Platform Status"
           value="Free & Active"
@@ -56,16 +52,18 @@ export default function DashboardPage() {
           icon={Headphones}
           trend="Always online"
         />
-      </div>
-
+      </div> */}
+      
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
+        <CreditStatsDemo />
         {/* First Row: WhatsApp Setup Card */}
         <WhatsAppSetupCard />
 
         {/* Platform Features Card - Compact Horizontal Layout */}
         <AnalyticsCard />
 
+        {/* <WalletAnalyticsCard /> */}
       </div>
     </div>
   );
