@@ -11,7 +11,7 @@ export function useDeleteMessages(onDeleted?: () => void) {
   const deleteMessage = async (messageId: string) => {
     setDeleting(true);
     try {
-      const res = await fetch(`/api/whatsapp/messages/${messageId}`, {
+      const res = await fetch(`/api/wa-accounts/messages/${messageId}`, {
         method: "DELETE",
       });
 
@@ -42,7 +42,7 @@ export function useDeleteMessages(onDeleted?: () => void) {
 
     setDeleting(true);
     try {
-      const res = await fetch("/api/whatsapp/messages/bulk-delete", {
+      const res = await fetch("/api/wa-accounts/messages/bulk-delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: selectedMessages }),

@@ -36,7 +36,7 @@ export default function WhatsAppSetupCard() {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const res = await fetch("/api/whatsapp/check-status")
+        const res = await fetch("/api/wa-accounts/check-status")
         const result: ApiResponse = await res.json()
 
         if (!result.success) {
@@ -51,7 +51,7 @@ export default function WhatsAppSetupCard() {
 
     const fetchPhone = async () => {
       try {
-        const res = await fetch("/api/whatsapp/get-phone-numbers", { method: "POST" })
+        const res = await fetch("/api/facebook/get-phone-numbers", { method: "POST" })
         const result: ApiResponse = await res.json()
 
         if (!result.success) return
@@ -67,7 +67,7 @@ export default function WhatsAppSetupCard() {
   const handleDelete = async () => {
     setDeletingPhone(true)
     try {
-      const res = await fetch("/api/whatsapp/accounts", { method: "DELETE" })
+      const res = await fetch("/api/facebook/accounts", { method: "DELETE" })
       const result: ApiResponse = await res.json()
 
       if (result.success) {

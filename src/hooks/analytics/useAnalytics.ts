@@ -12,7 +12,7 @@ export function useAnalytics() {
   const fetchAnalytics = useCallback(async (range: { start: Date; end: Date }) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/whatsapp/analytics", {
+      const res = await fetch("/api/wa-accounts/analytics", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(range),

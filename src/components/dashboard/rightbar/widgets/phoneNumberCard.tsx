@@ -44,7 +44,7 @@ export default function PhoneNumberCard({ showRemoveButton = false }: PhoneNumbe
     const fetchData = async () => {
       try {
 
-        const res = await fetch("/api/whatsapp/get-phone-numbers", {
+        const res = await fetch("/api/facebook/get-phone-numbers", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
         })
@@ -71,7 +71,7 @@ export default function PhoneNumberCard({ showRemoveButton = false }: PhoneNumbe
   const handleDelete = async () => {
     setDeletingPhone(true)
     try {
-      const res = await fetch("/api/whatsapp/accounts", {
+      const res = await fetch("/api/facebook/accounts", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       })

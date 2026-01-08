@@ -11,7 +11,7 @@ export function useDeleteContacts(onDeleted?: () => void) {
   const deleteContact = async (contactId: string, contactName?: string) => {
     setDeleting(true);
     try {
-      const res = await fetch(`/api/whatsapp/contacts/${contactId}`, {
+      const res = await fetch(`/api/wa-accounts/contacts/${contactId}`, {
         method: "DELETE",
       });
 
@@ -42,7 +42,7 @@ export function useDeleteContacts(onDeleted?: () => void) {
 
     setDeleting(true);
     try {
-      const res = await fetch("/api/whatsapp/contacts/bulk-delete", {
+      const res = await fetch("/api/wa-accounts/contacts/bulk-delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: selectedContacts }),

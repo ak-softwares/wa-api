@@ -26,7 +26,7 @@ export function useBlockedContacts() {
     try {
       setLoading(true);
 
-      const res = await fetch("/api/whatsapp/block");
+      const res = await fetch("/api/wa-accounts/block");
       const json = await res.json();
 
       if (!json.success) {
@@ -49,7 +49,7 @@ export function useBlockedContacts() {
   // Block
   const blockNumber = async (participant: ChatParticipant) => {
     try {
-      const res = await fetch("/api/whatsapp/block", {
+      const res = await fetch("/api/wa-accounts/block", {
         method: "POST",
         body: JSON.stringify({ number: participant.number }),
       });
@@ -70,7 +70,7 @@ export function useBlockedContacts() {
   // Unblock
   const unblockNumber = async (participant: ChatParticipant) => {
     try {
-      const res = await fetch("/api/whatsapp/block", {
+      const res = await fetch("/api/wa-accounts/block", {
         method: "DELETE",
         body: JSON.stringify({ number: participant.number }),
       });

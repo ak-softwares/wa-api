@@ -28,8 +28,8 @@ export function useContacts({ sidebarRef }: UseContactsProps) {
       try {
         const res = await fetch(
           query
-            ? `/api/whatsapp/contacts?q=${encodeURIComponent(query)}&page=${pageToFetch}&per_page=${perPage}`
-            : `/api/whatsapp/contacts?page=${pageToFetch}&per_page=${perPage}`
+            ? `/api/wa-accounts/contacts?q=${encodeURIComponent(query)}&page=${pageToFetch}&per_page=${perPage}`
+            : `/api/wa-accounts/contacts?page=${pageToFetch}&per_page=${perPage}`
         );
         const json: ApiResponse = await res.json();
 

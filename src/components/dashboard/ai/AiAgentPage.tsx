@@ -32,7 +32,7 @@ export default function AIAgentPage() {
   const loadConfig = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch('/api/whatsapp/ai/ai-agent');
+      const res = await fetch('/api/wa-accounts/ai/ai-agent');
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.data) {
@@ -54,7 +54,7 @@ export default function AIAgentPage() {
 
     try {
       setIsSaving(true);
-      const res = await fetch('/api/whatsapp/ai/ai-agent', {
+      const res = await fetch('/api/wa-accounts/ai/ai-agent', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(aiAgent),
@@ -84,7 +84,7 @@ export default function AIAgentPage() {
     const newStatus = !aiAgent.isActive;
     try {
       setIsSaving(true);
-      const res = await fetch('/api/whatsapp/ai/ai-agent', {
+      const res = await fetch('/api/wa-accounts/ai/ai-agent', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...aiAgent, isActive: newStatus, prompt: aiAgent.prompt}),
@@ -115,7 +115,7 @@ export default function AIAgentPage() {
 
     try {
       setIsTesting(true);
-      const res = await fetch('/api/whatsapp/ai/test-webhook', {
+      const res = await fetch('/api/wa-accounts/ai/test-webhook', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ webhookUrl }),

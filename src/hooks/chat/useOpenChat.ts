@@ -10,7 +10,7 @@ export function useOpenChat() {
   const openChatByContact = useCallback(async (phone: String) => {
     try {
       const res = await fetch(
-        `/api/whatsapp/chats/by-phone?phone=${phone}`
+        `/api/wa-accounts/chats/by-phone?phone=${phone}`
       );
 
       if (!res.ok) {

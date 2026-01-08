@@ -75,13 +75,13 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
 
         if (query) {
           // 🔍 Searching
-          url = `/api/whatsapp/chats?q=${encodeURIComponent(query)}&page=${pageToFetch}&per_page=${perPage}`;
+          url = `/api/wa-accounts/chats?q=${encodeURIComponent(query)}&page=${pageToFetch}&per_page=${perPage}`;
         } else if (phone && activeChat == null) {
           // 📱 fetch by phone (ensure temp chat is included)
-          url = `/api/whatsapp/chats?page=${pageToFetch}&per_page=${perPage}&phone=${phone}`;
+          url = `/api/wa-accounts/chats?page=${pageToFetch}&per_page=${perPage}&phone=${phone}`;
         } else {
           // 📦 regular fetch
-          url = `/api/whatsapp/chats?page=${pageToFetch}&per_page=${perPage}&filter=${filter}`;
+          url = `/api/wa-accounts/chats?page=${pageToFetch}&per_page=${perPage}&filter=${filter}`;
         }
 
         const res = await fetch(url);
@@ -151,7 +151,7 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
     );
 
     if ((chat.unreadCount ?? 0) > 0) {
-      fetch(`/api/whatsapp/chats/${chatId}/mark-read`, {
+      fetch(`/api/wa-accounts/chats/${chatId}/mark-read`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ unreadCount: 0 }),

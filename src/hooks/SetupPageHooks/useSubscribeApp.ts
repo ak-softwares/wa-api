@@ -12,7 +12,7 @@ export function useSubscribeApp() {
   const checkSubscription = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch("/api/whatsapp/subscribe-app"); // ✅ new endpoint for subscription status
+      const res = await fetch("/api/facebook/subscribe-app"); // ✅ new endpoint for subscription status
       const data: ApiResponse & { isSubscribed?: boolean } = await res.json();
 
       if (res.ok && data.success) {
@@ -32,7 +32,7 @@ export function useSubscribeApp() {
     try {
       setIsLoading(true);
 
-      const res = await fetch("/api/whatsapp/subscribe-app", {
+      const res = await fetch("/api/facebook/subscribe-app", {
         method: "POST",
       });
 

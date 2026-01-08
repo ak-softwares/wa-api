@@ -87,7 +87,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
       
       try {
         const res = await fetch(
-          `/api/whatsapp/messages?chatId=${chatId}&page=${pageToFetch}&per_page=${perPage}`
+          `/api/wa-accounts/messages?chatId=${chatId}&page=${pageToFetch}&per_page=${perPage}`
         );
         const json: ApiResponse = await res.json();
 

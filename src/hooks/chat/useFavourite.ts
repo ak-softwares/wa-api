@@ -9,7 +9,7 @@ export const useFavourite = () => {
   const toggleFavourite = async (chatId: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/whatsapp/chats/${chatId}/favourite`, {
+      const res = await fetch(`/api/wa-accounts/chats/${chatId}/favourite`, {
         method: "PATCH",
       });
 

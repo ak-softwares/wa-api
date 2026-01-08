@@ -23,7 +23,7 @@ export function useEditMembers(): EditMembersHook {
     try {
       setLoading(true);
 
-      const res = await fetch(`/api/whatsapp/chats/${chatId}/edit-members`, {
+      const res = await fetch(`/api/wa-accounts/chats/${chatId}/edit-members`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ members }),
@@ -58,7 +58,7 @@ export function useEditMembers(): EditMembersHook {
     try {
       setLoading(true);
 
-      const res = await fetch(`/api/whatsapp/chats/${chatId}/edit-members`, {
+      const res = await fetch(`/api/wa-accounts/chats/${chatId}/edit-members`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ members }),

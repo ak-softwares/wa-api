@@ -17,7 +17,7 @@ export function useContact(contactId?: string) {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/whatsapp/contacts/${contactId}`);
+        const res = await fetch(`/api/wa-accounts/contacts/${contactId}`);
         const data: ApiResponse = await res.json();
 
         if (!res.ok || !data.success) {

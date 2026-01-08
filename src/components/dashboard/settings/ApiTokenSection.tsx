@@ -20,7 +20,7 @@ export default function APITokenSection() {
 
   const loadApiToken = async () => {
     setIsLoading(true);
-    const res = await fetch("/api/whatsapp/api-token");
+    const res = await fetch("/api/wa-accounts/api-token");
     if (res.ok) {
       const { data } = await res.json();
       setConfig({ apiToken: data?.token || "" });
@@ -29,7 +29,7 @@ export default function APITokenSection() {
   };
 
   const generateNewToken = async () => {
-    const res = await fetch("/api/whatsapp/api-token", { method: "POST" });
+    const res = await fetch("/api/wa-accounts/api-token", { method: "POST" });
     if (res.ok) {
       const { data } = await res.json();
       setConfig({ apiToken: data.token });
@@ -40,7 +40,7 @@ export default function APITokenSection() {
   };
 
   const revokeToken = async () => {
-    const res = await fetch("/api/whatsapp/api-token", { method: "DELETE" });
+    const res = await fetch("/api/wa-accounts/api-token", { method: "DELETE" });
     if (res.ok) {
       setConfig({ apiToken: "" });
       toast.success("API token revoked");
@@ -136,7 +136,7 @@ export default function APITokenSection() {
                 </p>
                 <div className="bg-gray-100 dark:bg-[#2E2F2F] p-4 rounded-lg font-mono text-xs space-y-2 text-gray-900 dark:text-gray-300">
                 <p><strong>Method:</strong> POST</p>
-                <p><strong>URL:</strong> {`${baseUrl}/api/whatsapp/messages`}</p>
+                <p><strong>URL:</strong> {`${baseUrl}/api/wa-accounts/messages`}</p>
                 <p className="text-xs break-words whitespace-pre-wrap"><strong>Authorization:</strong> Bearer YOUR_TOKEN</p>
                 <p><strong>Content-Type:</strong> application/json</p>
                 <pre className="bg-white dark:bg-[#1a1b1b] p-2 rounded-md text-gray-900 dark:text-gray-300">

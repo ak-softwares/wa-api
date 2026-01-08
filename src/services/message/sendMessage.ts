@@ -17,7 +17,7 @@ export async function sendMessage({
     messagePayload.template = convertedTemplate;
   }
 
-  const res = await fetch("/api/whatsapp/messages", {
+  const res = await fetch("/api/wa-accounts/messages", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(messagePayload),

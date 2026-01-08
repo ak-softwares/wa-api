@@ -18,7 +18,7 @@ export function useWallet(): UseWalletResult {
       setLoading(true);
       setError(null);
 
-      const res = await fetch("/api/whatsapp/wallet", {
+      const res = await fetch("/api/wa-accounts/wallet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });

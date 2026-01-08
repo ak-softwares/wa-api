@@ -6,9 +6,7 @@ import {
   X,
   CreditCard,
   Zap,
-  ChevronRight,
   Sparkles,
-  Check,
 } from "lucide-react";
 import { PRICE_PER_MESSAGE } from "@/utiles/constans/wallet";
 import { useRazorpayPayment } from "@/hooks/razorpay/useRazorpayPayment";

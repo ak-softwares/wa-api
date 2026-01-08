@@ -13,7 +13,7 @@ export function useDeleteChats(onDeleted?: () => void) {
   const deleteChat = async (chatId: string) => {
     setDeleting(true);
     try {
-      const res = await fetch(`/api/whatsapp/chats/${chatId}`, {
+      const res = await fetch(`/api/wa-accounts/chats/${chatId}`, {
         method: "DELETE",
       });
 
@@ -48,7 +48,7 @@ export function useDeleteChats(onDeleted?: () => void) {
 
     setDeleting(true);
     try {
-      const res = await fetch("/api/whatsapp/chats/bulk-delete", {
+      const res = await fetch("/api/wa-accounts/chats/bulk-delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: selectedChats }),

@@ -12,7 +12,7 @@ export function useRegisterPhoneNumber() {
   const checkRegistration = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch("/api/whatsapp/register-phone-number"); // ✅ make new endpoint for status
+      const res = await fetch("/api/facebook/register-phone-number"); // ✅ make new endpoint for status
       const data: ApiResponse & { isRegistered?: boolean } = await res.json();
 
       if (res.ok && data.success) {
@@ -32,7 +32,7 @@ export function useRegisterPhoneNumber() {
     try {
       setIsLoading(true);
 
-      const res = await fetch("/api/whatsapp/register-phone-number", {
+      const res = await fetch("/api/facebook/register-phone-number", {
         method: "POST",
       });
 

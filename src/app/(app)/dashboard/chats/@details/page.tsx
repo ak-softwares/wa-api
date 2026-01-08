@@ -124,11 +124,11 @@ export default function MessagePage() {
   useEffect(() => {
     if (!chatId) return;
 
-    fetch(`/api/whatsapp/chats/${chatId}/opened`, { method: "POST" });
+    fetch(`/api/wa-accounts/chats/${chatId}/opened`, { method: "POST" });
 
     // ✅ When leaving the chat
     return () => {
-      fetch(`/api/whatsapp/chats/${chatId}/closed`, { method: "POST" });
+      fetch(`/api/wa-accounts/chats/${chatId}/closed`, { method: "POST" });
     };
   }, [chatId]);
 

@@ -38,7 +38,7 @@ export default function SetupProgressCard() {
   const fetchStatus = useCallback(async () => {
     try {
       setLoading(true)
-      const res = await fetch("/api/whatsapp/check-status")
+      const res = await fetch("/api/wa-accounts/check-status")
       const result: ApiResponse = await res.json()
 
       if (result.success) {

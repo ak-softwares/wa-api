@@ -18,7 +18,7 @@ import { sendMessage } from "@/services/message/sendMessage"
 type SendMessageForm = z.infer<typeof sampleMessageSchema>;
 
 export default function SendTestMessagePopup() {
-  const [preview, setPreview] = useState({ to: "", message: "" })
+  const [preview, setPreview] = useState({ to: "", message: "Test message" })
 
   const form = useForm<SendMessageForm>({
     resolver: zodResolver(sampleMessageSchema),
@@ -41,8 +41,12 @@ export default function SendTestMessagePopup() {
       messageType: MessageType.TEXT,
       message: data.message
     };
-    await sendMessage({messagePayload})
-    toast.success("Test message sent successfully!")
+    try {
+      await sendMessage({messagePayload})
+      toast.success("Test message sent successfully!")
+    } catch (error: any) {
+      toast.error(error.message);
+    }
   }
 
   return (

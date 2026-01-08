@@ -53,7 +53,7 @@ export const useBroadcast = (onSuccess?: () => void) => {
         imageUrl: c.imageUrl || null,
       }));
 
-      const response = await fetch("/api/whatsapp/chats/broadcast", {
+      const response = await fetch("/api/wa-accounts/chats/broadcast", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

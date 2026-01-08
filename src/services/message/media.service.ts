@@ -23,7 +23,7 @@ export async function uploadMediaApi(file: File) {
   const form = new FormData();
   form.append("file", file);
 
-  const res = await fetch("/api/whatsapp/media", {
+  const res = await fetch("/api/wa-accounts/media", {
     method: "POST",
     body: form,
   });
@@ -38,7 +38,7 @@ export async function uploadMediaApi(file: File) {
 }
 
 export async function fetchMediaBlob(mediaId: string) {
-  const res = await fetch(`/api/whatsapp/media/${mediaId}`);
+  const res = await fetch(`/api/wa-accounts/media/${mediaId}`);
   const blob = await res.blob();
   return URL.createObjectURL(blob);
 }

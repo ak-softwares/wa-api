@@ -131,6 +131,7 @@ export async function getDefaultWaAccount(req?: NextRequest) {
   }
 
   // Check token existence
+  // console.log(waAccount.waba_id)
   // console.log(waAccount.permanent_token);
   if (!waAccount.permanent_token) {
     const response: ApiResponse = { success: false, message: "Permanent token not found" };

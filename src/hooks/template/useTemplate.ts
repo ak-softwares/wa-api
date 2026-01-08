@@ -28,7 +28,7 @@ export function useTemplates({ sidebarRef, isSend }: UseTemplatesProps = {}) {
       loadMore ? setLoadingMore(true) : setLoading(true);
 
       try {
-        const url = new URL("/api/whatsapp/templates", window.location.origin);
+        const url = new URL("/api/wa-accounts/templates", window.location.origin);
         url.searchParams.set("limit", PER_PAGE);
         if (loadMore && cursor) {
           url.searchParams.set("after", cursor);

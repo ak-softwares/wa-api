@@ -61,7 +61,7 @@ export default function UpdateContactDialog({
   const onSubmit = async (data: ContactForm) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/whatsapp/contacts/${contact.id}`, {
+      const res = await fetch(`/api/wa-accounts/contacts/${contact.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

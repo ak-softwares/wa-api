@@ -32,7 +32,7 @@ export default function AIChatPage() {
     try {
       setIsLoading(true);
       // Replace with your actual API endpoint
-      const response = await fetch('/api/whatsapp/ai/ai-chat');
+      const response = await fetch('/api/wa-accounts/ai/ai-chat');
       if (response.ok) {
         const result = await response.json();
         setAiChat(result.data);
@@ -47,7 +47,7 @@ export default function AIChatPage() {
   const handleSaveConfig = async () => {
     try {
       setIsSaving(true);
-      const response = await fetch('/api/whatsapp/ai/ai-chat', {
+      const response = await fetch('/api/wa-accounts/ai/ai-chat', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ export default function AIChatPage() {
     
     try {
       setIsSaving(true);
-      const response = await fetch('/api/whatsapp/ai/ai-chat', {
+      const response = await fetch('/api/wa-accounts/ai/ai-chat', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

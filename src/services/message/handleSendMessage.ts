@@ -5,7 +5,7 @@ import { ChatType } from "@/types/Chat";
 import { ApiError } from "@/types/apiResponse";
 import { MessagePayload } from "@/types/MessageType";
 import { Types } from "mongoose";
-import { getOrCreateChat } from "../webhook-helper/getOrCreateChat";
+import { getOrCreateChat } from "../apiHelper/getOrCreateChat";
 import { CREDIT_COST } from "../../lib/wallet/credits";
 import { UsageLogModel } from "@/models/UsageLog";
 import { consumeMessage } from "../../lib/wallet/consumeMessage";

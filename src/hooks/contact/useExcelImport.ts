@@ -112,7 +112,7 @@ export function useExcelImport() {
     try {
         setIsImporting(true);
 
-        const res = await fetch("/api/whatsapp/contacts/import", {
+        const res = await fetch("/api/wa-accounts/contacts/import", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ contacts: validSelected }),

@@ -26,7 +26,7 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
     const checkFacebookConnection = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch("/api/whatsapp/check-status");
+        const res = await fetch("/api/wa-accounts/check-status");
          const result: ApiResponse = await res.json()
         if (result.success && result.data.token) {
           setFacebookConnected(true);
@@ -159,7 +159,7 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
     access_token: string;
   }) => {
     try {
-      const res = await fetch("/api/whatsapp/accounts", {
+      const res = await fetch("/api/facebook/accounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

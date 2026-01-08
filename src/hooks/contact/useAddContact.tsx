@@ -90,7 +90,7 @@ export const useAddContact = (onSuccess?: () => void) => {
   const submit = async (data: ContactForm) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/whatsapp/contacts", {
+      const res = await fetch("/api/wa-accounts/contacts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
