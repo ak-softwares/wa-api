@@ -9,7 +9,7 @@ import { getOrCreateChat } from "@/services/apiHelper/getOrCreateChat";
 import { handleIncomingMessage } from "@/services/webhookHelper/handleIncomingMessage";
 import { handleAIMessage } from "@/services/webhookHelper/handleAIMessage";
 
-
+// https://wa-api.me/api/webhooks/facebook
 const FACEBOOK_WEBHOOK_TOKEN = process.env.FACEBOOK_WEBHOOK_TOKEN; // secret token
 
 // --------------------------------------------------------

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
-import { FREE_MONTHLY_MESSAGES, PRICE_PER_MESSAGE } from "@/utiles/constans/wallet";
+import { FREE_MONTHLY_MESSAGES, PRICE_PER_CREDIT_USD } from "@/utiles/constans/wallet";
 
 type Currency = 'USD' | 'EUR' | 'GBP' | 'INR';
 
@@ -84,7 +84,7 @@ export default function PricingPage() {
     {
       id: "pay-as-you-go",
       name: "Pay-As-You-Go",
-      usdPrice: PRICE_PER_MESSAGE,
+      usdPrice: PRICE_PER_CREDIT_USD,
       period: "per message",
       description: "Best for growing businesses with variable volume",
       features: [

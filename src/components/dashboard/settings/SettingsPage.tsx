@@ -3,7 +3,7 @@
 import MenuTile from "@/components/common/MenuTile";
 import SearchBar from "@/components/common/SearchBar";
 import { useTheme } from "next-themes";
-import { Moon, Sun } from "lucide-react";
+import { History, Moon, Sun } from "lucide-react";
 import { useSettingsStore } from "@/store/settingsStore";
 import { useLogoutDialog } from "@/hooks/profile/useLogoutDialog";
 
@@ -30,11 +30,12 @@ export default function SettingsPage() {
         <div className="space-y-2 px-5">
           {/* Example MenuTile */}
           <MenuTile
-              icon={<img src="/assets/icons/setting.svg" className="w-6 h-6 dark:invert" alt="User" />}
-              label="Profile"
-              subtitle="Manage your profile settings"
-              onClick={() => setSelectedSettingsMenu("profile")}
-              selected={selectedSettingsMenu === "profile"}
+              icon={<History />}
+              // icon={<img src="/assets/icons/setting.svg" className="w-6 h-6 dark:invert" alt="User" />}
+              label="Payment history"
+              subtitle="View and manage your payments"
+              onClick={() => setSelectedSettingsMenu("transaction-history")}
+              selected={selectedSettingsMenu === "transaction-history"}
           />
           <MenuTile
               icon={<img src="/assets/icons/key.svg" className="w-6 h-6 dark:invert" alt="User" />}
@@ -51,7 +52,7 @@ export default function SettingsPage() {
               selected={selectedSettingsMenu === "blocked-contacts"}
           />
           <MenuTile
-              icon={theme === "dark" ? <Sun size={22} /> : <Moon size={22} />}
+              icon={theme === "dark" ? <Sun /> : <Moon/>}
               label="Theme"
               subtitle="Click to change theme"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}

@@ -3,13 +3,21 @@
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 
-export function RefreshButton() {
-  const handleRefresh = () => {
-    window.location.reload(); // 🔄 Reloads the page
+interface RefreshButtonProps {
+  onClick?: () => void;
+}
+
+export function RefreshButton({ onClick }: RefreshButtonProps) {
+  const handleClick = () => {
+    if (onClick) {
+      onClick(); // ✅ custom action
+    } else {
+      window.location.reload(); // 🔄 fallback refresh
+    }
   };
 
   return (
-    <Button variant="outline" size="sm" onClick={handleRefresh}>
+    <Button variant="outline" size="sm" onClick={handleClick}>
       <RefreshCw className="h-4 w-4 mr-2" />
       Refresh
     </Button>

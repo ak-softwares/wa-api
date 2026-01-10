@@ -7,6 +7,7 @@ import { handleSendMessage } from "@/services/message/handleSendMessage";
 import { MESSAGE_TAGS } from "@/utiles/enums/messageTags";
 import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
 
+// https://wa-api.me/api/wa-accounts/messages
 export async function GET(req: NextRequest) {
   try {
     const { user, errorResponse } = await fetchAuthenticatedUser();

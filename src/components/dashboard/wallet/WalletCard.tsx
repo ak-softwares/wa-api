@@ -1,15 +1,14 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Zap, Wallet, PlusCircle } from "lucide-react";
-import { FREE_MONTHLY_MESSAGES, PRICE_PER_MESSAGE } from "@/utiles/constans/wallet";
+import { FREE_MONTHLY_MESSAGES, PRICE_PER_CREDIT_USD } from "@/utiles/constans/wallet";
 import { useWallet } from "@/hooks/wallet/useWallet";
 import AddCreditPopup from "./AddCreditPopup";
 import { useState } from "react";
 
 export default function CreditStatsDemo() {
-  const { data, loading } = useWallet();
+  const { data, loading, setData } = useWallet();
   const [showAddCredit, setShowAddCredit] = useState(false);
-
 
   const totalFreeMonthlyCredits = FREE_MONTHLY_MESSAGES;
   const usedThisMonth = data?.currentMonthUsed ?? 0;
@@ -22,59 +21,52 @@ export default function CreditStatsDemo() {
 
   const isLow = percentage >= 80;
 
-  // Mock function to simulate adding credits
   // In a real app, this would call your backend API
-  const handleAddCredits = async (credits: number) => {
-    try {
-      // Example API call:
-      // await fetch('/api/wallet/add-credits', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ credits }),
-      // });
-      
-      // For demo purposes, just refetch the wallet data
-      console.log(`Adding ${credits} credits`);
-      // refetch(); // This will refetch the wallet data
-    } catch (error) {
-      console.error("Failed to add credits:", error);
-    }
+  const handleAddCredits = (credits: number) => {
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            creditBalance: prev.creditBalance + credits,
+          }
+        : prev
+    );
   };
+  
   return (
     <>    
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Monthly Usage Card */}
-        <Card className="flex-1">
-          <CardContent className="px-4">
-            <div className="flex items-center justify-between">
+        <Card className="flex-1 p-3">
+          <CardHeader className="px-4">
+            <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-emerald-50">
-                  <Zap className="h-4 w-4 text-emerald-600" />
-                </div>
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Free messages / Month
-                </span>
+                <Zap className="text-emerald-600" size={15} />
+                Free Messages per Month
               </div>
 
               <div
                 className={`px-2 py-1 rounded-full text-xs font-semibold ${
                   isLow
                     ? "bg-red-100 text-red-700"
-                    : "bg-emerald-100 text-emerald-700"
+                    : "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
                 }`}
               >
                 {loading ? "..." : `${percentage}%`}
               </div>
-            </div>
+            </CardTitle>
+          </CardHeader>
 
+          <CardContent className="px-4">
             {/* Progress */}
-            <div className="space-y-2 mt-2">
+            <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="font-medium text-gray-700">
+                <span className="font-medium text-gray-700 dark:text-gray-300">
                   {loading
                     ? "..."
                     : `${usedThisMonth} / ${totalFreeMonthlyCredits} used`}
                 </span>
-                <span className="text-gray-500">
+                <span className="text-muted-foreground">
                   {loading ? "..." : `${remaining} remaining`}
                 </span>
               </div>
@@ -92,16 +84,12 @@ export default function CreditStatsDemo() {
         </Card>
 
         {/* Current Balance Card */}
-        <Card className="flex-1">
-          <CardContent className="px-4">
-            <div className="flex items-center justify-between">
+        <Card className="flex-1 p-3">
+          <CardHeader className="px-4">
+            <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-emerald-50">
-                  <Wallet className="h-4 w-4 text-emerald-600" />
-                </div>
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Current Balance
-                </span>
+                <Wallet className="h-4 w-4 text-emerald-600" />
+                Current Balance
               </div>
 
               <Button
@@ -112,27 +100,30 @@ export default function CreditStatsDemo() {
                 <PlusCircle className="h-4 w-4" />
                 Add Credits
               </Button>
-            </div>
+            </CardTitle>
+          </CardHeader>
 
-            <div className="flex items-end gap-3 mt-2">
-              <div className="flex flex-1 items-baseline gap-1">
-                <span className="text-3xl font-bold text-gray-900">
+          <CardContent className="px-4">
+            <div className="flex items-end justify-between mt-1">
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold text-gray-900 dark:text-gray-200">
                   {loading ? "..." : data?.creditBalance.toLocaleString()}
                 </span>
-                <span className="text-sm font-medium text-gray-500">
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   credits
                 </span>
               </div>
 
               <div className="text-right">
-                <span className="block text-xs text-gray-500">Avg. Cost</span>
-                <p className="text-sm font-medium text-gray-900">
-                  ${PRICE_PER_MESSAGE} / credit
+                <span className="block text-xs text-gray-500 dark:text-gray-400">Avg. Cost</span>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-200">
+                  ${PRICE_PER_CREDIT_USD} / credit
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
+
       </div>
 
       {/* Add Credit Popup */}

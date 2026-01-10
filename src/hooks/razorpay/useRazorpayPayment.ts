@@ -35,8 +35,6 @@ export async function razorpayHandler({
   }
 }
 
-
-
 interface UseRazorpayPaymentParams {
   amount: number;
   currency?: string;

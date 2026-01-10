@@ -3,7 +3,6 @@ import mongoose, { Schema, models, model, Types } from "mongoose";
 export interface IWallet {
   _id?: Types.ObjectId;
   userId: Types.ObjectId;
-  waAccountId: Types.ObjectId;
   balance: number; // credits
   locked?: number; // optional (for in-flight usage)
 }
@@ -11,7 +10,6 @@ export interface IWallet {
 const WalletSchema = new Schema<IWallet>(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, unique: true },
-    waAccountId: { type: Schema.Types.ObjectId, ref: "WaAccount", required: true },
     balance: { type: Number, default: 0, min: 0 },
     locked: { type: Number, default: 0 },
   },

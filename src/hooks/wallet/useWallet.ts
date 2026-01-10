@@ -5,6 +5,7 @@ interface UseWalletResult {
   data: WalletAnalytics | null;
   loading: boolean;
   error: string | null;
+  setData: React.Dispatch<React.SetStateAction<WalletAnalytics | null>>;
   refetch: () => Promise<void>;
 }
 
@@ -18,7 +19,7 @@ export function useWallet(): UseWalletResult {
       setLoading(true);
       setError(null);
 
-      const res = await fetch("/api/wa-accounts/wallet", {
+      const res = await fetch("/api/wallet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -45,6 +46,7 @@ export function useWallet(): UseWalletResult {
     data,
     loading,
     error,
+    setData,
     refetch: fetchWallet,
   };
 }
