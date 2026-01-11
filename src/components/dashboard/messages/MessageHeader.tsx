@@ -5,7 +5,6 @@ import IconButton from "@/components/common/IconButton";
 import MessagesMenu from "./MessagesMenu";
 import { useChatStore } from "@/store/chatStore";
 import { CountryCode, parsePhoneNumberFromString } from "libphonenumber-js";
-import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
 import { useRouter } from "next/navigation";
 import { useFavourite } from "@/hooks/chat/useFavourite";
 import { Chat, ChatType } from "@/types/Chat";
@@ -15,6 +14,7 @@ interface MessagesHeaderProps {
   onBack?: () => void;
   isBlocked?: boolean;
   onBlockToggle?: () => void;
+  onDelete?: (chat: Chat) => void; // new callback
 }
 
 export default function MessagesHeader({
@@ -22,9 +22,9 @@ export default function MessagesHeader({
   onBack,
   onBlockToggle,
   isBlocked,
+  onDelete,
 }: MessagesHeaderProps) {
   const {activeChat, setActiveChat} = useChatStore();
-  const { deleteChat } = useDeleteChats();
   const { toggleFavourite } = useFavourite();
   
   const router = useRouter();
@@ -38,15 +38,6 @@ export default function MessagesHeader({
     const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
     return phoneNumber ? phoneNumber.formatInternational() : number;
   }
-
-  const handleDelete = async () => {
-    if (!chatId) return;
-    const success = await deleteChat(chatId);
-    if (success) {
-      // onDelete?.(chatId); // ✅ refresh or remove from UI
-      router.refresh(); // 🔄 re-fetches data for the current route
-    }
-  };
 
   const handleUpdateChat = async (chatId: string, updates: Partial<Chat> = {}) => {
     // If the update includes isFavourite, call the API
@@ -123,7 +114,7 @@ export default function MessagesHeader({
         <MessagesMenu
           onContactDetails={onAvatarClick}
           onCloseChat={onBack}
-          onDeleteChat={handleDelete}
+          onDeleteChat={() => activeChat && onDelete?.(activeChat)}
           isFavourite={isFavourite ?? false}
           onToggleFavourite={() => handleUpdateChat(activeChat._id!.toString(), { isFavourite: !activeChat.isFavourite })}
           isBlocked={isBlocked}

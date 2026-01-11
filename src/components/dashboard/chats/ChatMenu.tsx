@@ -7,14 +7,13 @@ import {
   DropdownMenuContent,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
 import MenuItemsList from "@/components/common/MenuItemList";
 import { Chat, ChatParticipant, ChatType } from "@/types/Chat";
 import { useFavourite } from "@/hooks/chat/useFavourite";
 
 interface ChatMenuProps {
   chat: Chat;
-  onDelete?: (chatId: string) => void; // new callback
+  onDelete?: (chat: Chat) => void; // new callback
   onUpdateFavourite?: (chatId: string, isFavourite: boolean) => void; // added
   onBlockToggle?: (participant: ChatParticipant) => void;  // ✅ fixed
   isBlocked?: boolean;   // ✅ NOW BOOLEAN
@@ -22,7 +21,6 @@ interface ChatMenuProps {
 
 export default function ChatMenu({ chat, onDelete, onUpdateFavourite, onBlockToggle, isBlocked }: ChatMenuProps) {
 
-  const { deleteChat } = useDeleteChats();
   const { toggleFavourite } = useFavourite();
 
   const isBroadcast = chat?.type === ChatType.BROADCAST;
@@ -33,14 +31,6 @@ export default function ChatMenu({ chat, onDelete, onUpdateFavourite, onBlockTog
     if (updatedState !== null) {
       // Optional: update UI state or refresh
       onUpdateFavourite?.(chat._id!.toString(), updatedState);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!chat) return;
-    const success = await deleteChat(chat._id!.toString());
-    if (success) {
-      onDelete?.(chat._id!.toString()); // ✅ refresh or remove from UI
     }
   };
       
@@ -85,7 +75,7 @@ export default function ChatMenu({ chat, onDelete, onUpdateFavourite, onBlockTog
   bottomItems.push({
     icon: "/assets/icons/delete.svg",
     label: "Delete chat",
-    action: handleDelete,
+    action: () => onDelete?.(chat),
     danger: true,
   });
 

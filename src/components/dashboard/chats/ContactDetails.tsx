@@ -1,4 +1,3 @@
-// components/chat/ContactDetails.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,6 @@ import { Star, Ban, Trash2 } from "lucide-react";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { useChatStore } from "@/store/chatStore";
 import ContactAvatar from "../contacts/ContactAvatar";
-import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
 import { useRouter } from "next/navigation";
 import IconButton from "@/components/common/IconButton";
 import { useAddContact } from "@/hooks/contact/useAddContact";
@@ -14,18 +12,18 @@ import { useState } from "react";
 import AddContactsToBroadcastPopup from "./AddContactsToBroadcastPopup";
 import ViewAllMembersPopup from "./ViewAllMembersPopup";
 import MembersMenu from "./MembersMenu";
-import { ChatType } from "@/types/Chat";
+import { Chat, ChatType } from "@/types/Chat";
 
 interface ContactDetailsProps {
   isOpen: boolean;
   onClose: () => void;
   isBlocked?: boolean;
   onBlockToggle?: () => void;
+  onDelete?: (chat: Chat) => void; // new callback
 }
 
-export default function ContactDetails({ isOpen, onClose, isBlocked, onBlockToggle }: ContactDetailsProps) {
+export default function ContactDetails({ isOpen, onClose, isBlocked, onBlockToggle, onDelete }: ContactDetailsProps) {
   const { activeChat } = useChatStore();
-  const { deleteChat } = useDeleteChats();
   const { openAddContactDialog, AddContactDialog } = useAddContact();
   const [showAddMembersPopup, setShowAddMembersPopup] = useState(false);
   const [showViewAllMembers, setShowViewAllMembers] = useState(false);
@@ -41,15 +39,6 @@ export default function ContactDetails({ isOpen, onClose, isBlocked, onBlockTogg
   const formatPhone = (number: string, defaultCountry: CountryCode = "IN") => {
     const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
     return phoneNumber ? phoneNumber.formatInternational() : number;
-  };
-
-  const handleDelete = async () => {
-    if (!activeChat) return;
-    const success = await deleteChat(activeChat._id!.toString());
-    if (success) {
-      // onDelete?.(chatId); // ✅ refresh or remove from UI
-      router.refresh(); // 🔄 re-fetches data for the current route
-    }
   };
 
   const isBroadcast = activeChat.type === ChatType.BROADCAST;
@@ -252,7 +241,7 @@ export default function ContactDetails({ isOpen, onClose, isBlocked, onBlockTogg
               )}
             </Button>
           )}
-          <Button variant="ghost" className="w-full justify-start text-red-600" onClick={handleDelete}>
+          <Button variant="ghost" className="w-full justify-start text-red-600" onClick={() => onDelete?.(activeChat)}>
             <Trash2 className="h-4 w-4 mr-3" />
             Delete Chat
           </Button>

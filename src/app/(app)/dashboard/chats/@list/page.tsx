@@ -19,18 +19,63 @@ import MakeBroadcastPopup from "@/components/dashboard/chats/MakeBroadcastPopup"
 import { ChatFilterType } from "@/utiles/enums/chatFilters";
 import { Chat, ChatParticipant, ChatType } from "@/types/Chat";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
+import { DeleteMode } from "@/utiles/enums/deleteMode";
+import { ConfirmDialog } from "@/components/common/dialog/ConfirmDialog";
 
 export default function ChatList() {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
   const { chats, totalChats, setChats, loading, loadingMore, hasMore, searchChats, filter, setFilter } = useChats({ sidebarRef });
 
-  const [selectedChatIds, setSelectedChatIds] = useState<string[]>([]);
+  const [selectedChats, setSelectedChats] = useState<Chat[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const { deleteChatsBulk } = useDeleteChats();
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
   const [isMakeBroadcastOpen, setIsMakeBroadcastOpen] = useState(false);
   const { activeChat, setActiveChat } = useChatStore();
   const { isBlocked, toggleBlock, confirmBlockDialog } = useBlockedContacts();
+
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [deleteMode, setDeleteMode] = useState<DeleteMode | null>(null);
+  const [targetChat, setTargetChat] = useState<Chat | null>(null);
+  const { deleteChat, deleteChatsBulk, deleteAllChats, isDeleting } = 
+    useDeleteChats(({ mode, deletedIds }) => {
+      setOpenDeleteDialog(false);
+      setDeleteMode(null);
+
+      if (mode === DeleteMode.All) {
+        setChats([]);
+        return;
+      }
+
+      if (mode === DeleteMode.Bulk) {
+        setSelectedChats([]);
+      }
+
+      setChats((prev) =>
+        prev.filter((c) => !deletedIds.includes(c._id!.toString()))
+      );
+    });
+
+  const handleDeleteChat = (deletedChat: Chat) => {
+    setTargetChat(deletedChat);
+    setDeleteMode(DeleteMode.Single);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleDeleteSelectedChats = () => {
+    if (!selectedChats || selectedChats.length === 0) {
+      toast.error("No chats selected");
+      return;
+    }
+
+    setDeleteMode(DeleteMode.Bulk);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleDeleteAllChats = () => {
+    setDeleteMode(DeleteMode.All);
+    setOpenDeleteDialog(true);
+  };
+
   
   const FILTERS: { key: ChatFilterType; label: string }[] = [
     { key: "all", label: "All" },
@@ -47,13 +92,6 @@ export default function ChatList() {
   const handleOpenChat = async (chat: any) => {
     setActiveChat(chat)
     // setSelectedMessageMenu("message");
-  };
-
-  const handleDeleteChat = (chatId: string) => {
-    setChats((prev) => prev.filter(chat => String(chat._id) !== chatId));
-    if(String(activeChat?._id) === chatId) {
-      setActiveChat(null);
-    }
   };
 
   const handleUpdateChatFavourite = (chatId: string, isFavourite: boolean) => {
@@ -73,42 +111,19 @@ export default function ChatList() {
 
   // Clear all selections
   const clearSelection = () => {
-    setSelectedChatIds([]);
+    setSelectedChats([]);
     setIsSelectionMode(false);
   };
 
-  const handleDelete = (deletedId: string) => {
-    setChats((prev) => prev.filter((c) => c._id!.toString() !== deletedId));
-    // refreshContacts();
-  };
-
-  const handleDeleteSelected = async () => {
-    if (!selectedChatIds || selectedChatIds.length === 0) {
-      toast.error("No contacts selected");
-      return;
-    }
-
-    const success = await deleteChatsBulk(selectedChatIds);
-    if (success) {
-      // ✅ Remove deleted contacts from UI
-      setChats((prev) =>
-        prev.filter((c) => !selectedChatIds.includes(c._id!.toString()))
-      );
-      clearSelection?.(); // ✅ Optionally clear selection state
-    }
-  };
-
   // Select all chats
-  const selectAllChats = () => {
-    setSelectedChatIds(chats.map(chat => chat._id!.toString()));
-  };
+  const selectAllChats = () => {setSelectedChats(chats)}
 
   // Toggle contact selection
-  const toggleContactSelection = (chatId: string) => {
-    setSelectedChatIds(prev => 
-      prev.includes(chatId) 
-        ? prev.filter(id => id !== chatId)
-        : [...prev, chatId]
+  const toggleChatSelection = (chat: Chat) => {
+    setSelectedChats(prev =>
+      prev.some(c => c._id === chat._id)
+        ? prev.filter(c => c._id !== chat._id)
+        : [...prev, chat]
     );
   };
   
@@ -126,6 +141,7 @@ export default function ChatList() {
           <ChatsMenu 
             onSelectChats={() => setIsSelectionMode(true)} 
             onMakeBroadcast={() => setIsMakeBroadcastOpen(true)} 
+            onDeleteAllChats={handleDeleteAllChats}
           />
           {/* New Chat Popup */}
           <NewChatPopup
@@ -149,10 +165,10 @@ export default function ChatList() {
                 label={"Close Selection"}
                 IconSrc={"/assets/icons/close.svg"}
               />
-              <h2 className="text-lg">{selectedChatIds.length} selected</h2>
+              <h2 className="text-lg">{selectedChats.length} selected</h2>
             </div>
             <SelectedChatMenu
-              onDeleteSelected={handleDeleteSelected}
+              onDeleteSelected={handleDeleteSelectedChats}
               onSelectAll={selectAllChats} 
             />
           </div>
@@ -205,7 +221,7 @@ export default function ChatList() {
           <div className="p-8 text-center">No chats found.</div>
         ) : (
           chats.map((chat) => {
-            const isSelected = selectedChatIds.includes(chat._id!.toString());
+            const isSelected = selectedChats.some(c => c._id === chat._id);
             const isBroadcast = chat.type === ChatType.BROADCAST;
             const partner = chat.participants[0];
             const isActive = chat._id === activeChat?._id
@@ -233,7 +249,7 @@ export default function ChatList() {
                   isActive={isActive}
                   onClick={() =>
                     isSelectionMode
-                      ? toggleContactSelection(chat._id!.toString())
+                      ? toggleChatSelection(chat)
                       : handleOpenChat(chat)
                   }
                   rightMenu={
@@ -285,6 +301,33 @@ export default function ChatList() {
           ))}
       </div>
       {confirmBlockDialog()}
+      <ConfirmDialog
+        open={openDeleteDialog}
+        loading={isDeleting}
+        title={
+          deleteMode === DeleteMode.Single
+            ? "Delete chat?"
+            : deleteMode === DeleteMode.Bulk
+            ? "Delete selected chats?"
+            : "Delete all chats?"
+        }
+        description="This action cannot be undone."
+        onCancel={() => setOpenDeleteDialog(false)}
+        onConfirm={async () => {
+          if (deleteMode === DeleteMode.Single && targetChat) {
+            await deleteChat(targetChat._id!.toString());
+          }
+
+          if (deleteMode === DeleteMode.Bulk) {
+            const ids = selectedChats.map((c) => c._id!.toString());
+            await deleteChatsBulk(ids);
+          }
+
+          if (deleteMode === DeleteMode.All) {
+            await deleteAllChats();
+          }
+        }}
+      />
     </div>
   );
 }

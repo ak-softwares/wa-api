@@ -6,13 +6,11 @@ import ContactAvatar from "./ContactAvatar";
 import { useState, useRef } from "react";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { toast } from "@/components/ui/sonner";
-import { useRouter } from "next/navigation";
 import ContactMenu from "./ContactMenu";
 import ContactsMenu from "./ContactsMenu";
 import IconButton from "@/components/common/IconButton";
 import SearchBar from "@/components/common/SearchBar";
 import SelectedContactsMenu from "./SelectedContactsMenu";
-import { useDeleteContacts } from "@/hooks/contact/useDeleteContacts";
 import { useBroadcast } from "@/hooks/chat/useBroadcast";
 import { Contact } from "@/types/Contact";
 import { useAddContact } from "@/hooks/contact/useAddContact";
@@ -20,6 +18,9 @@ import { useEditContact } from "@/hooks/contact/useEditContact";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import { ChatParticipant } from "@/types/Chat";
 import { useExportContacts } from "@/hooks/contact/useExportContacts";
+import { useDeleteContacts } from "@/hooks/contact/useDeleteContacts";
+import { ConfirmDialog } from "@/components/common/dialog/ConfirmDialog";
+import { DeleteMode } from "@/utiles/enums/deleteMode";
 
 export default function ContactList() {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
@@ -27,12 +28,55 @@ export default function ContactList() {
   const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const { openBroadcastDialog, BroadcastDialog } = useBroadcast();
-  const router = useRouter();
-  const { deleteContactsBulk } = useDeleteContacts();
   const { openAddContactDialog, AddContactDialog } = useAddContact();
   const { openEditContactDialog, EditContactDialog } = useEditContact();
   const { isBlocked, toggleBlock, confirmBlockDialog } = useBlockedContacts();
   const { exportContacts } = useExportContacts();
+
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [deleteMode, setDeleteMode] = useState<DeleteMode | null>(null);
+  const [targetContact, setTargetContact] = useState<Contact | null>(null);
+  const { deleteContact, deleteContactsBulk, deleteAllContacts, isDeleting } = 
+  useDeleteContacts(({ mode, deletedIds }) => {
+    setDeleteMode(null);
+    setTargetContact(null);
+
+    if (mode === DeleteMode.All) {
+      setContacts([]);
+      return;
+    }
+
+    if (mode === DeleteMode.Bulk) {
+      setSelectedContacts([]);
+    }
+    
+    setContacts((prev) =>
+      prev.filter((c) => !deletedIds.includes(c._id!.toString()))
+    );
+    setOpenDeleteDialog(false); // close dialog after success
+
+  });
+
+  const handleDeleteContact = (deletedContact: Contact) => {
+    setTargetContact(deletedContact);
+    setDeleteMode(DeleteMode.Single);
+    setOpenDeleteDialog(true);
+  };
+  
+  const handleDeleteSelected = () => {
+    if (!selectedContacts || selectedContacts.length === 0) {
+      toast.error("No contacts selected");
+      return;
+    }
+
+    setDeleteMode(DeleteMode.Bulk);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleDeleteAllContacts = () => {
+    setDeleteMode(DeleteMode.All);
+    setOpenDeleteDialog(true);
+  };
 
   const handleExport = () => {
     exportContacts(selectedContacts);
@@ -46,27 +90,6 @@ export default function ContactList() {
     openBroadcastDialog(selectedContacts)
   }
 
-  const handleDeleteSelected = async () => {
-    if (!selectedContacts || selectedContacts.length === 0) {
-      toast.error("No contacts selected");
-      return;
-    }
-
-    const success = await deleteContactsBulk(selectedContacts.map(contact => contact._id!.toString()));
-    if (success) {
-      // ✅ Remove deleted contacts from UI
-      setContacts((prev) =>
-        prev.filter((c) => !selectedContacts.some((sc) => sc._id === c._id))
-      );
-      clearSelection?.(); // ✅ Optionally clear selection state
-    }
-  };
-
-  const handleDelete = (deletedId: string) => {
-    setContacts((prev) => prev.filter((c) => c._id!.toString() !== deletedId));
-    // refreshContacts();
-  };
-
   // Toggle contact selection
   const toggleContactSelection = (contact: Contact) => {
     setSelectedContacts(prev =>
@@ -77,9 +100,7 @@ export default function ContactList() {
   };
 
   // Select all contacts
-  const selectAllContacts = () => {
-    setSelectedContacts(contacts); // whole objects
-  };
+  const selectAllContacts = () => {setSelectedContacts(contacts)};
 
   // Clear all selections
   const clearSelection = () => {
@@ -117,7 +138,7 @@ export default function ContactList() {
             label={"Add Contact"}
             IconSrc={"/assets/icons/add-contacts.svg"}
           />
-          <ContactsMenu onSelectContacts={() => setIsSelectionMode(true)} />
+          <ContactsMenu onSelectContacts={() => setIsSelectionMode(true)} onDeleteAllContacts={handleDeleteAllContacts} />
           {AddContactDialog}
         </div>
       </div>
@@ -197,9 +218,9 @@ export default function ContactList() {
                       : null
                   }
                   rightMenu={
-                    <ContactMenu 
+                    <ContactMenu
                       contact={contact} 
-                      onDelete={handleDelete}
+                      onDelete={handleDeleteContact}
                       onEdit={() => handleEditContact(contact)}
                       onBlockToggle={() => toggleBlock(participant)}
                       isBlocked={isBlocked(participant)}
@@ -225,6 +246,33 @@ export default function ContactList() {
       </div>
       {EditContactDialog}
       {confirmBlockDialog()}
+      <ConfirmDialog
+        open={openDeleteDialog}
+        loading={isDeleting}
+        title={
+          deleteMode === DeleteMode.Single
+            ? "Delete contact?"
+            : deleteMode === DeleteMode.Bulk
+            ? "Delete selected contacts?"
+            : "Delete all contacts?"
+        }
+        description="This action cannot be undone."
+        onCancel={() => setOpenDeleteDialog(false)}
+        onConfirm={async () => {
+          if (deleteMode === DeleteMode.Single && targetContact) {
+            await deleteContact(targetContact._id!, targetContact.name);
+          }
+
+          if (deleteMode === DeleteMode.Bulk) {
+            const ids = selectedContacts.map((c) => c._id!.toString());
+            await deleteContactsBulk(ids);
+          }
+
+          if (deleteMode === DeleteMode.All) {
+            await deleteAllContacts();
+          }
+        }}
+      />
     </div>
   );
 }

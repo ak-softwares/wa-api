@@ -22,6 +22,8 @@ import { MessageType } from "@/types/MessageType";
 import { ChatType } from "@/types/Chat";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import SendTemplatePage from "@/components/dashboard/templates/SendTemplatePage";
+import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
+import { ConfirmDialog } from "@/components/common/dialog/ConfirmDialog";
 
 export default function MessagePage() {
   const { theme } = useTheme(); // or use your theme context
@@ -51,6 +53,36 @@ export default function MessagePage() {
 
   const isBroadcast = activeChat?.type === ChatType.BROADCAST
   const partner = activeChat?.participants?.[0];
+
+  // ✅ Reset unread count when chat is opened
+  useEffect(() => {
+    if (!chatId) return;
+
+    fetch(`/api/wa-accounts/chats/${chatId}/opened`, { method: "POST" });
+
+    // ✅ When leaving the chat
+    return () => {
+      fetch(`/api/wa-accounts/chats/${chatId}/closed`, { method: "POST" });
+    };
+  }, [chatId]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const { deleteChat, isDeleting } = useDeleteChats(({ mode, deletedIds }) => {setOpenDeleteDialog(false)});
+  
+  const handleDeleteChat = () => {
+    setOpenDeleteDialog(true);
+  };
 
   // Handle different media type selections
   const handleMediaSelection = (type: MediaType) => {
@@ -89,17 +121,6 @@ export default function MessagePage() {
     resetFileInput(fileInputRef);
   };
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
-        setShowEmojiPicker(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   // Insert emoji at cursor position
   const insertEmoji = (emoji: string) => {
     const input = inputRef.current;
@@ -119,18 +140,6 @@ export default function MessagePage() {
       input.setSelectionRange(start + emoji.length, start + emoji.length);
     }, 0);
   };
-
-  // ✅ Reset unread count when chat is opened
-  useEffect(() => {
-    if (!chatId) return;
-
-    fetch(`/api/wa-accounts/chats/${chatId}/opened`, { method: "POST" });
-
-    // ✅ When leaving the chat
-    return () => {
-      fetch(`/api/wa-accounts/chats/${chatId}/closed`, { method: "POST" });
-    };
-  }, [chatId]);
 
   const messageSend = () => {
     if (message.trim()) {
@@ -230,6 +239,7 @@ export default function MessagePage() {
             onBack={backFromChat}
             onBlockToggle={() => blocked.toggleBlock(partner)}
             isBlocked={blocked.isBlocked(partner)}
+            onDelete={handleDeleteChat}
           />
           <div
             className="flex flex-col flex-1 overflow-hidden bg-[#FAF7F4] dark:bg-[#161717]"
@@ -450,6 +460,7 @@ export default function MessagePage() {
           onClose={() => setShowContactDetails(false)}
           onBlockToggle={() => blocked.toggleBlock(partner)}
           isBlocked={blocked.isBlocked(partner)}
+          onDelete={handleDeleteChat}
         />
       </div>
       {/* New Chat Popup */}
@@ -464,6 +475,14 @@ export default function MessagePage() {
         />
       )}
       {blocked.confirmBlockDialog()}
+      <ConfirmDialog
+        open={openDeleteDialog}
+        loading={isDeleting}
+        title={"Delete chat"}
+        description="This action cannot be undone."
+        onCancel={() => setOpenDeleteDialog(false)}
+        onConfirm={async () => { await deleteChat(activeChat._id!)}}
+      />
     </div>
   );
 }

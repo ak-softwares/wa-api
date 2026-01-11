@@ -3,7 +3,7 @@ import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 import { ContactModel } from "@/models/Contact";
 
-export async function POST(req: NextRequest) {
+export async function DELETE(req: NextRequest) {
   try {
     // ✅ Authenticated user
     const { user, errorResponse } = await fetchAuthenticatedUser();

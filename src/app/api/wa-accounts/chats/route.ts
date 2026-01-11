@@ -132,3 +132,51 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    // ✅ Authenticated user
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    if (errorResponse) return errorResponse;
+
+    // 🔐 Optional safety confirmation (recommended)
+    const confirm = req.headers.get("x-confirm-delete-all");
+    if (confirm !== "true") {
+      const response: ApiResponse = {
+        success: false,
+        message: "Confirmation required to delete all chats",
+      };
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    // ✅ Delete ALL chats for this user + WA account
+    const result = await ChatModel.deleteMany({
+      userId: user._id,
+      waAccountId: waAccount._id,
+    });
+
+    if (result.deletedCount === 0) {
+      const response: ApiResponse = {
+        success: false,
+        message: "No chats found to delete",
+      };
+      return NextResponse.json(response, { status: 200 });
+    }
+
+    const response: ApiResponse = {
+      success: true,
+      message: `${result.deletedCount} chat(s) deleted successfully`,
+      data: {
+        deletedCount: result.deletedCount,
+      },
+    };
+
+    return NextResponse.json(response, { status: 200 });
+  } catch (err: any) {
+    const response: ApiResponse = {
+      success: false,
+      message: err?.message || "Unexpected error",
+    };
+    return NextResponse.json(response, { status: 500 });
+  }
+}

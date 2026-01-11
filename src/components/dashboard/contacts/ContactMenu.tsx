@@ -11,14 +11,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useDeleteContacts } from "@/hooks/contact/useDeleteContacts";
 import { Contact } from "@/types/Contact";
 import { useOpenChat } from "@/hooks/chat/useOpenChat";
 import MenuItemsList from "@/components/common/MenuItemList";
 
 interface ContactMenuProps {
   contact: Contact;
-  onDelete?: (contactId: string) => void;
+  onDelete?: (contact: Contact) => void;
   onEdit?: () => void;
   onBlockToggle?: () => void;
   isBlocked?: boolean;
@@ -27,17 +26,7 @@ interface ContactMenuProps {
 export default function ContactMenu({ contact, onDelete, onEdit, onBlockToggle, isBlocked }: ContactMenuProps) {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { deleteContact, deleting } = useDeleteContacts();
   const { openChatByContact } = useOpenChat();
-
-  const handleDelete = async () => {
-    if (!contact._id) return;
-    const success = await deleteContact(contact._id!.toString(), contact.name);
-    if (success) {
-      onDelete?.(contact._id!.toString()); // ✅ refresh or remove from UI
-      setIsDialogOpen(false);
-    }
-  };
 
   const handleChatClick = () => {
     if (contact.phones.length === 1) {
@@ -82,7 +71,7 @@ export default function ContactMenu({ contact, onDelete, onEdit, onBlockToggle, 
 
   const bottomItems = [
     blockItem,
-    { icon: "/assets/icons/delete.svg", label: "Delete contact", action: handleDelete, danger: true },
+    { icon: "/assets/icons/delete.svg", label: "Delete contact", action: () => onDelete?.(contact), danger: true },
   ];
 
   return (

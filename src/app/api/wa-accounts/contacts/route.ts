@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { ContactModel, IContact } from "@/models/Contact";
 
 // GET contacts (paginated, with optional search functionality)
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     const { user, waAccount, errorResponse } = await getDefaultWaAccount();
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
@@ -96,7 +96,7 @@ export async function GET(req: Request) {
 }
 
 // POST contact
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const { user, waAccount, errorResponse } = await getDefaultWaAccount();
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
@@ -130,6 +130,54 @@ export async function POST(req: Request) {
     const response: ApiResponse = {
       success: false,
       message: err.message || "Unexpected error",
+    };
+    return NextResponse.json(response, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    // ✅ Authenticated user
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    if (errorResponse) return errorResponse;
+
+    // 🔐 Optional safety confirmation (recommended)
+    const confirm = req.headers.get("x-confirm-delete-all");
+    if (confirm !== "true") {
+      const response: ApiResponse = {
+        success: false,
+        message: "Confirmation required to delete all chats",
+      };
+      return NextResponse.json(response, { status: 400 });
+    }
+    
+    // ✅ Delete ALL contacts for this user
+    const result = await ContactModel.deleteMany({
+      userId: user._id,
+      waAccountId: waAccount._id
+    });
+
+    if (result.deletedCount === 0) {
+      const response: ApiResponse = {
+        success: false,
+        message: "No contacts found to delete",
+      };
+      return NextResponse.json(response, { status: 200 });
+    }
+
+    const response: ApiResponse = {
+      success: true,
+      message: `${result.deletedCount} contact(s) deleted successfully`,
+      data: {
+        deletedCount: result.deletedCount,
+      },
+    };
+
+    return NextResponse.json(response, { status: 200 });
+  } catch (err: any) {
+    const response: ApiResponse = {
+      success: false,
+      message: err?.message || "Unexpected error",
     };
     return NextResponse.json(response, { status: 500 });
   }
