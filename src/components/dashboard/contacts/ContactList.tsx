@@ -13,8 +13,7 @@ import SearchBar from "@/components/common/SearchBar";
 import SelectedContactsMenu from "./SelectedContactsMenu";
 import { useBroadcast } from "@/hooks/chat/useBroadcast";
 import { Contact } from "@/types/Contact";
-import { useAddContact } from "@/hooks/contact/useAddContact";
-import { useEditContact } from "@/hooks/contact/useEditContact";
+import { useContactDialog } from "@/hooks/contact/useContactDialog";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import { ChatParticipant } from "@/types/Chat";
 import { useExportContacts } from "@/hooks/contact/useExportContacts";
@@ -28,10 +27,10 @@ export default function ContactList() {
   const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const { openBroadcastDialog, BroadcastDialog } = useBroadcast();
-  const { openAddContactDialog, AddContactDialog } = useAddContact();
-  const { openEditContactDialog, EditContactDialog } = useEditContact();
+  const { openAddContactDialog, openEditContactDialog, ContactDialog } = useContactDialog();
   const { isBlocked, toggleBlock, confirmBlockDialog } = useBlockedContacts();
   const { exportContacts } = useExportContacts();
+  const [searchValue, setSearchValue] = useState("");
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deleteMode, setDeleteMode] = useState<DeleteMode | null>(null);
@@ -82,10 +81,6 @@ export default function ContactList() {
     exportContacts(selectedContacts);
   };
 
-  const handleEditContact = (contact: Contact) => {
-    openEditContactDialog(contact);
-  };
-
   const handleMakeBroadcast = async () => {
     openBroadcastDialog(selectedContacts)
   }
@@ -126,6 +121,9 @@ export default function ContactList() {
       .join(", ");
   }
 
+  const filterByTag = (tag: string) => {
+    setSearchValue(tag);
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -139,7 +137,6 @@ export default function ContactList() {
             IconSrc={"/assets/icons/add-contacts.svg"}
           />
           <ContactsMenu onSelectContacts={() => setIsSelectionMode(true)} onDeleteAllContacts={handleDeleteAllContacts} />
-          {AddContactDialog}
         </div>
       </div>
 
@@ -171,8 +168,9 @@ export default function ContactList() {
 
       {/* Search Bar */}
       <SearchBar
-          placeholder="Search contacts..."
-          onSearch={searchContacts}
+        value={searchValue}
+        placeholder="Search contacts..."
+        onSearch={searchContacts}
       />
 
       {/* Contact List */}
@@ -209,6 +207,8 @@ export default function ContactList() {
                   imageUrl={contact.imageUrl}
                   title={contact.name || formatPhone(String(contact.phones[0])) || "Unknown"}
                   subtitle={formatAndJoinPhones(contact.phones)}
+                  tags={contact.tags}
+                  onTagClick={(tag) => filterByTag(tag)}
                   size="xl"
                   isSelectionMode={isSelectionMode}
                   isSelected={isSelected}
@@ -221,7 +221,7 @@ export default function ContactList() {
                     <ContactMenu
                       contact={contact} 
                       onDelete={handleDeleteContact}
-                      onEdit={() => handleEditContact(contact)}
+                      onEdit={() => openEditContactDialog(contact)}
                       onBlockToggle={() => toggleBlock(participant)}
                       isBlocked={isBlocked(participant)}
                     />}
@@ -244,7 +244,7 @@ export default function ContactList() {
             </div>
           ))}
       </div>
-      {EditContactDialog}
+      {ContactDialog}
       {confirmBlockDialog()}
       <ConfirmDialog
         open={openDeleteDialog}

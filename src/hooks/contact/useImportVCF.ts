@@ -44,7 +44,7 @@ export function useVCFImport() {
         let name = "";
         let email = "";
         const phones: string[] = [];
-        const tags = ["VCF Import"];
+        const tags = ["VCF file"];
 
         lines.forEach((line) => {
           if (line.startsWith("FN:") || line.startsWith("NAME:")) {

@@ -4,6 +4,8 @@ interface ContactAvatarProps {
   imageUrl?: string;
   title?: string;
   subtitle?: string;
+  tags?: string[]; // ✅ NEW
+  onTagClick?: (tag: string) => void; // ✅ NEW
   isGroup?: boolean;
   isSelected?: boolean;
   isSelectionMode?: boolean;
@@ -18,6 +20,8 @@ export default function ContactAvatar({
   imageUrl,
   title,
   subtitle,
+  tags,
+  onTagClick,
   isGroup = false,
   isSelected = false,
   isSelectionMode = false,
@@ -134,6 +138,37 @@ export default function ContactAvatar({
               {subtitle.length > 40 ? subtitle.slice(0, 40) + "..." : subtitle}
             </div>
           )}
+
+          {/* Tags (horizontal scroll) */}
+          {tags && tags.length > 0 && (
+            <div
+              className="flex gap-1 overflow-x-auto whitespace-nowrap scrollbar-hide"
+              onClick={(e) => e.stopPropagation()} // prevent row click
+            >
+              {tags.map((tag, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTagClick?.(tag);
+                  }}
+                  className="
+                    shrink-0
+                    px-2 py-0.5 text-xs rounded-full
+                    bg-green-100 text-green-700
+                    dark:bg-green-900/40 dark:text-green-300
+                    hover:bg-green-200 dark:hover:bg-green-900/60
+                    transition-colors
+                    max-w-[120px] truncate
+                  "
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          )}
+
         </div>
       </div>
 

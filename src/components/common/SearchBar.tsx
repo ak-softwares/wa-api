@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 
 interface SearchBarProps {
+  value?: string;
   placeholder?: string;
   onSearch?: (query: string) => void;
   className?: string;
@@ -12,6 +13,7 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({
+  value,
   placeholder = "Search...",
   onSearch,
   className = "",
@@ -20,6 +22,13 @@ export default function SearchBar({
   const [searchTerm, setSearchTerm] = useState("");
   const [isActive, setIsActive] = useState(false);
   const debouncedSearchTerm = useDebounce(searchTerm, delay);
+
+  // ✅ Debounced search effect
+  useEffect(() => {
+    if (value) {
+      setSearchTerm(value);
+    }
+  }, [value]); // ✅ only depend on debouncedSearchTerm
 
   // ✅ Debounced search effect
   useEffect(() => {

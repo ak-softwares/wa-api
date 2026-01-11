@@ -58,7 +58,7 @@ export async function GET(req: Request) {
           ?.map((p: any) => p.canonicalForm?.replace(/^\+/, "") || p.value)
           .filter((n: any): n is string => !!n) || [],
       imageUrl: c.photos?.[0]?.url ?? undefined,
-      tags: ["Google Import"],
+      tags: ["Google contact"],
     }));
 
     // Filter contacts without phone numbers

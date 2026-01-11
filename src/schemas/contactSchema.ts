@@ -18,6 +18,7 @@ export const contactSchema = z.object({
       .min(8, "Phone number must be at least 8 digits")
       .max(15, "Phone number must be at most 15 digits")
       .regex(/^\d+$/, "Phone number must contain only digits")
-  })).min(1, "At least one phone number is required")
-
+  })).min(1, "At least one phone number is required"),
+  
+  tags: z.array(z.string()).optional(), // ✅ NEW
 });
