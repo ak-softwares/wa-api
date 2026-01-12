@@ -9,8 +9,6 @@ import { useChatStore } from "@/store/chatStore";
 import { useMessageStore } from "@/store/messageStore";
 import { MessagePayload } from "@/types/MessageType";
 import { sendMessage } from "@/services/message/sendMessage";
-import { convertToMetaSendTemplate } from "@/lib/mapping/convertToMetaSendTemplate";
-import { console } from "inspector/promises";
 import { Template } from "@/types/Template";
 
 interface UseMessagesProps {
@@ -26,7 +24,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [refreshFlag, setRefreshFlag] = useState(0);
-  const { newMessage, newChat, setNewMessageData } = useChatStore();
+  const { newMessage, newChat, setNewMessageData, updatedMessageStatus, setUpdateMessageStatus } = useChatStore();
   const { appendMessage, setAppendMessage } = useMessageStore();
 
   useEffect(() => {
@@ -57,9 +55,9 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
 
   // 🔹 When a new message arrives via Pusher → append it if chat matches
   useEffect(() => {
-    if (!newMessage || !newChat) return;
+    if (!newMessage) return;
 
-    if (chatId && newChat._id!.toString() === chatId) {
+    if (chatId && newMessage.chatId === chatId) {
       setMessages((prev) => {
         // avoid duplicates
         const exists = prev.some((m) => m._id === newMessage._id);
@@ -70,6 +68,23 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
     // optional: clear message after handling
     setNewMessageData(null, null);
   }, [newMessage, newChat, chatId, setNewMessageData]);
+
+  // 🔹 When message status updates → update existing message
+  useEffect(() => {
+    if (!updatedMessageStatus) return;
+
+    setMessages((prev) =>
+      prev.map((m) =>
+        m._id === updatedMessageStatus._id
+          ? { ...m, ...updatedMessageStatus }
+          : m
+      )
+    );
+
+    // clear after handling
+    setUpdateMessageStatus(null);
+  }, [updatedMessageStatus, setUpdateMessageStatus]);
+
 
   const fetchMessages = useCallback(
     async (pageToFetch: number) => {

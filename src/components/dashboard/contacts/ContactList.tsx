@@ -188,48 +188,49 @@ export default function ContactList() {
           ))
         ) : contacts.length === 0 ? (
           <div className="p-8 text-center">No contacts found.</div>
-        ) : (
-          contacts.map((contact) => {
-            const isSelected = selectedContacts.some(c => c._id === contact._id);
-            // Convert Contact → ChatParticipant shape
-            const participant: ChatParticipant = {
-              number: contact.phones[0],
-              name: contact.name ?? undefined,
-              imageUrl: contact.imageUrl ?? undefined,
-            };
-            return (
-              <div
-                key={contact._id!.toString()}
-                className={"mx-3"}
-              >
-                {/* Avatar */}
-                <ContactAvatar
-                  imageUrl={contact.imageUrl}
-                  title={contact.name || formatPhone(String(contact.phones[0])) || "Unknown"}
-                  subtitle={formatAndJoinPhones(contact.phones)}
-                  tags={contact.tags}
-                  onTagClick={(tag) => filterByTag(tag)}
-                  size="xl"
-                  isSelectionMode={isSelectionMode}
-                  isSelected={isSelected}
-                  onClick={() =>
-                    isSelectionMode
-                      ? toggleContactSelection(contact)
-                      : null
-                  }
-                  rightMenu={
-                    <ContactMenu
-                      contact={contact} 
-                      onDelete={handleDeleteContact}
-                      onEdit={() => openEditContactDialog(contact)}
-                      onBlockToggle={() => toggleBlock(participant)}
-                      isBlocked={isBlocked(participant)}
-                    />}
-                />
-              </div>
-            );
-          })
-        )}
+        ) : <div className="pb-6">{ 
+            contacts.map((contact) => {
+              const isSelected = selectedContacts.some(c => c._id === contact._id);
+              // Convert Contact → ChatParticipant shape
+              const participant: ChatParticipant = {
+                number: contact.phones[0],
+                name: contact.name ?? undefined,
+                imageUrl: contact.imageUrl ?? undefined,
+              };
+              return (
+                <div
+                  key={contact._id!.toString()}
+                  className={"mx-3 mb-2"}
+                >
+                  {/* Avatar */}
+                  <ContactAvatar
+                    imageUrl={contact.imageUrl}
+                    title={contact.name || formatPhone(String(contact.phones[0])) || "Unknown"}
+                    subtitle={formatAndJoinPhones(contact.phones)}
+                    tags={contact.tags}
+                    onTagClick={(tag) => filterByTag(tag)}
+                    size="xl"
+                    isSelectionMode={isSelectionMode}
+                    isSelected={isSelected}
+                    onClick={() =>
+                      isSelectionMode
+                        ? toggleContactSelection(contact)
+                        : null
+                    }
+                    rightMenu={
+                      <ContactMenu
+                        contact={contact} 
+                        onDelete={handleDeleteContact}
+                        onEdit={() => openEditContactDialog(contact)}
+                        onBlockToggle={() => toggleBlock(participant)}
+                        isBlocked={isBlocked(participant)}
+                      />}
+                  />
+                </div>
+              );
+            })
+          } </div>
+        }
 
         {hasMore &&
           loadingMore &&

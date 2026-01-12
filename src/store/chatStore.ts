@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { Chat } from "@/types/Chat";
 import { Message } from "@/types/Message";
-import { Types } from "mongoose";
 
 interface ChatStore {
   // 🟢 Current active chat (opened in chat window)
@@ -12,6 +11,9 @@ interface ChatStore {
   newMessage: Message | null;
   newChat: Chat | null;
   setNewMessageData: (message: Message | null, chat: Chat | null) => void;
+
+  updatedMessageStatus: Message | null;
+  setUpdateMessageStatus: (message: Message | null) => void;
 }
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -21,4 +23,7 @@ export const useChatStore = create<ChatStore>((set) => ({
   newMessage: null,
   newChat: null,
   setNewMessageData: (message, chat) => set({ newMessage: message, newChat: chat }),
+
+  updatedMessageStatus: null,
+  setUpdateMessageStatus: (message) => set({ updatedMessageStatus: message }),
 }));

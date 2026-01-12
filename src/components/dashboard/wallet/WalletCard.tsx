@@ -5,6 +5,7 @@ import { FREE_MONTHLY_MESSAGES, PRICE_PER_CREDIT_USD } from "@/utiles/constans/w
 import { useWallet } from "@/hooks/wallet/useWallet";
 import AddCreditPopup from "./AddCreditPopup";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 
 export default function CreditStatsDemo() {
   const { data, loading, setData } = useWallet();
@@ -42,19 +43,15 @@ export default function CreditStatsDemo() {
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Zap className="text-emerald-600" size={15} />
-                Free Messages per Month
+                Free Message Quota
               </div>
-
-              <div
-                className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  isLow
-                    ? "bg-red-100 text-red-700"
-                    : "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
-                }`}
-              >
+              <Badge variant={isLow ? "destructive" : "outline"} className="mt-2">
                 {loading ? "..." : `${percentage}%`}
-              </div>
+              </Badge>
             </CardTitle>
+            <CardDescription className="-mt-2">
+              {FREE_MONTHLY_MESSAGES} free messages per month
+            </CardDescription>
           </CardHeader>
 
           <CardContent className="px-4">

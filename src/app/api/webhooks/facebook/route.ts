@@ -8,6 +8,7 @@ import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
 import { getOrCreateChat } from "@/services/apiHelper/getOrCreateChat";
 import { handleIncomingMessage } from "@/services/webhookHelper/handleIncomingMessage";
 import { handleAIMessage } from "@/services/webhookHelper/handleAIMessage";
+import { handleMessageStatus } from "@/services/webhookHelper/handleMessageStatus";
 
 // https://wa-api.me/api/webhooks/facebook
 const FACEBOOK_WEBHOOK_TOKEN = process.env.FACEBOOK_WEBHOOK_TOKEN; // secret token
@@ -43,11 +44,27 @@ export async function POST(req: NextRequest) {
 
       for (const change of changes) {
         const value = change.value;
-        const phone_number_id = value?.metadata?.phone_number_id;
-        const messages = value?.messages ?? [];
-        if (!phone_number_id || messages.length === 0) continue;
 
-        // Find user only once per entry
+        const phone_number_id = value?.metadata?.phone_number_id;
+        if (!phone_number_id) continue;
+
+        // -------------------------------
+        // 🔹 HANDLE MESSAGE STATUSES
+        // -------------------------------
+        const statuses = value?.statuses ?? [];
+        if (statuses.length > 0) {
+          for (const status of statuses) {
+            await handleMessageStatus({ statusPayload: status });
+          }
+        }
+
+        // -------------------------------
+        // 🔹 HANDLE INCOMING MESSAGES
+        // -------------------------------
+        // Find wa-account only once per entry
+        const messages = value?.messages ?? [];
+        if (messages.length === 0) continue;
+
         const waAccount: IWaAccount | null = await WaAccountModel.findOne({ phone_number_id });
         if (!waAccount) continue;
 
@@ -82,7 +99,6 @@ export async function POST(req: NextRequest) {
             phone_number_id,
             rowMessageJson: msg,
           })
-
 
           // handle lastMessage and unreadCount
           const updateFields: Partial<IChat> = {

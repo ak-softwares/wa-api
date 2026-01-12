@@ -69,7 +69,15 @@ export default function MessageMetaInfo({ message }: MessageMetaInfoProps) {
         />
       )}
 
-      {(message.status === MessageStatus.Sent || message.status === MessageStatus.Delivered) && (
+      {(message.status === MessageStatus.Sent) && (
+        <img
+          src="/assets/icons/status-check.svg"
+          className="w-4 h-4 dark:invert opacity-60"
+          alt="sent/delivered"
+        />
+      )}
+
+      {(message.status === MessageStatus.Delivered) && (
         <img
           src="/assets/icons/status-dblcheck.svg"
           className="w-4 h-4 dark:invert opacity-60"
@@ -80,7 +88,7 @@ export default function MessageMetaInfo({ message }: MessageMetaInfoProps) {
       {message.status === MessageStatus.Read && (
         <img
           src="/assets/icons/status-dblcheck-1.svg"
-          className="w-4 h-4 dark:invert opacity-60"
+          className="w-4 h-4"
           alt="read"
         />
       )}

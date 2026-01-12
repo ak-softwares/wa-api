@@ -1,3 +1,5 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { User2, Users2, Check } from "lucide-react";
 
 interface ContactAvatarProps {
@@ -76,7 +78,7 @@ export default function ContactAvatar({
     <div
       onClick={!isDisabled ? onClick : undefined}
       className={`
-        px-3 rounded-lg group flex items-center py-4 cursor-pointer w-full select-none justify-between
+        px-3 rounded-lg group flex min-h-[80px] items-center py-2 cursor-pointer w-full select-none justify-between
         transition-colors duration-200
         ${config.gap}
         ${isActive
@@ -134,37 +136,25 @@ export default function ContactAvatar({
             {title || "Unknown"}
           </div>
           {subtitle && (
-            <div className={`truncate ${config.subtitle} text-gray-400 leading-tight mt-0.5 break-words`}>
+            <div className={`truncate ${config.subtitle} text-gray-400 leading-tight mt-0.5 mb-1 break-words`}>
               {subtitle.length > 40 ? subtitle.slice(0, 40) + "..." : subtitle}
             </div>
           )}
 
           {/* Tags (horizontal scroll) */}
           {tags && tags.length > 0 && (
-            <div
-              className="flex gap-1 overflow-x-auto whitespace-nowrap scrollbar-hide"
-              onClick={(e) => e.stopPropagation()} // prevent row click
-            >
+            <div className="flex gap-1 overflow-x-auto whitespace-nowrap scrollbar-hide">
               {tags.map((tag, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={(e) => {
+                <Badge 
+                key={index} 
+                variant={"outline"}
+                onClick={(e) => {
                     e.stopPropagation();
                     onTagClick?.(tag);
                   }}
-                  className="
-                    shrink-0
-                    px-2 py-0.5 text-xs rounded-full
-                    bg-green-100 text-green-700
-                    dark:bg-green-900/40 dark:text-green-300
-                    hover:bg-green-200 dark:hover:bg-green-900/60
-                    transition-colors
-                    max-w-[120px] truncate
-                  "
                 >
                   {tag}
-                </button>
+                </Badge>
               ))}
             </div>
           )}

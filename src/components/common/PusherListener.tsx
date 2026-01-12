@@ -13,7 +13,7 @@ export default function PusherListener() {
   const router = useRouter();
   const pathname = usePathname(); // ✅ Reactive to URL change
   const { data: session, status } = useSession();
-  const { activeChat, setActiveChat, setNewMessageData } = useChatStore();
+  const { activeChat, setActiveChat, setNewMessageData, setUpdateMessageStatus } = useChatStore();
 
   useEffect(() => {
     if (status !== "authenticated" || !session?.user?.id) return;
@@ -24,6 +24,9 @@ export default function PusherListener() {
 
     const userChannel = pusher.subscribe(`user-${session.user.id}`);
 
+    // ----------------------------------
+    // 🔹 NEW MESSAGE EVENT
+    // ----------------------------------
     userChannel.bind("new-message", (data: any) => {
       const chat = data.chat;
       const msg = data.message;
@@ -58,12 +61,23 @@ export default function PusherListener() {
       });
     });
 
+    // ----------------------------------
+    // 🔹 MESSAGE STATUS UPDATE EVENT
+    // ----------------------------------
+    userChannel.bind("message-status-update", (data: any) => {
+      const updatedMessage = data.message;
+      // console.log("status: " + updatedMessage.status)
+
+      if (!updatedMessage?._id) return;
+      setUpdateMessageStatus(updatedMessage);
+    });
+
     return () => {
       userChannel.unbind_all();
       userChannel.unsubscribe();
       pusher.disconnect();
     };
-  }, [status, session?.user?.id, pathname, router, activeChat, setNewMessageData]);
+  }, [status, session?.user?.id, pathname, router, setNewMessageData, setUpdateMessageStatus]);
 
   return null;
 }

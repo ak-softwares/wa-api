@@ -30,6 +30,9 @@ export type Message = {
   location?: LocationType;
   waMessageId?: string;
   status?: MessageStatus;
+  sentAt?: string;
+  deliveredAt?: string;
+  readAt?: string;
   type?: MessageType;
   context?: Context;
   tag?: string;

@@ -183,7 +183,7 @@ export default function WhatsAppSetupCard() {
           </div>
           <div>
             <p className="text-muted-foreground">Quality</p>
-            <Badge variant="secondary">{phoneData?.quality_rating || "Unknown"}</Badge>
+            <Badge variant="outline">{phoneData?.quality_rating || "Unknown"}</Badge>
           </div>
         </div>
 

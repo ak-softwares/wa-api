@@ -20,6 +20,15 @@ export enum MessageStatus {
   Received = "received",
 }
 
+export const STATUS_PRIORITY: Record<MessageStatus, number> = {
+  [MessageStatus.Pending]: 0,
+  [MessageStatus.Sent]: 1,
+  [MessageStatus.Delivered]: 2,
+  [MessageStatus.Read]: 3,
+  [MessageStatus.Failed]: 4,
+  [MessageStatus.Received]: 5, // incoming messages only
+};
+
 export enum IncomingMessageType {
   TEXT = "text",
   IMAGE = "image",

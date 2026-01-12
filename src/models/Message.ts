@@ -41,6 +41,9 @@ export interface IMessage {
   location?: ILocation;
   waMessageId?: string;
   status?: MessageStatus;
+  sentAt?: Date;
+  deliveredAt?: Date;
+  readAt?: Date;
   type?: MessageType;
   context?: IContext;
   tag?: string;
@@ -98,6 +101,10 @@ const MessageSchema = new Schema<IMessage>(
       enum: Object.values(MessageStatus),
       default: MessageStatus.Sent,
     },
+    // 🔹 STATUS TIMESTAMPS
+    sentAt: { type: Date },
+    deliveredAt: { type: Date },
+    readAt: { type: Date },
     type: {
       type: String,
       enum: Object.values(MessageType),
