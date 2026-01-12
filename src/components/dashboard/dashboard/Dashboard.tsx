@@ -57,13 +57,12 @@ export default function DashboardPage() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
         <CreditStatsDemo />
-        {/* First Row: WhatsApp Setup Card */}
-        <WhatsAppSetupCard />
 
         {/* Platform Features Card - Compact Horizontal Layout */}
         <AnalyticsCard />
 
-        {/* <WalletAnalyticsCard /> */}
+        {/* First Row: WhatsApp Setup Card */}
+        <WhatsAppSetupCard />
       </div>
     </div>
   );

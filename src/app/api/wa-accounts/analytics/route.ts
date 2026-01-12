@@ -3,6 +3,8 @@ import { MessageModel } from "@/models/Message";
 import { AiUsageModel } from "@/models/AiUsage";
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { AnalyticsData } from "@/types/Analytics";
+import { MessageStatus } from "@/types/MessageType";
+import { MESSAGE_TAGS } from "@/utiles/enums/messageTags";
 
 export async function POST(req: Request) {
   try {
@@ -25,20 +27,40 @@ export async function POST(req: Request) {
       createdAt: { $gte: start, $lte: end }
     });
 
-    // 2. Total sent messages (only those sent BY user)
-    const totalSentMessages = await MessageModel.countDocuments({
+    // Total sent messages (only those sent BY user)
+    const apiSentMessages = await MessageModel.countDocuments({
         userId: user._id,
         from: waAccount.phone_number_id,     // messages sent FROM this WA account
-        status: { $in: ["sent", "delivered", "read"] },
+        status: { $in: [MessageStatus.Sent, MessageStatus.Delivered, MessageStatus.Read] },
         createdAt: { $gte: start, $lte: end }
     });
 
-    // 3. Total AI Replies
-    const totalAIReplies = await AiUsageModel.countDocuments({
+    const fbAcceptedMessages = await MessageModel.countDocuments({
       userId: user._id,
-    //   from: waAccount.phone_number_id,   // ensures it's an outgoing AI reply
-    //   status: { $in: ["sent", "delivered", "read"] },
-      createdAt: { $gte: start, $lte: end }
+      from: waAccount.phone_number_id, // outgoing messages only
+      sentAt: { $exists: true },       // ✅ webhook-confirmed
+      createdAt: { $gte: start, $lte: end },
+    });
+
+    const deliveredMessages = await MessageModel.countDocuments({
+      userId: user._id,
+      from: waAccount.phone_number_id,   // outgoing only
+      deliveredAt: { $exists: true },    // ✅ webhook-confirmed
+      createdAt: { $gte: start, $lte: end },
+    });
+
+    const readMessages = await MessageModel.countDocuments({
+      userId: user._id,
+      from: waAccount.phone_number_id,   // outgoing only
+      readAt: { $exists: true },         // ✅ webhook-confirmed
+      createdAt: { $gte: start, $lte: end },
+    });
+
+    const aIReplies = await MessageModel.countDocuments({
+      userId: user._id,
+      from: waAccount.phone_number_id, // outgoing only
+      tag: { $in: [MESSAGE_TAGS.AI_CHAT, MESSAGE_TAGS.AI_AGENT] },
+      createdAt: { $gte: start, $lte: end },
     });
 
     // 4. AI Cost
@@ -57,13 +79,16 @@ export async function POST(req: Request) {
       }
     ]);
 
-    const totalAICost = aiUsage.length > 0 ? aiUsage[0].totalCost : 0;
+    const aICost = aiUsage.length > 0 ? aiUsage[0].totalCost : 0;
 
     const data: AnalyticsData = {
       totalMessages,
-      totalSentMessages,
-      totalAIReplies,
-      totalAICost,
+      apiSentMessages,
+      fbAcceptedMessages,
+      deliveredMessages,
+      readMessages,
+      aIReplies,
+      aICost,
     };
 
     return NextResponse.json({
