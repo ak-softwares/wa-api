@@ -44,6 +44,7 @@ export interface IMessage {
   sentAt?: Date;
   deliveredAt?: Date;
   readAt?: Date;
+  failedAt?: Date;
   type?: MessageType;
   context?: IContext;
   tag?: string;
@@ -105,6 +106,7 @@ const MessageSchema = new Schema<IMessage>(
     sentAt: { type: Date },
     deliveredAt: { type: Date },
     readAt: { type: Date },
+    failedAt: { type: Date },
     type: {
       type: String,
       enum: Object.values(MessageType),

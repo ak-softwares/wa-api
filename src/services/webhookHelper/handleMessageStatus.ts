@@ -9,12 +9,15 @@ interface HandleMessageStatusParams {
 export async function handleMessageStatus({ statusPayload }: HandleMessageStatusParams) {
   const waMessageId = statusPayload.id;
   const incomingStatus = statusPayload.status as MessageStatus;
-  const statusTime = new Date(Number(statusPayload.timestamp));
   // console.log("statusPayload: " + statusPayload)
   // console.log("waMessageId: " + waMessageId)
   // console.log("status: " + incomingStatus)
 
   if (!waMessageId || !incomingStatus) return;
+
+  // ✅ WhatsApp timestamp is in SECONDS → convert safely
+  const rawTs = Number(statusPayload.timestamp);
+  const statusTime = new Date(rawTs < 1e12 ? rawTs * 1000 : rawTs);
 
   // 🔍 Fetch current message first (needed for priority check)
   const existingMessage = await MessageModel.findOne({ waMessageId });
@@ -34,8 +37,15 @@ export async function handleMessageStatus({ statusPayload }: HandleMessageStatus
     update.readAt = statusTime;
   }
 
+  if (incomingStatus === MessageStatus.Read) {
+    // ✅ Read implies delivered + sent (for analytics)
+    if (!existingMessage.sentAt) update.sentAt = statusTime;
+    if (!existingMessage.deliveredAt) update.deliveredAt = statusTime;
+    if (!existingMessage.readAt) update.readAt = statusTime;
+  }
+
   if (incomingStatus === MessageStatus.Failed && !existingMessage.failedAt) {
-    update.updatedAt = statusTime;
+    update.failedAt = statusTime;
   }
 
   const lastStatus = existingMessage.status as MessageStatus;

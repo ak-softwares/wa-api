@@ -33,6 +33,7 @@ export type Message = {
   sentAt?: string;
   deliveredAt?: string;
   readAt?: string;
+  failedAt?: string;
   type?: MessageType;
   context?: Context;
   tag?: string;
