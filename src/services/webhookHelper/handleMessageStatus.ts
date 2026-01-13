@@ -35,7 +35,7 @@ export async function handleMessageStatus({ statusPayload }: HandleMessageStatus
   }
 
   if (incomingStatus === MessageStatus.Failed && !existingMessage.failedAt) {
-    update.failedAt = statusTime;
+    update.updatedAt = statusTime;
   }
 
   const lastStatus = existingMessage.status as MessageStatus;
