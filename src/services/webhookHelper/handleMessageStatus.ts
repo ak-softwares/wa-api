@@ -8,39 +8,46 @@ interface HandleMessageStatusParams {
 
 export async function handleMessageStatus({ statusPayload }: HandleMessageStatusParams) {
   const waMessageId = statusPayload.id;
-  const newStatus = statusPayload.status as MessageStatus;
+  const incomingStatus = statusPayload.status as MessageStatus;
   const statusTime = new Date(Number(statusPayload.timestamp));
   // console.log("statusPayload: " + statusPayload)
   // console.log("waMessageId: " + waMessageId)
-  // console.log("status: " + newStatus)
+  // console.log("status: " + incomingStatus)
 
-  if (!waMessageId || !newStatus) return;
+  if (!waMessageId || !incomingStatus) return;
 
   // 🔍 Fetch current message first (needed for priority check)
   const existingMessage = await MessageModel.findOne({ waMessageId });
   if (!existingMessage) return;
 
-  const currentStatus = existingMessage.status as MessageStatus;
+  const update: any = {};
 
-  // 🛑 PRIORITY CHECK (prevent downgrade / duplicates)
-  if (currentStatus && STATUS_PRIORITY[newStatus] < STATUS_PRIORITY[currentStatus]) {
-    return; // ignore old or duplicate webhook
-  }
-  const update: any = {
-    status: newStatus,
-  };
-
-  if (newStatus === MessageStatus.Sent) {
+  if (incomingStatus === MessageStatus.Sent && !existingMessage.sentAt) {
     update.sentAt = statusTime;
   }
 
-  if (newStatus === MessageStatus.Delivered) {
+  if (incomingStatus === MessageStatus.Delivered && !existingMessage.deliveredAt) {
     update.deliveredAt = statusTime;
   }
 
-  if (newStatus === MessageStatus.Read) {
+  if (incomingStatus === MessageStatus.Read && !existingMessage.readAt) {
     update.readAt = statusTime;
   }
+
+  if (incomingStatus === MessageStatus.Failed && !existingMessage.failedAt) {
+    update.failedAt = statusTime;
+  }
+
+  const lastStatus = existingMessage.status as MessageStatus;
+
+  const shouldUpdateStatus = !lastStatus || STATUS_PRIORITY[incomingStatus] > STATUS_PRIORITY[lastStatus];
+
+  if (shouldUpdateStatus) {
+    update.status = incomingStatus;
+  }
+
+  // If nothing to update, skip DB write
+  if (Object.keys(update).length === 0) return;
 
   const message = await MessageModel.findOneAndUpdate(
     { waMessageId },
@@ -48,12 +55,16 @@ export async function handleMessageStatus({ statusPayload }: HandleMessageStatus
     { new: true } // ✅ IMPORTANT
   );
 
+  if (!message) return;
+
   // handle push notification
-  await sendPusherNotification({
-    userId: message.userId.toString(),
-    event: "message-status-update",
-    message: message,
-  });
+  if (shouldUpdateStatus) {
+    await sendPusherNotification({
+      userId: message.userId.toString(),
+      event: "message-status-update",
+      message: message,
+    });
+  }
 }
 
 // status :{
@@ -81,3 +92,4 @@ export async function handleMessageStatus({ statusPayload }: HandleMessageStatus
 //     "type": "free_customer_service"
 //   }
 // }
+
