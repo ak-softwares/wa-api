@@ -6,6 +6,8 @@ import { MessagePayload } from "@/types/MessageType";
 import { handleSendMessage } from "@/services/message/handleSendMessage";
 import { MESSAGE_TAGS } from "@/utiles/enums/messageTags";
 import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
+import { WalletModel } from "@/models/Wallet";
+import { checkMessageCreditsAvailability } from "@/services/wallet/checkMessageCreditsAvailability";
 
 // https://wa-api.me/api/wa-accounts/messages
 export async function GET(req: NextRequest) {
@@ -66,6 +68,20 @@ export async function POST(req: NextRequest) {
 
     // Parse request body
     const messagePayload: MessagePayload = await req.json();
+
+    const participantsLength = messagePayload.participants?.length || 0;
+    if (participantsLength === 0) {
+      const response: ApiResponse = { success: false, message: "Participants are required" };
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    // ✅ only check (no debit here)
+    const creditCheck = await checkMessageCreditsAvailability({ userId: user._id, credits: participantsLength });
+    if (!creditCheck.allowed) {
+      const response: ApiResponse = { success: false, message: "Insufficient credits" };
+      return NextResponse.json(response, { status: 402 });
+    }
+
     // console.log("Building template payload:", JSON.stringify(messagePayload.template));
     const result = await handleSendMessage({
       messagePayload,

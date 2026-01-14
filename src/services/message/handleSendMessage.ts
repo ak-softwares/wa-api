@@ -6,11 +6,6 @@ import { ApiError } from "@/types/apiResponse";
 import { MessagePayload } from "@/types/MessageType";
 import { Types } from "mongoose";
 import { getOrCreateChat } from "../apiHelper/getOrCreateChat";
-import { CREDIT_COST } from "../../lib/wallet/credits";
-import { UsageLogModel } from "@/models/UsageLog";
-import { consumeMessage } from "../../lib/wallet/consumeMessage";
-import { commitCredits } from "../../lib/wallet/commitCredits";
-import { refundCredits } from "../../lib/wallet/refundCredits";
 import { IWaAccount } from "@/models/WaAccount";
 import { ChatModel, IChat } from "@/models/Chat";
 import { buildWhatsAppPayload } from "@/lib/messages/whatsappPayloadBuilder";
@@ -81,40 +76,6 @@ export async function handleSendMessage({
     let status: MessageStatus = MessageStatus.Failed;
     let errorMessage: string | undefined;
 
-    const COST = CREDIT_COST.SEND_TEXT;
-
-    // 1️⃣ Create UsageLog (PENDING)
-    const usageLog = await UsageLogModel.create({
-      userId,
-      waAccountId: waAccount._id,
-      phoneNumber: participant.number,
-      actionType: "SEND_TEXT",
-      creditsUsed: 0,
-      status: "PENDING",
-    });
-
-    // 2️⃣ Decide FREE or PAID
-    let billingType: "FREE" | "PAID";
-
-    try {
-      const result = await consumeMessage(userId.toString(), COST);
-      billingType = result.type as "FREE" | "PAID";
-    } catch (err) {
-      // No free quota + no credits
-      await UsageLogModel.updateOne(
-        { _id: usageLog._id },
-        { status: "FAILED", error: "Insufficient credits" }
-      );
-
-      failedMessages.push({
-        to: participant.number,
-        error: "Insufficient credits",
-      });
-
-      throw new ApiError(402, "Insufficient credits");
-      // continue; // move to next participant
-    }
-
     try {
       const whatsAppPayload: WhatsAppPayload = buildWhatsAppPayload({
         messagePayload,
@@ -126,41 +87,13 @@ export async function handleSendMessage({
       waMessageId = fbResponse.data?.messages?.[0]?.id;
       status = waMessageId ? MessageStatus.Sent : MessageStatus.Failed;
 
-      if (status === MessageStatus.Sent) {
-        // Commit credits ONLY if PAID
-        if (billingType === "PAID") {
-          await commitCredits(userId.toString(), COST);
-        }
-
-        await UsageLogModel.updateOne(
-          { _id: usageLog._id },
-          {
-            status: "SUCCESS",
-            messageId: waMessageId,
-            creditsUsed: billingType === "PAID" ? COST : 0,
-          }
-        );
-
-      } else {
+      if (status === MessageStatus.Failed) {
         throw new Error("WhatsApp send failed");
       }
-
     } catch (err: any) {
       errorMessage = err?.response?.data?.error?.message || err.message || "Send failed";
       status = MessageStatus.Failed;
 
-      // Refund ONLY if PAID
-      if (billingType === "PAID") {
-        await refundCredits(userId.toString(), COST);
-      }
-
-      await UsageLogModel.updateOne(
-        { _id: usageLog._id },
-        {
-          status: "FAILED",
-          error: errorMessage || "WhatsApp send failed",
-        }
-      );
       // 🚨 If single participant AND chat type is CHAT → return error
       if (participants.length === 1 && !isBroadcast) {
         throw new ApiError(400, errorMessage || "Failed to send message");

@@ -114,6 +114,24 @@ export default function AIChatPage() {
     setSelectedAiMenu(null);
   };
 
+  useEffect(() => {
+  const onKeyDown = (e: KeyboardEvent) => {
+    const isSaveShortcut =
+      (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s";
+
+    if (isSaveShortcut) {
+      e.preventDefault(); // prevent browser save dialog
+
+      if (!isSaving) {
+        handleSaveConfig();
+      }
+    }
+  };
+
+  window.addEventListener("keydown", onKeyDown);
+  return () => window.removeEventListener("keydown", onKeyDown);
+}, [handleSaveConfig, isSaving]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">

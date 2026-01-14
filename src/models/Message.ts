@@ -50,6 +50,7 @@ export interface IMessage {
   tag?: string;
   participants?: ChatParticipant[];
   aiUsageId?: string;
+  isCreditDebited?: boolean,
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -118,6 +119,7 @@ const MessageSchema = new Schema<IMessage>(
     tag: { type: String },
     aiUsageId: { type: String },
     participants: { type: [ChatParticipantSchema] },
+    isCreditDebited: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

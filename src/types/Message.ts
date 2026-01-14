@@ -39,6 +39,7 @@ export type Message = {
   tag?: string;
   participants?: ChatParticipant[];
   aiUsageId?: string;
+  isCreditDebited?: boolean,
   createdAt?: string;
   updatedAt?: string;
 }

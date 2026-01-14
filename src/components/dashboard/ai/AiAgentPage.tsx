@@ -105,6 +105,27 @@ export default function AIAgentPage() {
     }
   };
 
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const isSaveShortcut = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s";
+
+      if (isSaveShortcut) {
+        e.preventDefault(); // stop browser "Save page" dialog
+
+        // respect the same disabled logic
+        const disabled =
+          isSaving || (aiAgent.webhookUrl ? !isValidUrl(aiAgent.webhookUrl) : false);
+
+        if (!disabled) {
+          handleSave();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handleSave, isSaving, aiAgent.webhookUrl]);
+
   const handleTestWebhook = async () => {
     const webhookUrl = aiAgent?.webhookUrl?.trim() || '';
 

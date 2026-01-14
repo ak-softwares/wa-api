@@ -17,7 +17,6 @@ export async function POST(req: Request) {
     const wallet = await WalletModel.findOne({ userId: user._id }).lean<IWallet>();
 
     const creditBalance: number = wallet?.balance ?? 0;
-    const lockedCredits: number = wallet?.locked ?? 0;
     
     // Current Month Usage
     const monthlyUsage = await MonthlyUsageModel.findOne({
@@ -30,7 +29,6 @@ export async function POST(req: Request) {
 
     const data: WalletAnalytics = {
         creditBalance,
-        lockedCredits,
         currentMonthUsed,
         year,
         month,

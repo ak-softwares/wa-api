@@ -1,6 +1,8 @@
+import mongoose from "mongoose";
 import { MessageModel } from "@/models/Message";
 import { MessageStatus, STATUS_PRIORITY } from "@/types/MessageType";
 import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
+import { debitMessageCredits } from "../wallet/debitMessageCredits";
 
 interface HandleMessageStatusParams {
   statusPayload: any;
@@ -66,6 +68,38 @@ export async function handleMessageStatus({ statusPayload }: HandleMessageStatus
   );
 
   if (!message) return;
+
+  // ✅ Debit credits when message becomes Delivered OR Read (first time only)
+  const isSuccessStatus = incomingStatus === MessageStatus.Delivered || incomingStatus === MessageStatus.Read;
+
+  if (isSuccessStatus && !existingMessage.isCreditDebited) {
+
+    const session = await mongoose.startSession();
+    try {
+      await session.withTransaction(async () => {
+        // 🔥 lock debit (prevent double debit)
+        const lockedMessage = await MessageModel.findOneAndUpdate(
+          {
+            waMessageId,
+            $or: [
+              { isCreditDebited: false },
+              { isCreditDebited: { $exists: false } },
+            ],
+          },
+          { $set: { isCreditDebited: true } },
+          { new: true, session }
+        );
+
+        if (!lockedMessage) return; // already debited by another webhook call
+
+        const cost = 1;
+
+        await debitMessageCredits({ userId: lockedMessage.userId, cost, session});
+      });
+    } finally {
+      session.endSession();
+    }
+  }
 
   // handle push notification
   if (shouldUpdateStatus) {
