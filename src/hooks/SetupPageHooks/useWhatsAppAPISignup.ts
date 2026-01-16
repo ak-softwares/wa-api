@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "@/components/ui/sonner";
 import { ApiResponse } from "@/types/apiResponse";
+import { FB_GRAPH_VERSION } from "@/utiles/constans/apiConstans";
 
 interface UseWhatsAppSignupReturn {
   launchWhatsAppSignup: () => void;
@@ -53,7 +54,7 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
           appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
           autoLogAppEvents: true,
           xfbml: true,
-          version: "v23.0",
+          version: FB_GRAPH_VERSION,
         });
       } else {
         setTimeout(checkFB, 500);

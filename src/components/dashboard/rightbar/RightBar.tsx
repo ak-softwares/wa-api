@@ -1,7 +1,6 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import PhoneNumberCard from "./widgets/phoneNumberCard"
 import { Button } from "@/components/ui/button";
 import { WhatsappAPIPricingCard } from "./widgets/whatsappAPIPricing";
 
@@ -45,9 +44,6 @@ export default function RightBar() {
             </Button>
         </CardContent>
         </Card>
-        <div className="max-w-md mx-auto mt-6">
-          <PhoneNumberCard />
-        </div>
         <div className="max-w-md mx-auto mt-6">
           <WhatsappAPIPricingCard />        
         </div>

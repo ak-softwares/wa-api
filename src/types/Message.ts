@@ -40,6 +40,7 @@ export type Message = {
   participants?: ChatParticipant[];
   aiUsageId?: string;
   isCreditDebited?: boolean,
+  errorMessage?: string;
   createdAt?: string;
   updatedAt?: string;
 }

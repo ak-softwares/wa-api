@@ -11,7 +11,7 @@ interface HandleMessageStatusParams {
 export async function handleMessageStatus({ statusPayload }: HandleMessageStatusParams) {
   const waMessageId = statusPayload.id;
   const incomingStatus = statusPayload.status as MessageStatus;
-  // console.log("statusPayload: " + statusPayload)
+  // console.log("statusPayload: " + JSON.stringify(statusPayload, null, 2))
   // console.log("waMessageId: " + waMessageId)
   // console.log("status: " + incomingStatus)
 
@@ -48,6 +48,9 @@ export async function handleMessageStatus({ statusPayload }: HandleMessageStatus
 
   if (incomingStatus === MessageStatus.Failed && !existingMessage.failedAt) {
     update.failedAt = statusTime;
+    // ✅ Store only error message
+    const err = statusPayload?.errors?.[0];
+    if (err?.message) update.errorMessage = err.message;
   }
 
   const lastStatus = existingMessage.status as MessageStatus;

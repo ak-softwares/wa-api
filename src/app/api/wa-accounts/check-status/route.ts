@@ -1,22 +1,20 @@
-// src/app/api/facebook/setup-status/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
-
-type StatusData = { token: boolean; phone: boolean; subscription: boolean };
+import { WaSetupStatus } from "@/types/WabaAccount";
 
 export async function GET(req: NextRequest) {
   try {
     const { user, waAccount, errorResponse } = await getDefaultWaAccount();
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    const { permanent_token, is_phone_number_registered, is_app_subscribed } = waAccount;
-
-    const data: StatusData = {
-      token: !!permanent_token,
-      phone: !!is_phone_number_registered,
-      subscription: !!is_app_subscribed,
+    const data: WaSetupStatus = {
+      isTokenAvailable: !!waAccount?.permanent_token,
+      isPhoneRegistered: !!waAccount?.is_phone_number_registered,
+      isAppSubscription: !!waAccount?.is_app_subscribed,
+      isPhoneVerified: waAccount?.wabaAccount?.phone_numbers?.[0]?.code_verification_status === "VERIFIED",
+      wabaAccountStatus: waAccount?.wabaAccount?.account_review_status || "UNKNOWN",
     };
 
     const response: ApiResponse = {

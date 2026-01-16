@@ -86,7 +86,7 @@ export async function handleSendMessage({
       const fbResponse = await axios.post(url, whatsAppPayload, { headers });
       waMessageId = fbResponse.data?.messages?.[0]?.id;
       status = waMessageId ? MessageStatus.Sent : MessageStatus.Failed;
-
+      // console.log("response: " + JSON.stringify(fbResponse.data, null, 2))
       if (status === MessageStatus.Failed) {
         throw new Error("WhatsApp send failed");
       }

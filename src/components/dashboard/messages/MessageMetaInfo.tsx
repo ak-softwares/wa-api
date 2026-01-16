@@ -66,6 +66,7 @@ export default function MessageMetaInfo({ message }: MessageMetaInfoProps) {
           src="/assets/icons/warning.svg"
           className="w-4 h-4"
           alt="failed"
+          title={message.errorMessage ? `Error: ${message.errorMessage}` : "Message failed"}
         />
       )}
 

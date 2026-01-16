@@ -8,11 +8,6 @@ export type WaAccount = {
   waba_id: string;
   business_id: string;
   permanent_token: string;
-  verified_name?: string;
-  display_phone_number?: string;
-  quality_rating?: string;
-  last_onboarded_time?: string;
-  code_verification_status?: string;
   is_phone_number_registered?: boolean;
   is_app_subscribed?: boolean;
   aiChat?: AIChat;

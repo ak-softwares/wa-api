@@ -2,8 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
-import { WaAccountModel } from "@/models/WaAccount";
-import { getPhoneNumbers } from "@/services/whatsappApi/getPhoneNumber";
+import { IWabaAccount, WaAccountModel } from "@/models/WaAccount";
+import { getWabaDetails } from "@/services/whatsappApi/getPhoneNumber";
 import { subscribeApp } from "@/services/whatsappApi/subscribeApp";
 import { deregisterPhoneNumber, registerPhoneNumber } from "@/services/whatsappApi/registerPhoneNumber";
 import { exchangeFacebookToken } from "@/services/whatsappApi/exchangeFacebookToken";
@@ -31,8 +31,10 @@ export async function POST(req: NextRequest) {
     // ---------------- Step 3: Subscribe App ----------------
     const appSubscribed = await subscribeApp({ waba_id, permanent_token })
                                   .then(() => true).catch(() => false);
+
     // ---------------- Step 4: Get Phone number and name ----------------
-    const phoneNumbers = await getPhoneNumbers({ waba_id, permanent_token }).catch(() => []); // It ignores the error. It returns an empty array []
+    const wabaAccount: IWabaAccount | null = await getWabaDetails({ waba_id, permanent_token })
+                                  .catch(() => null); // It ignores the error. It returns an empty array []
 
     // ---------------- Step 5: Update & Save User ----------------
     // 5️⃣ Upsert WA Account (SEPARATE COLLECTION)
@@ -44,10 +46,7 @@ export async function POST(req: NextRequest) {
         waba_id,
         business_id,
         permanent_token,
-        verified_name: phoneNumbers[0].verified_name || "",
-        display_phone_number: phoneNumbers[0].display_phone_number || "",
-        quality_rating: phoneNumbers[0].quality_rating || "",
-        code_verification_status: phoneNumbers[0].code_verification_status || "",
+        wabaAccount: wabaAccount ?? undefined,
         is_phone_number_registered: phoneRegistered,
         is_app_subscribed: appSubscribed,
       },

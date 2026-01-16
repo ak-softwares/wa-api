@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     // 1. Total messages in the date range
     const totalMessages = await MessageModel.countDocuments({
       userId: user._id,
+      from: waAccount.phone_number_id,     // messages sent FROM this WA account
       createdAt: { $gte: start, $lte: end }
     });
 

@@ -26,8 +26,8 @@ export default function ContactsMenu({ onSelectContacts, onDeleteAllContacts }: 
   const topItems = [
     { icon: "/assets/icons/select.svg", label: "Select Contacts", action: onSelectContacts },
     { icon: "/assets/icons/broadcast.svg", label: "Make Broadcast", action: onSelectContacts },
-    { icon: "/assets/icons/download.svg", label: "Import from Google", action: handleGoogleImport },
     { icon: "/assets/icons/document.svg", label: "Import from Excel", action: goToExcelImportPage },
+    { icon: "/assets/icons/download.svg", label: "Import from Google", action: handleGoogleImport },
     { icon: "/assets/icons/VCF.svg", label: "Import from VCF", action: goToVCFImportPage },
     { icon: "/assets/icons/export.svg", label: "Export Contacts", action: onSelectContacts },
   ];

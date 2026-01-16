@@ -42,7 +42,7 @@ export default function CreditStatsDemo() {
           <CardHeader className="px-4">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Zap className="text-emerald-600" size={15} />
+                <Zap className="text-[#0B8576] dark:text-[#11B8A2]" size={15} />
                 Free Message Quota
               </div>
               <Badge variant={isLow ? "destructive" : "outline"} className="mt-2">
@@ -85,13 +85,13 @@ export default function CreditStatsDemo() {
           <CardHeader className="px-4">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Wallet className="h-4 w-4 text-emerald-600" />
+                <Wallet className="h-4 w-4 text-[#0B8576] dark:text-[#11B8A2]" />
                 Current Balance
               </div>
 
               <Button
                 size="sm"
-                className="gap-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                className="gap-1 bg-[#11B8A2] hover:bg-[#11B8A2]/80 text-white shadow-sm"
                 onClick={() => setShowAddCredit(true)}
               >
                 <PlusCircle className="h-4 w-4" />

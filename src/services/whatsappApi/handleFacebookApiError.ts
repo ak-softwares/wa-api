@@ -1,7 +1,7 @@
 import { ApiError } from "@/types/apiResponse";
 import axios from "axios";
 
-export function handleFacebookApiError(error: unknown, fallbackMessage: string) {
+export function handleFacebookApiError(error: unknown, fallbackMessage: string): never {
   // ✅ Preserve business errors
   if (error instanceof ApiError) {
     throw error;

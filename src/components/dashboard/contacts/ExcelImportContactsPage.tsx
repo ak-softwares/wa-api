@@ -92,9 +92,9 @@ export default function ExcelImportContactsPage() {
   // -------------------------------------------------------
   const downloadTemplate = () => {
     const template = [
-      ["Name", "Email (optional)", "Phones"],
-      ["John Doe", "john@example.com", "919876543210"],
-      ["Jane Smith", "jane@example.com", "441234567890"],
+      ["Name", "Phones", "Tags", "Email"],
+      ["John Doe", "919876543210", "remarketing", "john@example.com" ],
+      ["Jane Smith", "919876543211", "Excel import", "jane@example.com"],
     ]
       .map((r) => r.join(","))
       .join("\n");

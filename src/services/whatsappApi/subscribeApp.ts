@@ -14,7 +14,7 @@ export async function subscribeApp({ waba_id, permanent_token}: SubscribeAppPara
   try {
     const url = `https://graph.facebook.com/${FB_GRAPH_VERSION}/${waba_id}/subscribed_apps`;
 
-    const fbResponse = await axios.post(url, { headers: getFacebookHeaders(permanent_token) });
+    const fbResponse = await axios.post(url, {}, { headers: getFacebookHeaders(permanent_token) });
 
     if (fbResponse.data?.success !== true) {
       const errorMessage = fbResponse.data?.error?.message

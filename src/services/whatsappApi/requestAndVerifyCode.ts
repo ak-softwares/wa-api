@@ -4,6 +4,12 @@ import { getFacebookHeaders } from "./helper";
 import { ApiError } from "@/types/apiResponse";
 import { handleFacebookApiError } from "./handleFacebookApiError";
 
+interface RequestCodeResult {
+  success: boolean;
+  alreadyVerified: boolean;
+  data?: any;
+}
+
 // Request WhatsApp verification code
 interface RequestCodeParams {
   phone_number_id: string;
@@ -25,8 +31,22 @@ export async function requestVerificationCode({ phone_number_id, permanent_token
       throw new ApiError(400, errorMessage);
     }
 
-    return fbResponse.data;
+    return {
+      success: true,
+      alreadyVerified: false,
+      data: fbResponse.data,
+    };
   } catch (error: any) {
+    const errCode = error?.response?.data?.error?.code;
+    const errSubCode = error?.response?.data?.error?.error_subcode;
+
+    // ✅ Meta: already verified
+    if (errCode === 136024 && errSubCode === 2388091) {
+      return {
+        success: true,
+        alreadyVerified: true,
+      };
+    }
     handleFacebookApiError(error, "Request verification code failed");
   }
 }
@@ -56,7 +76,6 @@ export async function verifyVerificationCode({ phone_number_id, permanent_token,
       throw new ApiError(400, errorMessage);
     }
 
-    return fbResponse.data;
   } catch (error: any) {
     handleFacebookApiError(error, "Verify verification code failed");
   }

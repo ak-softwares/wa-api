@@ -1,4 +1,7 @@
 /** @type {import('tailwindcss').Config} */
+const colors = require("tailwindcss/colors")
+const daisyui = require("daisyui")
+
 module.exports = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx}",
@@ -11,11 +14,15 @@ module.exports = {
       fontFamily: {
         sans: ['Segoe UI', 'system-ui', 'sans-serif'],
       },
+      colors: {
+        brand: "#11B8A2",
+        link: colors.blue[600],
+      },
     },
   },
   plugins: [daisyui],
   daisyui: {
-    theme: ["dark"],
+    themes: ["dark"],
     darkTheme: "dark"
   }
 }

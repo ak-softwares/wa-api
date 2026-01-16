@@ -41,7 +41,19 @@ export function useExcelImport() {
         const name = row.Name?.toString().trim();
         const email = row.Email?.toString().trim();
         const phoneRaw = row.Phones?.toString().trim();
-        const tags = ["Excel Import"];
+        // ✅ Tags column (comma separated)
+        const fileTags = row.Tags?.toString().trim();
+        const tags = [
+          "Excel Import",
+          ...(fileTags
+            ? fileTags
+                .split(",")
+                .map((t: string) => t.trim())
+                .filter(Boolean)
+            : []),
+        ];
+        // ✅ Remove duplicates
+        const uniqueTags = Array.from(new Set(tags));
 
         const errors: string[] = [];
         let status: "valid" | "invalid" | "duplicate" = "valid";
@@ -78,7 +90,7 @@ export function useExcelImport() {
           email,
           phones,
           status,
-          tags,
+          tags: uniqueTags,
           errors: errors.length > 0 ? errors : undefined,
         });
       });

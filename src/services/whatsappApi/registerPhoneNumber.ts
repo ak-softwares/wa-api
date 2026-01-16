@@ -40,7 +40,7 @@ interface DeRegisterPhoneNumberParams {
 export async function deregisterPhoneNumber({ phone_number_id, permanent_token }: DeRegisterPhoneNumberParams) {
   try {
     const url = `https://graph.facebook.com/${FB_GRAPH_VERSION}/${phone_number_id}/deregister`;
-    const fbResponse = await axios.post(url, { headers: getFacebookHeaders(permanent_token) });
+    const fbResponse = await axios.post(url, {}, { headers: getFacebookHeaders(permanent_token) });
     if (fbResponse.data?.success !== true) {
       const errorMessage = fbResponse.data?.error?.message
         ? `Deregistration failed: ${fbResponse.data.error.message}`

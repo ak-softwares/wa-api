@@ -24,6 +24,7 @@ import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import SendTemplatePage from "@/components/dashboard/templates/SendTemplatePage";
 import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
 import { ConfirmDialog } from "@/components/common/dialog/ConfirmDialog";
+import MessageInfoDialog from "@/components/dashboard/messages/MessageInfoDialog";
 
 export default function MessagePage() {
   const { theme } = useTheme(); // or use your theme context
@@ -44,6 +45,9 @@ export default function MessagePage() {
   const [isSendTemplate, setIsSendTemplate] = useState(false);
   // Update state to handle different media types
   const [mediaSelections, setMediaSelections] = useState<MediaSelection[]>([]);
+  const [openInfoDialog, setOpenInfoDialog] = useState(false)
+  const [selectedInfoMessage, setSelectedInfoMessage] = useState<Message | null>(null)
+
   const blocked = useBlockedContacts();
   
   // Refs for different file inputs
@@ -90,7 +94,10 @@ export default function MessagePage() {
     fileInputRef.current?.click();
   };
 
-
+  const handleOpenInfo = (msg: Message) => {
+    setSelectedInfoMessage(msg)
+    setOpenInfoDialog(true)
+  }
   // Generic file handler for different media types
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -307,6 +314,7 @@ export default function MessagePage() {
                           setForwardMessage(message);
                           setIsForwardMessageOpen(true);
                         }}
+                        onInfo={() => handleOpenInfo(message)}   // ✅ correct
                       />
                     ))
                   }
@@ -483,6 +491,13 @@ export default function MessagePage() {
         onCancel={() => setOpenDeleteDialog(false)}
         onConfirm={async () => { await deleteChat(activeChat._id!)}}
       />
+      {selectedInfoMessage && (
+        <MessageInfoDialog
+          open={openInfoDialog}
+          setOpen={setOpenInfoDialog}
+          message={selectedInfoMessage}
+        />
+      )}
     </div>
   );
 }
