@@ -7,9 +7,9 @@ import { fetchMediaBlob, uploadMediaApi } from "@/services/message/media.service
 import { MessagePayload, MessageStatus, MessageType } from "@/types/MessageType";
 import { useChatStore } from "@/store/chatStore";
 import { ChatType } from "@/types/Chat";
-import MessagesHeader from "../messages/MessageHeader";
+import MessagesHeader from "../messages/common/MessageHeader";
 import IconButton from "@/components/common/IconButton";
-import MessagePreviewPage from "../messages/MessagePreviewPage";
+import MessagePreviewPage from "../messages/pages/MessagePreviewPage";
 import { Message } from "@/types/Message";
 import TemplateSearchSelect from "./widgets/SearchableTemplateSelect";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

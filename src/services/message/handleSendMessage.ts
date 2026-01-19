@@ -1,5 +1,5 @@
 import axios from "axios";
-import { MessageModel } from "@/models/Message";
+import { IMessage, MessageModel } from "@/models/Message";
 import { MessageStatus, MessageType, WhatsAppPayload } from "@/types/MessageType";
 import { ChatType } from "@/types/Chat";
 import { ApiError } from "@/types/apiResponse";
@@ -70,7 +70,43 @@ export async function handleSendMessage({
     template = replaceActualTemplateValue({metaTemplate: metaTemplate, messagePayload: messagePayload.template! as TemplatePayload});
   }
 
-  // ✅ Send to each participant
+  // ============================================================
+  // ✅ BROADCAST MASTER MESSAGE (Create FIRST)
+  // ============================================================
+  let broadcastMasterMessage: IMessage | null = null;
+
+  if (isBroadcast) {
+    broadcastMasterMessage = await MessageModel.create({
+      userId,
+      chatId: messagePayload.chatId,
+      isBroadcastMaster: true,
+      to: ChatType.BROADCAST,
+      participants,
+      from: waAccount.phone_number_id,
+      message: messagePayload.message,
+      media: messagePayload.media,
+      location: messagePayload.location,
+      template,
+      status: MessageStatus.Sent,
+      type: messagePayload.messageType,
+      tag: finalTag,
+    });
+
+    // Update broadcast chat lastMessage ONCE
+    const updateFields: Partial<IChat> = {
+      lastMessage: generateLastMessageText(messagePayload),
+      lastMessageAt: new Date(),
+    };
+
+    await ChatModel.updateOne(
+      { _id: messagePayload.chatId },
+      { $set: updateFields }
+    );
+  }
+
+  // ============================================================
+  // ✅ SEND TO EACH PARTICIPANT
+  // ============================================================
   for (const participant of participants) {
     let waMessageId: string | undefined;
     let status: MessageStatus = MessageStatus.Failed;
@@ -102,15 +138,20 @@ export async function handleSendMessage({
       // Otherwise continue to next participant
       continue;
     }
-
-    // Get or create chat using cache
-    const chat: IChat | null = await getOrCreateChat({
-      userId: userId,
-      waAccountId: waAccount._id!,
-      phone: participant.number,
-      chatCache,
-    });
     
+    // ============================================================
+    // ✅ CHAT TYPE: create/get chat and save normal message
+    // ============================================================
+    let chat: IChat | null = null;
+    if (!isBroadcast) {
+      chat = await getOrCreateChat({
+        userId,
+        waAccountId: waAccount._id!,
+        participant,
+        chatCache,
+      });
+    }
+
     // ✅ Only store chat if exactly ONE participant
     if (!isBroadcast && participants.length === 1) {
       singleChat = chat;
@@ -119,7 +160,9 @@ export async function handleSendMessage({
     // ✅ Save individual message
     const dbMessage = await MessageModel.create({
       userId,
-      chatId: chat?._id,
+      chatId: isBroadcast ? messagePayload.chatId : chat?._id,
+      isBroadcastMaster: isBroadcast ? false : undefined,
+      parentMessageId: broadcastMasterMessage ? broadcastMasterMessage?._id : undefined,  // 👇 link to master message for report
       to: participant.number,
       from: waAccount.phone_number_id,
       message: messagePayload.message,
@@ -133,39 +176,15 @@ export async function handleSendMessage({
       context,
     });
 
-
-    // handle lastMessage
-    const updateFields: Partial<IChat> = {
-      lastMessage: generateLastMessageText(messagePayload),
-      lastMessageAt: new Date(),
-    };
-    await ChatModel.updateOne({ _id: chat?._id }, { $set: updateFields });
+    if (!isBroadcast && chat?._id) {
+      // handle lastMessage
+      const updateFields: Partial<IChat> = {
+        lastMessage: generateLastMessageText(messagePayload),
+        lastMessageAt: new Date(),
+      };
+      await ChatModel.updateOne({ _id: chat._id }, { $set: updateFields });
+    }
     status === MessageStatus.Sent ? savedMessages.push(dbMessage) : failedMessages.push(dbMessage);
-  }
-
-  // ✅ Save broadcast master message (ONE extra record)
-  let broadcastMasterMessage = null;
-  if (isBroadcast) {
-    broadcastMasterMessage = await MessageModel.create({
-      userId,
-      chatId: messagePayload.chatId,
-      to: ChatType.BROADCAST,
-      participants,
-      from: waAccount.phone_number_id,
-      message: messagePayload.message,
-      media: messagePayload.media,
-      location: messagePayload.location,
-      template,
-      status: MessageStatus.Sent,
-      type: messagePayload.messageType,
-      tag: finalTag,
-    });
-    // handle lastMessage
-    const updateFields: Partial<IChat> = {
-      lastMessage: generateLastMessageText(messagePayload),
-      lastMessageAt: new Date(),
-    };
-    await ChatModel.updateOne({ _id: messagePayload.chatId }, { $set: updateFields });
   }
 
   const primaryMessage =

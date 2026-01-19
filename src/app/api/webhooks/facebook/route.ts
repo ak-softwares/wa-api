@@ -9,6 +9,7 @@ import { getOrCreateChat } from "@/services/apiHelper/getOrCreateChat";
 import { handleIncomingMessage } from "@/services/webhookHelper/handleIncomingMessage";
 import { handleAIMessage } from "@/services/webhookHelper/handleAIMessage";
 import { handleMessageStatus } from "@/services/webhookHelper/handleMessageStatus";
+import { ChatParticipant } from "@/types/Chat";
 
 // https://wa-api.me/api/webhooks/facebook
 const FACEBOOK_WEBHOOK_TOKEN = process.env.FACEBOOK_WEBHOOK_TOKEN; // secret token
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
         // -------------------------------
         // Find wa-account only once per entry
         const messages = value?.messages ?? [];
+        const sender_name = change.value?.contacts?.[0]?.profile?.name || "";
         if (messages.length === 0) continue;
 
         const waAccount: IWaAccount | null = await WaAccountModel.findOne({ phone_number_id });
@@ -80,11 +82,16 @@ export async function POST(req: NextRequest) {
           const messageText = msg.text?.body || "";
           if (!from) continue;
 
+          const participant: ChatParticipant = {
+            name: sender_name,
+            number: from,
+          }
+
           // Get or create chat using cache
           const chat: IChat | null = await getOrCreateChat({
             userId: user._id,
             waAccountId: waAccount._id!,
-            phone: from,
+            participant,
             chatCache,
           });
 

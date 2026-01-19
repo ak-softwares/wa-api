@@ -10,6 +10,7 @@ interface UseContactsProps {
 }
 
 export function useContacts({ sidebarRef }: UseContactsProps) {
+  // console.trace("fetchChats called");
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [totalContacts, setTotalContacts] = useState(0);
   const [page, setPage] = useState(1);

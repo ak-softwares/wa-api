@@ -2,25 +2,25 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatTime } from "@/utiles/formatTime/formatTime";
-import ChatMenu from "@/components/dashboard/chats/ChatMenu";
-import ContactAvatar from "@/components/dashboard/contacts/ContactAvatar";
+import ChatMenu from "@/components/dashboard/chats/menus/ChatMenu";
+import ContactAvatar from "@/components/dashboard/contacts/common/ContactAvatar";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
-import ChatsMenu from "@/components/dashboard/chats/ChatsMenu";
+import ChatsMenu from "@/components/dashboard/chats/menus/ChatsMenu";
 import SearchBar from "@/components/common/SearchBar";
 import { useState, useRef } from "react";
 import IconButton from "@/components/common/IconButton";
 import { toast } from "@/components/ui/sonner";
 import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
-import SelectedChatMenu from "@/components/dashboard/chats/SelectedChatsMenu";
+import SelectedChatMenu from "@/components/dashboard/chats/menus/SelectedChatsMenu";
 import { useChatStore } from "@/store/chatStore";
 import { useChats } from "@/hooks/chat/useChats";
-import NewChatPopup from "@/components/dashboard/chats/AppChatPopup";
-import MakeBroadcastPopup from "@/components/dashboard/chats/MakeBroadcastPopup";
+import NewChatPopup from "@/components/dashboard/chats/dialogs/NewChatPopup";
 import { ChatFilterType } from "@/utiles/enums/chatFilters";
-import { Chat, ChatParticipant, ChatType } from "@/types/Chat";
+import { Chat, ChatType } from "@/types/Chat";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import { DeleteMode } from "@/utiles/enums/deleteMode";
 import { ConfirmDialog } from "@/components/common/dialog/ConfirmDialog";
+import { useChatMenuStore } from "@/store/chatMenu";
 
 export default function ChatList() {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
@@ -29,9 +29,9 @@ export default function ChatList() {
   const [selectedChats, setSelectedChats] = useState<Chat[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
-  const [isMakeBroadcastOpen, setIsMakeBroadcastOpen] = useState(false);
   const { activeChat, setActiveChat } = useChatStore();
   const { isBlocked, toggleBlock, confirmBlockDialog } = useBlockedContacts();
+  const { setChatMenu } = useChatMenuStore();
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deleteMode, setDeleteMode] = useState<DeleteMode | null>(null);
@@ -91,7 +91,7 @@ export default function ChatList() {
 
   const handleOpenChat = async (chat: any) => {
     setActiveChat(chat)
-    // setSelectedMessageMenu("message");
+    setChatMenu("message-page");
   };
 
   const handleUpdateChatFavourite = (chatId: string, isFavourite: boolean) => {
@@ -140,18 +140,15 @@ export default function ChatList() {
           />
           <ChatsMenu 
             onSelectChats={() => setIsSelectionMode(true)} 
-            onMakeBroadcast={() => setIsMakeBroadcastOpen(true)} 
             onDeleteAllChats={handleDeleteAllChats}
           />
           {/* New Chat Popup */}
-          <NewChatPopup
+          {isNewChatOpen && (
+            <NewChatPopup
             isOpen={isNewChatOpen}
             onClose={() => setIsNewChatOpen(false)}
-          />
-          <MakeBroadcastPopup
-            isOpen= {isMakeBroadcastOpen}
-            onClose={() => setIsMakeBroadcastOpen(false)}
-          />
+            />
+          )}
         </div>
       </div>
 

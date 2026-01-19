@@ -1,6 +1,6 @@
 {
   "name": "wa-api",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -33,6 +33,7 @@
     "cmdk": "^1.1.1",
     "dayjs": "^1.11.19",
     "emoji-picker-react": "^4.16.1",
+    "exceljs": "^4.4.0",
     "googleapis": "^160.0.0",
     "js": "^0.1.0",
     "libphonenumber-js": "^1.12.24",

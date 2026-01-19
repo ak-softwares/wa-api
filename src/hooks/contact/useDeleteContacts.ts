@@ -46,7 +46,7 @@ export function useDeleteContacts(onDeleted?: (payload: {
 
     setIsDeleting(true);
     try {
-      const res = await fetch("/api/wa-accounts/contacts/bulk-delete", {
+      const res = await fetch("/api/wa-accounts/contacts/bulk", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: contactIds }),

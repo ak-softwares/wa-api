@@ -11,6 +11,8 @@ export type AnalyticsData = {
   deliveredMessages?: number;
   readMessages?: number;
 
+  failedMessages?: number;
+
   // AI
   aIReplies?: number;
   aICost?: number;

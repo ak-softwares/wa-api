@@ -17,6 +17,7 @@ interface UseMessagesProps {
 }
 
 export function useMessages({ containerRef, chatId }: UseMessagesProps) {
+  // console.trace("fetchChats called");
   const [messages, setMessages] = useState<Message[]>([]);
   const [page, setPage] = useState(1);
   const [perPage] = useState(10);
@@ -129,20 +130,21 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
 
   // fetch on chat/page/refresh
   useEffect(() => {
+    if (page === 1) return; // prevent duplicate page=1 fetch
     fetchMessages(page);
-  }, [chatId, page, refreshFlag, fetchMessages]);
+  }, [page, fetchMessages]);
+
 
 
   useEffect(() => {
-    // Reset everything on chat change
+    if (!chatId) return;
+
     setMessages([]);
     setPage(1);
     setHasMore(true);
 
-    // Fetch first page explicitly
     fetchMessages(1);
   }, [chatId, fetchMessages]);
-
 
   // infinite scroll
   useEffect(() => {

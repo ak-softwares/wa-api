@@ -19,7 +19,7 @@ import {
   TemplateCategory, 
   TemplateButtonType
 } from "@/utiles/enums/template";
-import MessagePreviewPage from "../messages/MessagePreviewPage";
+import MessagePreviewPage from "../messages/pages/MessagePreviewPage";
 import { MessageType } from "@/types/MessageType";
 import { MessageStatus } from "@/types/MessageType";
 import { Message } from "@/types/Message";

@@ -37,7 +37,7 @@ export const formatFullDateTime = (date?: string) => {
 
   const day = d.toLocaleDateString("en-US", { day: "2-digit" });
   const month = d.toLocaleDateString("en-US", { month: "short" });
-  const year = d.getFullYear();
+  const year = String(d.getFullYear()).slice(-2);
 
   let hours = d.getHours();
   const minutes = d.getMinutes().toString().padStart(2, "0");

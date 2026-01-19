@@ -21,6 +21,7 @@ import { useAnalytics } from "@/hooks/analytics/useAnalytics";
 import { dateRanges } from "@/utiles/helper/dateRangePresetsHelper";
 import { DateRangeEnum, DateRangeLabels } from "@/utiles/enums/dateRangeEnum";
 import { calcPercentage } from "@/lib/helper/math";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AnalyticsCard() {
   const { data, loading, fetchAnalytics } = useAnalytics();
@@ -137,7 +138,7 @@ export default function AnalyticsCard() {
   );
 }
 
-function MetricCard({
+export function MetricCard({
   label,
   value,
   icon,
@@ -182,3 +183,11 @@ function MetricCard({
   );
 }
 
+export function MetricCardSkeleton() {
+  return (
+    <div className="p-3 rounded-lg border dark:border-[#333434] space-y-2">
+      <Skeleton className="h-4 w-24" />
+      <Skeleton className="h-6 w-16" />
+    </div>
+  );
+}

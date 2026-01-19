@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from "react";
-import ContactList from "@/components/dashboard/contacts/ContactList";
+import ContactList from "@/components/dashboard/contacts/Pages/ContactList";
 
 export default function ContactsPage() {
   return (

@@ -114,29 +114,31 @@ export default function TemplateListPage() {
         ) : templates.length === 0 ? (
             <div className="p-8 text-center">No template found.</div>
         ) : (
-          templates.map((template) => (
-            <TemplateTile
-              key={template.id}
-              template={template}
-              isSelectionMode={isSelectionMode}
-              isSelected={selectedTemplates.some(t => t.name === template.name)}
-              onClick={() => {
-                if (isSelectionMode) {
-                  // Toggle selection 
-                  if (selectedTemplates.some(t => t.name === template.name)) {
-                    setSelectedTemplates(selectedTemplates.filter(t => t.name !== template.name));
+          <div className="mx-3">
+            {templates.map((template) => (
+              <TemplateTile
+                key={template.id}
+                template={template}
+                isSelectionMode={isSelectionMode}
+                isSelected={selectedTemplates.some(t => t.name === template.name)}
+                onClick={() => {
+                  if (isSelectionMode) {
+                    // Toggle selection 
+                    if (selectedTemplates.some(t => t.name === template.name)) {
+                      setSelectedTemplates(selectedTemplates.filter(t => t.name !== template.name));
+                    } else {
+                      setSelectedTemplates([...selectedTemplates, template]);
+                    }   
                   } else {
-                    setSelectedTemplates([...selectedTemplates, template]);
-                  }   
-                } else {
-                  // Handle non-selection mode click if needed
-                }
-              }}
-              onDelete={handleDeleteTemplate}
-              onDuplicate={handleDuplicateTemplate}
-              onEdit={handleEditTemplate}
-            />
-          ))
+                    // Handle non-selection mode click if needed
+                  }
+                }}
+                onDelete={handleDeleteTemplate}
+                onDuplicate={handleDuplicateTemplate}
+                onEdit={handleEditTemplate}
+              />
+            ))}
+          </div>
         )}
 
         {hasMore &&

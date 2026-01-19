@@ -4,14 +4,14 @@ import { Message } from "@/types/Message";
 import { useChatStore } from "@/store/chatStore";
 import { ChatParticipant } from "@/types/Chat";
 import { useEffect, useState } from "react";
-import MessageMenu from "../dashboard/messages/MessageMenu";
+import MessageMenu from "../dashboard/messages/menus/MessageMenu";
 import { useDeleteMessages } from "@/hooks/message/useDeleteMessages";
 import { toast } from "../ui/sonner";
-import { useOpenChat } from "@/hooks/chat/useOpenChat";
+import { useFindOrCreateChat } from "@/hooks/chat/useFindOrCreateChat";
 import { MessageType } from "@/types/MessageType";
 import TemplateMessage from "../dashboard/templates/RenderTemplateMessage";
 import { formatRichText } from "./FormatRichText";
-import MessageMetaInfo from "../dashboard/messages/MessageMetaInfo";
+import MessageMetaInfo from "../dashboard/messages/common/MessageMetaInfo";
 import MediaMessage from "../dashboard/templates/RenderMediaMessage";
 import LocationMessage from "../dashboard/templates/RenderLocationMessage";
 import { fetchMediaBlob } from "@/services/message/media.service";
@@ -29,7 +29,7 @@ export default function MessageBubble({ message, onDelete, onReply, onForward, o
   const activeChat = useChatStore((s) => s.activeChat);
   const [hovered, setHovered] = useState(false);
   const { deleteMessage } = useDeleteMessages();
-  const { openChatByContact } = useOpenChat();
+  const { findOrCreateChat } = useFindOrCreateChat();
   
   const isTemplate: boolean = !!message?.template || message?.type === MessageType.TEMPLATE;
   const isMedia: boolean = !!message?.media || message?.type === MessageType.MEDIA;
@@ -50,13 +50,14 @@ export default function MessageBubble({ message, onDelete, onReply, onForward, o
       const el = e.target.closest(".chat-number");
       if (el) {
         const phone = el.getAttribute("data-phone");
-        openChatByContact(phone);
+        if (!phone) return;
+        findOrCreateChat({participant: {number: phone}});
       }
     };
 
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
-  }, []);
+  }, [findOrCreateChat]);
 
   const handleDelete = async () => {
     if (!message._id) return;

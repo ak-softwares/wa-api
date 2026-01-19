@@ -5,7 +5,7 @@ import { Template } from "@/types/Template";
 import { TemplateButtonType, TemplateCategory, TemplateComponentType } from "@/utiles/enums/template";
 import React from "react";
 import { formatRichText } from "../../common/FormatRichText";
-import MessageMetaInfo from "../messages/MessageMetaInfo";
+import MessageMetaInfo from "../messages/common/MessageMetaInfo";
 import { Message } from "@/types/Message";
 import { toast } from "@/components/ui/sonner";
 import TemplateMediaPreview from "./TemplateMediaPreview";

@@ -33,6 +33,7 @@ export interface IMessage {
   _id?: Types.ObjectId;
   userId: Types.ObjectId;
   chatId: Types.ObjectId;
+  parentMessageId?: Types.ObjectId;
   to: string;
   from: string;
   message?: string;
@@ -51,6 +52,7 @@ export interface IMessage {
   participants?: ChatParticipant[];
   aiUsageId?: string;
   isCreditDebited?: boolean,
+  isBroadcastMaster?: boolean;
   errorMessage?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -92,8 +94,9 @@ const LocationSchema = new Schema<ILocation>(
 // ---- Main Message Schema ----
 const MessageSchema = new Schema<IMessage>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    chatId: { type: Schema.Types.ObjectId, ref: "Chat", required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "UserModel", required: true },
+    chatId: { type: Schema.Types.ObjectId, ref: "ChatModel", required: true },
+    parentMessageId: { type: Schema.Types.ObjectId, ref: "MessageModel" },
     to: { type: String, required: true },
     from: { type: String, required: true },
     message: { type: String },
@@ -121,6 +124,7 @@ const MessageSchema = new Schema<IMessage>(
     aiUsageId: { type: String },
     participants: { type: [ChatParticipantSchema] },
     isCreditDebited: { type: Boolean, default: false },
+    isBroadcastMaster: { type: Boolean },
     errorMessage: { type: String },
   },
   { timestamps: true }

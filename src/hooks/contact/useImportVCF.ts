@@ -2,16 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "@/components/ui/sonner";
-
-export interface ImportedContact {
-  id: string;
-  name: string;
-  phones: string[];
-  email?: string;
-  tags?: string[];
-  status: "valid" | "invalid" | "duplicate";
-  errors?: string[];
-}
+import { ImportedContact } from "@/types/Contact";
 
 export function useVCFImport() {
   const [isImporting, setIsImporting] = useState(false);
@@ -115,56 +106,11 @@ export function useVCFImport() {
     }
   };
 
-  // --------------------------------------------------
-  // UPLOAD (same as CSV/Excel)
-  // --------------------------------------------------
-  const uploadSelectedContacts = async (selectedIds: string[]) => {
-    const validSelected = importedContacts.filter(
-      (c) => selectedIds.includes(c.id) && c.status === "valid"
-    );
-
-    if (validSelected.length === 0) {
-      toast.error("No valid contacts selected");
-      return false;
-    }
-
-    try {
-      setIsImporting(true);
-
-      const res = await fetch("/api/wa-accounts/contacts/import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contacts: validSelected }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.message || "Failed to upload contacts");
-        return false;
-      }
-
-      const uploaded = data.data?.uploadedCount || 0;
-      const skipped = data.data?.skippedCount || 0;
-
-      if (uploaded > 0) toast.success(`Uploaded ${uploaded} contacts`);
-      if (skipped > 0) toast.warning(`${skipped} skipped`);
-
-      return true;
-    } catch {
-      toast.error("Failed to upload contacts");
-      return false;
-    } finally {
-      setIsImporting(false);
-    }
-  };
-
   const validContacts = importedContacts.filter((c) => c.status === "valid");
   const invalidContacts = importedContacts.filter((c) => c.status !== "valid");
 
   return {
     parseVCF,
-    uploadSelectedContacts,
     importedContacts,
     validContacts,
     invalidContacts,

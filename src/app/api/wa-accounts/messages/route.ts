@@ -8,6 +8,7 @@ import { MESSAGE_TAGS } from "@/utiles/enums/messageTags";
 import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
 import { WalletModel } from "@/models/Wallet";
 import { checkMessageCreditsAvailability } from "@/services/wallet/checkMessageCreditsAvailability";
+import { Types } from "mongoose";
 
 // https://wa-api.me/api/wa-accounts/messages
 export async function GET(req: NextRequest) {
@@ -20,6 +21,7 @@ export async function GET(req: NextRequest) {
     const chatId = searchParams.get("chatId");
     const per_page = Math.min(parseInt(searchParams.get("per_page") || "10"), 100);
     const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
+    const skip = (page - 1) * per_page;
 
     if (!chatId) {
       return NextResponse.json(
@@ -28,15 +30,28 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Total messages for pagination
-    const totalMessages = await MessageModel.countDocuments({ userId: user._id, chatId });
+    const match = {
+      userId: user._id,
+      chatId: new Types.ObjectId(chatId),
+      $or: [
+        { isBroadcastMaster: { $exists: false } },
+        { isBroadcastMaster: true },
+      ],
+    };
 
-    // Fetch paginated messages
-    const messages = await MessageModel.find({ userId: user._id, chatId })
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * per_page)
-      .limit(per_page)
-      .lean();
+    const [result] = await MessageModel.aggregate([
+      { $match: match },
+      { $sort: { createdAt: -1 } },
+      {
+        $facet: {
+          metadata: [{ $count: "total" }],
+          data: [{ $skip: skip }, { $limit: per_page }],
+        },
+      },
+    ]);
+
+    const messages = result?.data || [];
+    const totalMessages = result?.metadata?.[0]?.total || 0;
 
     const response: ApiResponse = {
       success: true,

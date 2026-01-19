@@ -1,24 +1,24 @@
 import { ChatModel, IChat } from "@/models/Chat";
-import { ChatType } from "@/types/Chat";
+import { ChatParticipant, ChatType } from "@/types/Chat";
 import { Types } from "mongoose";
 
 interface GetOrCreateChatArgs {
   userId: Types.ObjectId;
   waAccountId: Types.ObjectId;
-  phone: string;
+  participant: ChatParticipant;
   chatCache?: Map<string, IChat>;
 }
 
 export async function getOrCreateChat({
   userId,
   waAccountId,
-  phone,
+  participant,
   chatCache,
 }: GetOrCreateChatArgs) {
   try {
     // 1. Check cache (if provided)
     if (chatCache) {
-      const cachedChat = chatCache.get(phone);
+      const cachedChat = chatCache.get(participant.number);
       if (cachedChat) return cachedChat;
     }
 
@@ -27,14 +27,14 @@ export async function getOrCreateChat({
       {
         userId,
         waAccountId,
-        "participants.number": phone,
+        "participants.number": participant.number,
         type: { $ne: ChatType.BROADCAST },
       },
       {
         $setOnInsert: {
           userId,
           waAccountId,
-          participants: [{ number: phone }],
+          participants: [participant],
           type: ChatType.CHAT,
         },
       },
@@ -48,7 +48,7 @@ export async function getOrCreateChat({
     if (!chat) throw new Error("Chat creation failed");
 
     // 3. Cache result (if cache exists)
-    chatCache?.set(phone, chat);
+    chatCache?.set(participant.number, chat);
 
     return chat;
   } catch (err) {

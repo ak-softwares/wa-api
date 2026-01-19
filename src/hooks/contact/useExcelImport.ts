@@ -3,16 +3,7 @@
 import { useState } from "react";
 import * as XLSX from "xlsx";
 import { toast } from "@/components/ui/sonner";
-
-export interface ImportedContact {
-  id: string;
-  name: string;
-  phones: string[];
-  email?: string;
-  tags?: string[];
-  status: "valid" | "invalid" | "duplicate";
-  errors?: string[];
-}
+import { ImportedContact } from "@/types/Contact";
 
 export function useExcelImport() {
   const [isImporting, setIsImporting] = useState(false);
@@ -108,70 +99,39 @@ export function useExcelImport() {
     }
   };
 
-  // -----------------------------------------
-  // 2. UPLOAD SELECTED CONTACTS (Manual Trigger)
-  // -----------------------------------------
-  const uploadSelectedContacts = async (selectedIds: string[]) => {
-    const validSelected = importedContacts.filter(
-        (c) => selectedIds.includes(c.id) && c.status === "valid"
-    );
+  // -------------------------------------------------------
+  // DOWNLOAD TEMPLATE
+  // -------------------------------------------------------
+  const downloadTemplate = () => {
+    const template = [
+      ["Name", "Phones", "Tags", "Email"],
+      ["John Doe", "919876543210", "Remarketing", "john@example.com" ],
+      ["Jane Smith", "919876543211", "Loyal customers", "jane@example.com"],
+    ]
+      .map((r) => r.join(","))
+      .join("\n");
 
-    if (validSelected.length === 0) {
-        toast.error("No valid contacts selected");
-        return false;
-    }
+    const blob = new Blob([template], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
 
-    try {
-        setIsImporting(true);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "contacts_template.csv";
+    a.click();
 
-        const res = await fetch("/api/wa-accounts/contacts/import", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contacts: validSelected }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            toast.error(data.message || "Failed to upload contacts");
-            return false;
-        }
-
-        const uploaded = data.data?.uploadedCount || 0;
-        const skipped = data.data?.skippedCount || 0;
-
-        // --- Toast Messages ---
-        if (uploaded > 0) {
-            toast.success(`Uploaded ${uploaded} contacts`);
-        }
-
-        if (skipped > 0) {
-            toast.warning(`${skipped} contacts were skipped (invalid or missing fields)`);
-        }
-
-        return true;
-
-    } catch (err: any) {
-        console.error(err);
-        toast.error("Failed to upload contacts");
-        return false;
-
-    } finally {
-        setIsImporting(false);
-    }
+    URL.revokeObjectURL(url);
   };
-
 
   const validContacts = importedContacts.filter((c) => c.status === "valid");
   const invalidContacts = importedContacts.filter((c) => c.status !== "valid");
 
   return {
+    parseFile,
     isImporting,
     importProgress,
     importedContacts,
     validContacts,
     invalidContacts,
-    parseFile,
-    uploadSelectedContacts,
+    downloadTemplate,
   };
 }

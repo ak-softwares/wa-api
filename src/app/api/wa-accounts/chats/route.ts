@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ChatModel } from "@/models/Chat";
-import { ContactModel } from "@/models/Contact";
+import { ChatModel, IChat } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
+import { ChatParticipant, ChatType } from "@/types/Chat";
+import { getOrCreateChat } from "@/services/apiHelper/getOrCreateChat";
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,10 +17,8 @@ export async function GET(req: NextRequest) {
     const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
     const skip = (page - 1) * perPage;
 
-    let chats: any[] = [];
+    let chats: IChat[] = [];
     let totalChats = 0;
-
-    const contacts = await ContactModel.find({ userId: user._id }).lean();
 
     if (searchQuery) {
       // 🔹 Use Atlas Search
@@ -75,39 +74,25 @@ export async function GET(req: NextRequest) {
         matchConditions.type = "broadcast";
       }
 
-      // 🔹 Regular paginated query
-      [chats, totalChats] = await Promise.all([
-        ChatModel.aggregate([
-          { $match: matchConditions },
-          {
-            $addFields: {
-              sortDate: { $ifNull: ["$lastMessageAt", "$createdAt"] }, // 👈 fallback
-            },
+      const [searchResult] = await ChatModel.aggregate([
+        { $match: matchConditions },
+        {
+          $addFields: {
+            sortDate: { $ifNull: ["$lastMessageAt", "$createdAt"] }, // 👈 fallback
           },
-          { $sort: { sortDate: -1 } },
-          { $skip: skip },
-          { $limit: perPage },
-        ]),
-        ChatModel.countDocuments({ userId: user._id, waAccountId: waAccount._id }),
+        },
+        { $sort: { sortDate: -1 } },
+        { $skip: skip },
+        {
+          $facet: {
+            metadata: [{ $count: "total" }],
+            data: [{ $skip: skip }, { $limit: perPage }],
+          },
+        },
       ]);
+      chats = searchResult?.data || [];
+      totalChats = searchResult?.metadata?.[0]?.total || 0;
     }
-
-    // Map all chats' participants to include name and image
-    chats = chats.map((chat: any) => {
-      return {
-        ...chat,
-        participants: chat.participants.map((p: any) => {
-          const number = typeof p === "string" ? p : p.number;
-          const contact = contacts.find((c) => c.phones.includes(number));
-
-          return {
-            number,
-            name: contact?.name,
-            imageUrl: contact?.imageUrl || (typeof p === "object" ? p.imageUrl : undefined),
-          };
-        }),
-      };
-    });
 
     const response: ApiResponse = {
       success: true,
@@ -130,6 +115,41 @@ export async function GET(req: NextRequest) {
       },
       { status: 500 }
     );
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    if (errorResponse) return errorResponse;
+
+    // 📦 Parse request
+    const body = await req.json();
+    const participant: ChatParticipant = body.participant;
+
+    // 1️⃣ Missing phone
+    if (!participant.number) {
+      const response: ApiResponse = { success: false, message: "Missing phone number" };
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    // Get or create chat using cache
+    const chat: IChat | null = await getOrCreateChat({
+      userId: user._id,
+      waAccountId: waAccount._id!,
+      participant: participant,
+    });
+
+    // 6️⃣ Final success response
+    const response: ApiResponse = {
+      success: true,
+      message: "Chat found",
+      data: chat,
+    };
+    return NextResponse.json(response, { status: 201 });
+  } catch (error: any) {
+    const response: ApiResponse = { success: false, message: error.message || "Internal server error" };
+    return NextResponse.json(response, { status: 500 });
   }
 }
 

@@ -4,7 +4,7 @@ import React, { forwardRef } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-interface IconButtonProps {
+interface IconButtonSendProps {
   label: string;
   IconSrc: string;
   size?: string;
@@ -23,7 +23,7 @@ interface IconButtonProps {
  * - If asChild: returns a Slot-wrapped button so parent (DropdownMenuTrigger) can become the trigger.
  * - If not asChild: returns the button wrapped in TooltipProvider/Tooltip as before.
  */
-const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
+const IconButtonSend = forwardRef<HTMLButtonElement, IconButtonSendProps>(function IconButton(
   {
     label,
     IconSrc,
@@ -85,4 +85,4 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconB
   );
 });
 
-export default IconButton;
+export default IconButtonSend;

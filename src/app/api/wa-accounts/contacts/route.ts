@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { ContactModel, IContact } from "@/models/Contact";
+import { ImportedContact } from "@/types/Contact";
 
 // GET contacts (paginated, with optional search functionality)
 export async function GET(req: NextRequest) {
@@ -59,16 +60,32 @@ export async function GET(req: NextRequest) {
       contacts = searchResult?.data || [];
       total = searchResult?.metadata?.[0]?.total || 0;
     } else {
-      // Regular paginated query without search
-      const query = { userId: user._id, waAccountId: waAccount._id };
+      const matchConditions: any = {
+        userId: user._id,
+        waAccountId: waAccount._id,
+      };
+      const [searchResult] = await ContactModel.aggregate([
+        { $match: matchConditions },
 
-      [contacts, total] = await Promise.all([
-        ContactModel.find(query)
-          .sort({ name: 1 })
-          .skip(skip)
-          .limit(perPage),
-        ContactModel.countDocuments(query),
+        // optional: sort fallback if name missing
+        {
+          $addFields: {
+            sortName: { $ifNull: ["$name", ""] },
+          },
+        },
+
+        { $sort: { sortName: 1 } },
+
+        {
+          $facet: {
+            metadata: [{ $count: "total" }],
+            data: [{ $skip: skip }, { $limit: perPage }],
+          },
+        },
       ]);
+
+      contacts = searchResult?.data || [];
+      total = searchResult?.metadata?.[0]?.total || 0;
     }
 
     const response: ApiResponse = {
@@ -101,8 +118,9 @@ export async function POST(req: NextRequest) {
     const { user, waAccount, errorResponse } = await getDefaultWaAccount();
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    const { name, phones, email, tags } = await req.json();
-    if (!name || !phones?.length) {
+    const body = await req.json();
+    const contact: ImportedContact = body.contact;
+    if (!contact.name || !contact.phones.length) {
       const response: ApiResponse = {
         success: false,
         message: "Name and at least one phone number are required",
@@ -113,10 +131,10 @@ export async function POST(req: NextRequest) {
     const newContact = await ContactModel.create({
       userId: user._id,
       waAccountId: waAccount._id,
-      name,
-      phones,
-      email,
-      tags: tags || [],
+      name: contact.name,
+      phones: contact.phones,
+      email: contact.email,
+      tags: contact.tags || [],
     });
 
     const response: ApiResponse = {

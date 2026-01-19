@@ -22,6 +22,7 @@ export type Message = {
   _id?: string;
   userId: string;
   chatId: string;
+  parentMessageId?: string;
   to: string;
   from: string;
   message?: string;
@@ -40,6 +41,7 @@ export type Message = {
   participants?: ChatParticipant[];
   aiUsageId?: string;
   isCreditDebited?: boolean,
+  isBroadcastMaster?: boolean;
   errorMessage?: string;
   createdAt?: string;
   updatedAt?: string;
