@@ -33,25 +33,47 @@ function StatusBadge({ value }: { value?: MessageStatus }) {
 
   if (value === MessageStatus.Read)
     return (
-      <span className={`${base} border-green-300 text-green-700`}>Seen</span>
+      <span
+        className={`${base} border-green-300 text-green-700 bg-green-50 dark:border-green-500/40 dark:text-green-300 dark:bg-green-500/10`}
+      >
+        Seen
+      </span>
     );
 
   if (value === MessageStatus.Delivered)
     return (
-      <span className={`${base} border-blue-300 text-blue-700`}>Delivered</span>
+      <span
+        className={`${base} border-yellow-400 text-yellow-800 bg-yellow-50 dark:border-yellow-500/40 dark:text-yellow-300 dark:bg-yellow-500/10`}
+      >
+        Delivered
+      </span>
     );
 
   if (value === MessageStatus.Sent)
     return (
-      <span className={`${base} border-yellow-300 text-yellow-700`}>Sent</span>
+      <span
+        className={`${base} border-yellow-300 text-yellow-700 bg-yellow-50 dark:border-yellow-500/30 dark:text-yellow-200 dark:bg-yellow-500/10`}
+      >
+        Sent
+      </span>
     );
 
   if (value === MessageStatus.Failed)
     return (
-      <span className={`${base} border-red-300 text-red-700`}>Failed</span>
+      <span
+        className={`${base} border-red-300 text-red-700 bg-red-50 dark:border-red-500/40 dark:text-red-300 dark:bg-red-500/10`}
+      >
+        Failed
+      </span>
     );
 
-  return <span className={`${base} border-gray-300 text-gray-700`}>-</span>;
+  return (
+    <span
+      className={`${base} border-gray-300 text-gray-700 bg-gray-50 dark:border-gray-500/40 dark:text-gray-300 dark:bg-gray-500/10`}
+    >
+      -
+    </span>
+  );
 }
 
 export default function BroadcastMessageReportPage({
@@ -130,7 +152,7 @@ export default function BroadcastMessageReportPage({
 
 
       {/* METRICS */}
-      <div className="px-5 py-3 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-2 shrink-0">
+      <div className="px-5 py-2 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-2 shrink-0">
         {loading ? (
           <>
             <MetricCardSkeleton />
@@ -180,120 +202,133 @@ export default function BroadcastMessageReportPage({
       </div>
 
       {/* SEARCH */}
-      <div className="px-5 pt-3 shrink-0">
-        {/* <SearchBar
-          placeholder="Search messages..."
-          onSearch={(e) => setSearch(e.target.value)}
-        /> */}
-        <Input
+      <div className="px-5 py-2 shrink-0">
+        <SearchBar
+          value={search}
+          placeholder="Search number..."
+          onSearch={(q) => setSearch(q)}
+        />
+        {/* <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search number..."
           className="max-w-md"
-        />
+        /> */}
       </div>
 
       {/* TABLE */}
-      <div ref={containerRef} className="flex-1 overflow-auto p-5">
-        <div className="w-full border rounded-xl overflow-hidden dark:border-[#333434]">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-[#111]">
-              <tr className="text-left">
-                <th className="p-3 border-b dark:border-[#333434]">#</th>
-                <th className="p-3 border-b dark:border-[#333434]">Number</th>
-                <th className="p-3 border-b dark:border-[#333434]">Status</th>
-                <th className="p-3 border-b dark:border-[#333434]">Delivered At</th>
-                <th className="p-3 border-b dark:border-[#333434]">Read At</th>
-                <th className="p-3 border-b dark:border-[#333434]">Error</th>
-              </tr>
-            </thead>
+      <div className="flex-1 px-5 py-2 flex flex-col min-h-0">
+        <div className="w-full border rounded-xl overflow-hidden dark:border-[#333434] flex flex-col flex-1 min-h-0">
 
-            <tbody>
-              {loading && rows.length === 0 ? (
-                [...Array(8)].map((_, i) => (
-                  <tr key={i}>
+          {/* Scroll only body */}
+          <div ref={containerRef} className="flex-1 overflow-auto min-h-0">
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-[#111]">
+                <tr className="text-left">
+                  <th className="p-3 border-b dark:border-[#333434]">#</th>
+                  <th className="p-3 border-b dark:border-[#333434]">Number</th>
+                  <th className="p-3 border-b dark:border-[#333434]">Status</th>
+                  <th className="p-3 border-b dark:border-[#333434]">
+                    Delivered At
+                  </th>
+                  <th className="p-3 border-b dark:border-[#333434]">Read At</th>
+                  <th className="p-3 border-b dark:border-[#333434]">Error</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {loading && rows.length === 0 ? (
+                  [...Array(8)].map((_, i) => (
+                    <tr key={i}>
+                      <td colSpan={10} className="p-3 border-b dark:border-[#333434]">
+                        <Skeleton className="h-5 w-full" />
+                      </td>
+                    </tr>
+                  ))
+                ) : rows.length === 0 ? (
+                  <tr>
                     <td
                       colSpan={10}
-                      className="p-3 border-b dark:border-[#333434]"
+                      className="p-5 text-center text-gray-500 dark:text-gray-400"
                     >
-                      <Skeleton className="h-5 w-full" />
+                      No report data found.
                     </td>
                   </tr>
-                ))
-              ) : rows.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={10}
-                    className="p-5 text-center text-gray-500 dark:text-gray-400"
-                  >
-                    No report data found.
-                  </td>
-                </tr>
-              ) : (
-                rows.map((row, index) => (
-                  <tr
-                    key={row._id}
-                    className="hover:bg-gray-50 dark:hover:bg-[#151515] transition"
-                  >
-                    <td className="p-3 border-b dark:border-[#333434]">
-                      {index + 1}
-                    </td>
+                ) : (
+                  rows.map((row, index) => (
+                    <tr
+                      key={row._id}
+                      className="hover:bg-gray-50 dark:hover:bg-[#151515] transition"
+                    >
+                      <td className="p-3 border-b dark:border-[#333434]">
+                        {index + 1}
+                      </td>
 
-                    <td className="p-3 border-b dark:border-[#333434]">
-                      {formatPhone(row.to) || "-"}
-                    </td>
+                      <td className="p-3 border-b dark:border-[#333434]">
+                        {formatPhone(row.to) || "-"}
+                      </td>
 
-                    <td className="p-3 border-b dark:border-[#333434]">
-                      <StatusBadge value={row.status} />
-                    </td>
+                      <td className="p-3 border-b dark:border-[#333434]">
+                        <StatusBadge value={row.status} />
+                      </td>
 
-                    <td className="p-3 border-b dark:border-[#333434]">
-                      {formatFullDateTime(row.deliveredAt) || "-"}
-                    </td>
+                      <td className="p-3 border-b dark:border-[#333434]">
+                        {formatFullDateTime(row.deliveredAt) || "-"}
+                      </td>
 
-                    <td className="p-3 border-b dark:border-[#333434]">
-                      {formatFullDateTime(row.readAt) || "-"}
-                    </td>
+                      <td className="p-3 border-b dark:border-[#333434]">
+                        {formatFullDateTime(row.readAt) || "-"}
+                      </td>
 
-                    <td className="p-3 border-b dark:border-[#333434]">
-                      {row.errorMessage ? (
-                        <span className="text-orange-600">
-                          {row.errorMessage}
-                        </span>
-                      ) : (
-                        "-"
-                      )}
+                      <td className="p-3 border-b dark:border-[#333434]">
+                        {row.errorMessage ? (
+                          <span
+                            title={row.errorMessage}
+                            className="text-orange-600 max-w-[130px] inline-block overflow-hidden text-ellipsis break-words"
+                            style={{
+                              display: "-webkit-box",
+                              WebkitLineClamp: 1,
+                              WebkitBoxOrient: "vertical",
+                            }}
+                          >
+                            {row.errorMessage}
+                          </span>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+
+                {/* Pagination Loader */}
+                {loadingMore && (
+                  <tr>
+                    <td
+                      colSpan={10}
+                      className="p-4 text-center text-gray-500 dark:text-gray-400"
+                    >
+                      Loading more...
                     </td>
                   </tr>
-                ))
-              )}
+                )}
 
-              {/* Pagination Loader */}
-              {loadingMore && (
-                <tr>
-                  <td
-                    colSpan={10}
-                    className="p-4 text-center text-gray-500 dark:text-gray-400"
-                  >
-                    Loading more...
-                  </td>
-                </tr>
-              )}
-
-              {!loadingMore && !hasMore && rows.length > 0 && (
-                <tr>
-                  <td
-                    colSpan={10}
-                    className="p-4 text-center text-gray-500 dark:text-gray-400"
-                  >
-                    End of report
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                {!loadingMore && !hasMore && rows.length > 0 && (
+                  <tr>
+                    <td
+                      colSpan={10}
+                      className="p-4 text-center text-gray-500 dark:text-gray-400"
+                    >
+                      End of report
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+

@@ -8,7 +8,7 @@ import { useTheme } from "next-themes";
 import IconButton from "@/components/common/IconButton";
 import { useChatStore } from "@/store/chatStore";
 import ContactDetails from "@/components/dashboard/messages/pages/ContactDetails";
-import MessageBubble from "@/components/common/MessageBubble";
+import MessageBubble from "@/components/dashboard/messages/common/MessageBubble";
 import { Message } from "@/types/Message";
 import ForwardMessagePopup from "../dialogs/ForwardMessagePopup";
 import EmojiPicker, { Theme } from "emoji-picker-react";
@@ -195,6 +195,7 @@ export default function MessagePage() {
     setActiveChat(null);
     setMessageContext(null);
     setShowContactDetails(false);
+    setBroadcastMessageReport(false);
   };
 
   const handleAvatarClick = () => {
@@ -207,7 +208,9 @@ export default function MessagePage() {
 
   // Close contact details when active chat changes
   useEffect(() => {
+    setMessageContext(null);
     setShowContactDetails(false);
+    setBroadcastMessageReport(false);
   }, [activeChat]);
 
   if(!activeChat){

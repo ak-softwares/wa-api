@@ -12,6 +12,23 @@ interface SearchBarProps {
   delay?: number;
 }
 
+export const normalizePhoneForSearch = (value: string) => {
+  if (!value) return "";
+
+  // keep only digits
+  let digits = value.replace(/\D/g, "");
+
+  // If user enters Indian number with country code (91xxxxxxxxxx)
+  // convert it to last 12 digits if your DB stores 12-digit format
+  // Example: +91 8265 849298 -> 918265849298
+  if (digits.length === 10) {
+    // user typed only 10 digits, add country code
+    digits = "91" + digits;
+  }
+
+  return digits;
+};
+
 export default function SearchBar({
   value,
   placeholder = "Search...",
@@ -32,10 +49,16 @@ export default function SearchBar({
 
   // ✅ Debounced search effect
   useEffect(() => {
-    if (onSearch) {
-      onSearch(debouncedSearchTerm.trim());
-    }
-  }, [debouncedSearchTerm]); // ✅ only depend on debouncedSearchTerm
+    if (!onSearch) return;
+
+    const q = debouncedSearchTerm.trim();
+
+    const normalizedPhone = normalizePhoneForSearch(q);
+
+    // send both: raw query + normalized phone
+    onSearch(q || normalizedPhone);
+  }, [debouncedSearchTerm]);
+
 
   // ✅ Clear input
   const handleClearSearch = () => {

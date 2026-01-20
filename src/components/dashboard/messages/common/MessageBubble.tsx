@@ -2,18 +2,18 @@
 
 import { Message } from "@/types/Message";
 import { useChatStore } from "@/store/chatStore";
-import { ChatParticipant } from "@/types/Chat";
+import { ChatParticipant, ChatType } from "@/types/Chat";
 import { useEffect, useState } from "react";
-import MessageMenu from "../dashboard/messages/menus/MessageMenu";
+import MessageMenu from "../menus/MessageMenu";
 import { useDeleteMessages } from "@/hooks/message/useDeleteMessages";
-import { toast } from "../ui/sonner";
+import { toast } from "../../../ui/sonner";
 import { useFindOrCreateChat } from "@/hooks/chat/useFindOrCreateChat";
 import { MessageType } from "@/types/MessageType";
-import TemplateMessage from "../dashboard/templates/RenderTemplateMessage";
-import { formatRichText } from "./FormatRichText";
-import MessageMetaInfo from "../dashboard/messages/common/MessageMetaInfo";
-import MediaMessage from "../dashboard/templates/RenderMediaMessage";
-import LocationMessage from "../dashboard/templates/RenderLocationMessage";
+import TemplateMessage from "../../templates/RenderTemplateMessage";
+import { formatRichText } from "../../../common/FormatRichText";
+import MessageMetaInfo from "./MessageMetaInfo";
+import MediaMessage from "../../templates/RenderMediaMessage";
+import LocationMessage from "../../templates/RenderLocationMessage";
 import { fetchMediaBlob } from "@/services/message/media.service";
 
 interface MessageBubbleProps {
@@ -38,7 +38,7 @@ export default function MessageBubble({ message, onDelete, onReply, onForward, o
   const isMine = !activeChat?.participants?.some(
     (p: ChatParticipant) => p.number === message.from
   );
-
+  const isBroadcast = activeChat?.type === ChatType.BROADCAST
   const isMineContext =
     !!message.context?.from &&
     !!activeChat?.participants?.length &&
@@ -104,7 +104,7 @@ export default function MessageBubble({ message, onDelete, onReply, onForward, o
   const menuItems = [
     {
       icon: "/assets/icons/info.svg",
-      label: "Info",
+      label: isBroadcast ? "Report" : "Info",
       action: onInfo,
     },
     {

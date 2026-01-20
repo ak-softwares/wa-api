@@ -113,19 +113,20 @@ export function useBroadcastMessageReport({
   // infinite scroll (optional)
   useEffect(() => {
     const container = containerRef?.current;
-    if (!container) return;
+    if (!container)  return;
 
     const handleScroll = () => {
-      if (-container.scrollTop + container.clientHeight + 50 >= container.scrollHeight) {
+      const scrollBottom = container.scrollTop + container.clientHeight + 50;
+
+      if (scrollBottom >= container.scrollHeight) {
         if (!loading && !loadingMore && hasMore) {
           setPage((prev) => prev + 1);
         }
       }
     };
-
     container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [containerRef, loading, loadingMore, hasMore]);
+    return () => { container.removeEventListener("scroll", handleScroll) };
+  }, [loading, loadingMore, hasMore]);
 
   const refreshReport = () => {
     setRows([]);

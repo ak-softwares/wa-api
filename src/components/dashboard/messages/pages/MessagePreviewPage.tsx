@@ -1,6 +1,6 @@
 "use client";
 
-import MessageBubble from "@/components/common/MessageBubble";
+import MessageBubble from "@/components/dashboard/messages/common/MessageBubble";
 import { Message } from "@/types/Message";
 
 interface MessagePreviewPageProps {
