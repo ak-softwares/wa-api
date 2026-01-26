@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import ContactAvatar from "../contacts/common/ContactAvatar";
+import ContactAvatar from "../../contacts/common/ContactAvatar";
 import SearchBar from "@/components/common/SearchBar";
 import IconButton from "@/components/common/IconButton";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";

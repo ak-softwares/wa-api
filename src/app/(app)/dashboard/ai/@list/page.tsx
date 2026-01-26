@@ -36,19 +36,25 @@ export default function AiPage() {
           onClick={() => setSelectedAiMenu("ai-chat")}
           selected={selectedAiMenu === "ai-chat"}
         />
-
         <MenuTile
           icon={
             <img
-              src="/assets/icons/ai.svg"
+              src="/assets/icons/sub-menu/link.svg"
               className="w-6 h-6 dark:invert"
-              alt="AI Agent Icon"
+              alt="Tools integration"
             />
           }
-          label="AI Agent"
-          subtitle="Automate tasks using AI agents"
-          onClick={() => setSelectedAiMenu("ai-agent")}
-          selected={selectedAiMenu === "ai-agent"}
+          label="Tools Integrations"
+          subtitle="Connect WooCommerce, Shopify, Sheets & more."
+          onClick={() => setSelectedAiMenu("tools")}
+          selected={selectedAiMenu === "tools"}
+        />          
+        <MenuTile
+          icon={<img src="/assets/icons/key.svg" className="w-6 h-6 dark:invert" alt="User" />}
+          label="API Key"
+          subtitle="Generate api key here"
+          onClick={() => setSelectedAiMenu("api-key")}
+          selected={selectedAiMenu === "api-key"}
         />
       </div>
     </div>

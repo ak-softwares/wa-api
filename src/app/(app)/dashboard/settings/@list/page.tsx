@@ -1,7 +1,7 @@
 "use client";
 
-import BlockedContactsPage from "@/components/dashboard/settings/BlockedContactsPage";
-import SettingsPage from "@/components/dashboard/settings/SettingsPage";
+import BlockedContactsPage from "@/components/dashboard/settings/pages/BlockedContactsPage";
+import SettingsPage from "@/components/dashboard/settings/pages/SettingsPage";
 import { useSettingsStore } from "@/store/settingsStore";
 
 export default function SettingsDetailPage() {

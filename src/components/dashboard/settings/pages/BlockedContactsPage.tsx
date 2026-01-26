@@ -4,9 +4,9 @@ import IconButton from "@/components/common/IconButton";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import { useSettingsStore } from "@/store/settingsStore";
 import parsePhoneNumberFromString, { CountryCode } from "libphonenumber-js";
-import ContactAvatar from "../contacts/common/ContactAvatar";
+import ContactAvatar from "../../contacts/common/ContactAvatar";
 import { Skeleton } from "@/components/ui/skeleton"; // <-- Make sure this exists
-import BlockContactsPopup from "./BlockContactsPopup";
+import BlockContactsPopup from "../popups/BlockContactsPopup";
 import { useState } from "react";
 import { toast } from "@/components/ui/sonner";
 

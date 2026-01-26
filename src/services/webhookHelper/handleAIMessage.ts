@@ -1,12 +1,12 @@
 import { IChat } from "@/models/Chat";
 import { IWaAccount } from "@/models/WaAccount";
-import { sendToAIAgent } from "@/services/ai/webhookService";
+import { webhookHandler } from "@/services/ai/webhookService";
 import { getAIReply } from "@/services/ai/aiService";
-import { sendMessage } from "../message/sendMessage";
 import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
 import { handleSendMessage } from "../message/handleSendMessage";
 import { MessageType } from "@/types/MessageType";
 import { Types } from "mongoose";
+import { ToolModel } from "@/models/Tool";
 
 interface HandleAIMessageArgs {
   userId: Types.ObjectId; // User document
@@ -28,16 +28,25 @@ export async function handleAIMessage({
   const phone_number_id = change.value?.metadata?.phone_number_id;
   const from = rowMessageJson.from;
 
+  // ✅ 2) Check webhook tool
+  const webhookTool = await ToolModel.findOne({
+    userId,
+    waAccountId: waAccount._id,
+    id: "webhook",
+    active: true,
+  });
+
   // AI agent via webhook
-  if (waAccount.aiAgent?.isActive && waAccount.aiAgent?.webhookUrl) {
-    await sendToAIAgent({
-      webhookUrl: waAccount.aiAgent.webhookUrl,
+  if (webhookTool?.credentials?.webhookUrl) {
+    await webhookHandler({
+      webhookUrl: webhookTool.credentials.webhookUrl,
       payload: change, // single message payload
-      prompt: waAccount.aiAgent.prompt,
+      prompt: waAccount.aiChat?.prompt,
       user_name: sender_name,
       user_phone: from,
     });
   }
+
   // AI chat directly
   else if (waAccount.aiChat?.isActive) {
     const { aiGeneratedReply, aiUsageId } = await getAIReply({

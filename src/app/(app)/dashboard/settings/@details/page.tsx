@@ -1,7 +1,6 @@
 "use client";
 
-import APITokenPage from "@/components/dashboard/settings/APITokenPage";
-import DefaultSettingsPage from "@/components/dashboard/settings/DefaultSettingsPage";
+import DefaultSettingsPage from "@/components/dashboard/settings/pages/DefaultSettingsPage";
 import TransactionHistory from "@/components/dashboard/wallet/TransactionHistory";
 import { useSettingsStore } from "@/store/settingsStore";
 
@@ -10,8 +9,6 @@ export default function SettingsDetailPage() {
 
   if(selectedSettingsMenu == "transaction-history"){
     return <TransactionHistory />
-  }else if(selectedSettingsMenu == "api-key"){
-    return <APITokenPage />
   } else{
     return <DefaultSettingsPage />
   }

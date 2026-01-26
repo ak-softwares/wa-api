@@ -18,8 +18,8 @@ export interface ITemplate {
 
 const TemplateSchema = new Schema<ITemplate>({
   id: { type: String },
-  userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  waAccountId: { type: Schema.Types.ObjectId, ref: "WaAccount", required: true },
+  userId: { type: Schema.Types.ObjectId, ref: "UserModel", required: true },
+  waAccountId: { type: Schema.Types.ObjectId, ref: "WaAccountModel", required: true },
   name: { type: String, required: true },
   category: { type: String, required: true },
   language: { type: String, required: true },

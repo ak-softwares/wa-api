@@ -1,0 +1,103 @@
+import { useState } from "react";
+import { toast } from "@/components/ui/sonner";
+import { ApiResponse } from "@/types/apiResponse";
+import { Tool, ToolPayload } from "@/types/Tool";
+
+export function useToolMutation(
+  onSuccess?: (tool: Tool) => void,
+  onDeleteSuccess?: (toolId: string) => void
+) {
+  const [loading, setLoading] = useState(false);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+
+  // ✅ CREATE
+  const createTool = async (payload: ToolPayload) => {
+    try {
+      setLoading(true);
+
+      const res = await fetch("/api/tools", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const json: ApiResponse<Tool> = await res.json();
+
+      if (!res.ok || !json.success) {
+        toast.error(json.message || "Failed to create tool");
+        return;
+      }
+      if (!json.data) {
+        toast.error("Tool created but no data returned");
+        return;
+      }
+      toast.success("Tool connected successfully");
+      onSuccess?.(json.data);
+      return json.data;
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ UPDATE
+  const updateTool = async (toolDbId: string, payload: ToolPayload) => {
+    try {
+      setLoading(true);
+
+      const res = await fetch(`/api/tools/${toolDbId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const json: ApiResponse<Tool> = await res.json();
+
+      if (!res.ok || !json.success) {
+        toast.error(json.message || "Failed to update tool");
+        return;
+      }
+      if (!json.data) {
+        toast.error("Tool updated but no data returned");
+        return;
+      }
+      toast.success("Tool updated successfully");
+      onSuccess?.(json.data);
+      return json.data;
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ DELETE
+  const deleteTool = async (toolDbId: string) => {
+    try {
+      setIsDeleteLoading(true);
+
+      const res = await fetch(`/api/tools/${toolDbId}`, {
+        method: "DELETE",
+      });
+
+      const json: ApiResponse<{ _id: string }> = await res.json();
+
+      if (!res.ok || !json.success) {
+        toast.error(json.message || "Failed to delete tool");
+        return;
+      }
+
+      toast.success("Tool deleted successfully");
+      onDeleteSuccess?.(toolDbId);
+
+      return json.data;
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong");
+    } finally {
+      setIsDeleteLoading(false);
+    }
+  };
+
+  return { createTool, updateTool, deleteTool, loading, isDeleteLoading };
+}

@@ -1,8 +1,9 @@
 "use client";
 
-import AIAgentPage from "@/components/dashboard/ai/AiAgentPage";
-import AIChatPage from "@/components/dashboard/ai/AiChatPage";
-import DefaultAiPage from "@/components/dashboard/ai/DefaultAIPage";
+import AIChatPage from "@/components/dashboard/ai/pages/AiChatPage";
+import DefaultAiPage from "@/components/dashboard/ai/pages/DefaultAIPage";
+import APITokenPage from "@/components/dashboard/ai/pages/APITokenPage";
+import ToolsIntegrationPage from "@/components/dashboard/tools/pages/ToolsIntegrationPage";
 import { useAiStore } from "@/store/aiStore";
 
 export default function AiDetailPage() {
@@ -10,8 +11,10 @@ export default function AiDetailPage() {
 
   if(selectedAiMenu == "ai-chat"){
     return <AIChatPage />
-  } else if(selectedAiMenu == "ai-agent"){
-    return <AIAgentPage />
+  } else if(selectedAiMenu == "tools"){
+    return <ToolsIntegrationPage />
+  } else if(selectedAiMenu == "api-key"){
+    return <APITokenPage />
   } else{
     return <DefaultAiPage />
   }

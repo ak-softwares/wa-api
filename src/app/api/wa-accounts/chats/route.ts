@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ChatModel, IChat } from "@/models/Chat";
 import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
-import { ChatParticipant, ChatType } from "@/types/Chat";
+import { ChatParticipant } from "@/types/Chat";
 import { getOrCreateChat } from "@/services/apiHelper/getOrCreateChat";
 
 export async function GET(req: NextRequest) {

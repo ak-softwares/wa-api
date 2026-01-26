@@ -10,13 +10,14 @@ export default function Sidebar() {
   const router = useRouter();
   
   const topLinks = [
+    { href: "/dashboard", label: "Dashboard", icon: { active: "/assets/icons/main-menu/dashboard.svg", inactive: "/assets/icons/main-menu/dashboard.svg" }, size: "w-6 h-6" },
     { href: "/dashboard/chats", label: "Chats", icon: { active: "/assets/icons/chat-active.svg", inactive: "/assets/icons/chat.svg" }, size: "w-6 h-6" },
     { href: "/dashboard/contacts", label: "Contacts", icon: { active: "/assets/icons/contacts-active.svg", inactive: "/assets/icons/contacts.svg" }, size: "w-8 h-8" },
     { href: "/dashboard/templates", label: "Templates", icon: { active: "/assets/icons/template.svg", inactive: "/assets/icons/template.svg" }, size: "w-6 h-6" },
   ]
 
   const middleLinks = [
-    { href: "/dashboard/ai", label: "AI Chat", icon: { active: "/assets/icons/ai.svg", inactive: "/assets/icons/ai.svg" }, size: "w-6 h-6" },
+    { href: "/dashboard/ai", label: "AI", icon: { active: "/assets/icons/ai.svg", inactive: "/assets/icons/ai.svg" }, size: "w-6 h-6" },
     // { href: "/dashboard/campaigns", label: "Campaigns", icon: { active: Volume2, inactive: Megaphone }, size: "w-6 h-6" },
   ]
 

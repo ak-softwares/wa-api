@@ -1,14 +1,14 @@
 "use client";
 
 import IconButton from "@/components/common/IconButton";
-import { useSettingsStore } from "@/store/settingsStore";
 import APITokenSection from "./ApiTokenSection";
+import { useAiStore } from "@/store/aiStore";
 
 export default function APITokenPage() {
-  const { setSelectedSettingsMenu } = useSettingsStore();
+  const { setSelectedAiMenu } = useAiStore();
 
   const handleBack = () => {
-    setSelectedSettingsMenu(null);
+    setSelectedAiMenu(null);
   };
 
   return (
