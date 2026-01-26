@@ -1,4 +1,3 @@
-import { AIAgent } from "./AIAgent";
 import { AIChat } from "./AIChat";
 
 export type WaAccount = {
@@ -11,7 +10,6 @@ export type WaAccount = {
   is_phone_number_registered?: boolean;
   is_app_subscribed?: boolean;
   aiChat?: AIChat;
-  aiAgent?: AIAgent;
   apiToken?: string;
   apiTokenHashed?: string;
   apiTokenCreatedAt?: string;
