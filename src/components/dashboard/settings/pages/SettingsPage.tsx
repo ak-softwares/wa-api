@@ -80,6 +80,8 @@ export default function SettingsPage() {
           open={openLogoutDialog}
           title={"Logout"}
           description="Are you sure you want to logout from your account?"
+          actionText="Logout"
+          actionLoadingText="Logging out..."
           onCancel={() => setOpenLogoutDialog(false)}
           onConfirm={logout}
         />

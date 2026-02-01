@@ -9,7 +9,7 @@ import { getOrCreateChat } from "../apiHelper/getOrCreateChat";
 import { IWaAccount } from "@/models/WaAccount";
 import { ChatModel, IChat } from "@/models/Chat";
 import { buildWhatsAppPayload } from "@/lib/messages/whatsappPayloadBuilder";
-import { generateLastMessageText } from "@/lib/messages/generateLastMessageText";
+import { extractMessageText } from "@/lib/messages/extractMessageText";
 import { getTemplateByName } from "../template/getTemplateByName";
 import { ITemplate } from "@/models/Template";
 import { replaceActualTemplateValue } from "@/lib/mapping/replaceActualTemplateValue";
@@ -94,7 +94,7 @@ export async function handleSendMessage({
 
     // Update broadcast chat lastMessage ONCE
     const updateFields: Partial<IChat> = {
-      lastMessage: generateLastMessageText(messagePayload),
+      lastMessage: extractMessageText(messagePayload),
       lastMessageAt: new Date(),
     };
 
@@ -179,7 +179,7 @@ export async function handleSendMessage({
     if (!isBroadcast && chat?._id) {
       // handle lastMessage
       const updateFields: Partial<IChat> = {
-        lastMessage: generateLastMessageText(messagePayload),
+        lastMessage: extractMessageText(messagePayload),
         lastMessageAt: new Date(),
       };
       await ChatModel.updateOne({ _id: chat._id }, { $set: updateFields });

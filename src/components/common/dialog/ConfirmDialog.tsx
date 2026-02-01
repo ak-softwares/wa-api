@@ -16,6 +16,10 @@ interface ConfirmDialogProps {
   title?: string;
   description?: string;
   loading?: boolean;
+
+  actionText?: string;
+  actionLoadingText?: string;
+
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -25,6 +29,8 @@ export function ConfirmDialog({
   title = "Are you sure?",
   description = "This action cannot be undone.",
   loading,
+  actionText = "Delete",
+  actionLoadingText = "Deleting...",
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -48,7 +54,7 @@ export function ConfirmDialog({
             disabled={loading}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-white"
           >
-            {loading ? "Deleting..." : "Delete"}
+            {loading ? actionLoadingText : actionText}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

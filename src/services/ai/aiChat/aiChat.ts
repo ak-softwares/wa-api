@@ -1,9 +1,10 @@
 import OpenAI from "openai";
 import { MessageModel } from "@/models/Message";
-import { connectDB } from "../../lib/mongoose";
+import { connectDB } from "../../../lib/mongoose";
 import { IChat } from "@/models/Chat";
 import { AiUsageModel } from "@/models/AiUsage";
 import { Types } from "mongoose";
+import { getReplyFromChatAgent } from "../aiSDK/agents/chatAgent";
 
 /**
  * Get AI reply from OpenAI for a specific chat
@@ -24,6 +25,7 @@ export async function getAIReply({
   user_name,
   user_phone,
 }: GetAIReplyParams) {
+
   const aiPrompt = prompt || "You are a helpful AI assistant.";
   const finalSystemPrompt = `
 ${aiPrompt}
@@ -59,7 +61,6 @@ Do NOT overuse the name.
 
   try {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages,

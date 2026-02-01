@@ -4,21 +4,14 @@ import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { ITool, ToolModel } from "@/models/Tool";
 import { maskCredentialValues } from "@/lib/tools/maskCredentialValues";
 import { ToolPayload, ToolStatus } from "@/types/Tool";
+import { getIntegratedToolsSafe } from "@/services/ai/aiSDK/tools/getTools";
 
 export async function GET(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse;
 
-    const toolIntegrations = await ToolModel.find({
-      userId: user._id,
-      waAccountId: waAccount._id,
-    }).sort({ createdAt: -1 });
-
-    const safeTools = toolIntegrations.map((tool) => ({
-      ...tool.toObject({ getters: true }), // ✅ converts clean JSON
-      credentials: maskCredentialValues(tool.id, tool.credentials || {}),
-    }));
+    const safeTools = await getIntegratedToolsSafe({ userId: user._id, waAccountId: waAccount._id });
 
     const response: ApiResponse = {
       success: true,

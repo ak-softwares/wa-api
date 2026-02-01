@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef, useLayoutEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { Message } from "@/types/Message";
 import { MessageStatus } from "@/types/MessageType";
@@ -24,9 +24,14 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [refreshFlag, setRefreshFlag] = useState(0);
   const { newMessage, newChat, setNewMessageData, updatedMessageStatus, setUpdateMessageStatus } = useChatStore();
   const { appendMessage, setAppendMessage } = useMessageStore();
+  const currentChatIdRef = useRef<string>(chatId);
+
+  // 🔥 Update ref when chatId changes
+  useEffect(() => {
+    currentChatIdRef.current = chatId;
+  }, [chatId]);
 
   useEffect(() => {
     if (!appendMessage) return;
@@ -86,7 +91,6 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
     setUpdateMessageStatus(null);
   }, [updatedMessageStatus, setUpdateMessageStatus]);
 
-
   const fetchMessages = useCallback(
     async (pageToFetch: number) => {
 
@@ -106,8 +110,10 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
           `/api/wa-accounts/messages?chatId=${chatId}&page=${pageToFetch}&per_page=${perPage}`
         );
         const json: ApiResponse = await res.json();
-
+        // 🛑 IGNORE STALE RESPONSE
+        if (chatId !== currentChatIdRef.current) return;
         if (json.success && json.data && Array.isArray(json.data)) {
+          // console.log("chatId:", chatId, "currentChatIdRef:" + currentChatIdRef.current);
           setMessages((prev) =>
             pageToFetch === 1
               ? [...json.data]
@@ -121,6 +127,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
       } catch (err) {
         toast.error("Failed to load messages.");
       } finally {
+        if (chatId !== currentChatIdRef.current) return;
         if (pageToFetch === 1) setLoading(false);
         else setLoadingMore(false);
       }
@@ -136,7 +143,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
 
 
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!chatId) return;
 
     setMessages([]);
@@ -144,7 +151,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
     setHasMore(true);
 
     fetchMessages(1);
-  }, [chatId, fetchMessages]);
+  }, [chatId]);
 
   // infinite scroll
   useEffect(() => {
@@ -200,7 +207,6 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
     setMessages([]);
     setHasMore(true);
     setPage(1);
-    setRefreshFlag((f) => f + 1);
   };
 
   return {

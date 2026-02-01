@@ -1,12 +1,15 @@
 import { IChat } from "@/models/Chat";
 import { IWaAccount } from "@/models/WaAccount";
-import { webhookHandler } from "@/services/ai/webhookService";
-import { getAIReply } from "@/services/ai/aiService";
+import { webhookHandler } from "@/services/ai/webhookTool/webhookService";
+import { getAIReply } from "@/services/ai/aiChat/aiChat";
 import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
 import { handleSendMessage } from "../message/handleSendMessage";
 import { MessageType } from "@/types/MessageType";
 import { Types } from "mongoose";
 import { ToolModel } from "@/models/Tool";
+import { getReplyFromChatAgent } from "../ai/aiSDK/agents/chatAgent";
+import { messageHistory } from "../message/messageHistory";
+import { IMessage } from "@/models/Message";
 
 interface HandleAIMessageArgs {
   userId: Types.ObjectId; // User document
@@ -47,12 +50,16 @@ export async function handleAIMessage({
     });
   }
 
-  // AI chat directly
-  else if (waAccount.aiChat?.isActive) {
-    const { aiGeneratedReply, aiUsageId } = await getAIReply({
+  // AI chat-agent directly
+  if (waAccount.aiChat?.isActive) {
+    const messages: IMessage[] = await messageHistory({ chatId: chat._id!, length: 20 });
+    const systemPrompt = waAccount.aiChat?.prompt ?? "";
+
+    const { aiGeneratedReply } = await getReplyFromChatAgent({
       userId: userId,
-      prompt: waAccount.aiChat?.prompt ?? "",
-      chat,
+      waAccountId: waAccount._id!,
+      systemPrompt: systemPrompt,
+      messages,
       phone_number_id,
       user_name: sender_name,
       user_phone: from,
@@ -82,4 +89,40 @@ export async function handleAIMessage({
       }
     }
   }
+
+  // AI chat directly
+  // if (waAccount.aiChat?.isActive) {
+  //   const { aiGeneratedReply, aiUsageId } = await getAIReply({
+  //     userId: userId,
+  //     prompt: waAccount.aiChat?.prompt ?? "",
+  //     chat,
+  //     phone_number_id,
+  //     user_name: sender_name,
+  //     user_phone: from,
+  //   });
+
+  //   if (aiGeneratedReply) {
+  //     const messagePayload = {
+  //       participants: [{ number: from }],
+  //       messageType: MessageType.TEXT,
+  //       message: aiGeneratedReply,
+  //       tag: "aichat",
+  //     };
+  //     const result = await handleSendMessage({
+  //       messagePayload,
+  //       userId: userId,
+  //       waAccount
+  //     });
+
+  //     if (result.sent > 0 && result.message) {
+  //       // Trigger message for specific user (listener)
+  //       await sendPusherNotification({
+  //         userId: userId.toString(),
+  //         event: "new-message",
+  //         chat,
+  //         message: result.message,
+  //       });
+  //     }
+  //   }
+  // }
 }

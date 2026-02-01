@@ -171,10 +171,10 @@ export function ToolConnectDialog({ open, tool, mode = "connect", onClose, onSuc
 
   const title = mode === "edit" ? `Manage ${tool?.name}` : `Connect ${tool?.name}`;
 
-  const description =
-    mode === "edit"
-      ? "Update your credentials or enable/disable this integration."
-      : "Add your credentials to connect this integration.";
+  const description = tool?.desc || "Add your credentials to connect this integration.";
+    // mode === "edit"
+    //   ? "Update your credentials or enable/disable this integration."
+    //   : "Add your credentials to connect this integration.";
 
   const buttonText = mode === "edit" ? "Save Changes" : "Save & Connect";
 

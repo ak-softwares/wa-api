@@ -1,7 +1,7 @@
 import { MessagePayload, MessageType } from "@/types/MessageType";
 import { MediaType } from "@/utiles/enums/mediaTypes";
 
-export function generateLastMessageText(
+export function extractMessageText(
   payload: MessagePayload
 ): string {
   const { messageType, message, media, template } = payload;
