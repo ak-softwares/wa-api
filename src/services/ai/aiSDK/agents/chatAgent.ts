@@ -1,8 +1,8 @@
 import { generateText, ModelMessage, stepCountIs, ToolSet } from 'ai';
 import { openai, OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
-import { mapToolsToToolSet } from '../tools/mapToolsToToolSet';
+import { mapToolsToToolSet } from '../../tools/mapToolsToToolSet';
 import { Types } from 'mongoose';
-import { getIntegratedToolsRaw } from '../tools/getTools';
+import { getIntegratedToolsRaw } from '../../tools/getTools';
 import { IMessage } from '@/models/Message';
 import { mapToAIMessages } from '../messages/mapToAIMessages';
 import { mapToAISystemPrompt } from '../prompts/systemPrompt';
@@ -16,6 +16,7 @@ interface Params {
   user_name?: string;
   user_phone?: string;
 }
+
 export async function getReplyFromChatAgent({
   userId,
   waAccountId,
@@ -25,7 +26,7 @@ export async function getReplyFromChatAgent({
   user_name,
   user_phone
 }: Params) {
-  const integratedTools = await getIntegratedToolsRaw({ userId, waAccountId });
+  const integratedTools = await getIntegratedToolsRaw({ userId });
   const aiTools:ToolSet | undefined = mapToolsToToolSet(integratedTools);
   const aiSystemPrompt = mapToAISystemPrompt({ systemPrompt, name: user_name, number: user_phone });
   const aiMessages: ModelMessage[] = mapToAIMessages({ messages, businessPhone: phone_number_id });

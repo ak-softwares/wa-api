@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
-import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
+import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { ITool, ToolModel } from "@/models/Tool";
 import { maskCredentialValues } from "@/lib/tools/maskCredentialValues";
 import { ToolPayload, ToolStatus } from "@/types/Tool";
-import { getIntegratedToolsSafe } from "@/services/ai/aiSDK/tools/getTools";
+import { getIntegratedToolsSafe } from "@/services/ai/tools/getTools";
 
 export async function GET(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
-    if (errorResponse) return errorResponse;
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    const safeTools = await getIntegratedToolsSafe({ userId: user._id, waAccountId: waAccount._id });
+    const safeTools = await getIntegratedToolsSafe({ userId: user._id });
 
     const response: ApiResponse = {
       success: true,
@@ -32,8 +32,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
-    if (errorResponse) return errorResponse;
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const tool: ToolPayload = await req.json();
 
@@ -65,7 +65,6 @@ export async function POST(req: NextRequest) {
     // ✅ check already exists
     const existing = await ToolModel.findOne({
       userId: user._id,
-      waAccountId: waAccount._id,
       id: tool.id,
     });
 
@@ -80,7 +79,7 @@ export async function POST(req: NextRequest) {
     // ✅ create
     const createdTool = await ToolModel.create({
       userId: user._id,
-      waAccountId: waAccount._id,
+      waAccountId: user.defaultWaAccountId,
 
       id: tool.id,
       name: tool.name || tool.id,

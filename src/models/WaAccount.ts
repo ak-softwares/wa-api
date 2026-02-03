@@ -40,10 +40,6 @@ export interface IWaAccount {
   is_phone_number_registered?: boolean;
   is_app_subscribed?: boolean;
   aiChat?: IAIChat;
-  apiToken?: string;
-  apiTokenHashed?: string;
-  apiTokenCreatedAt?: Date;
-  apiTokenUpdatedAt?: Date;
   phone_number?: string;
   blockedNumbers?: string[];
   createdAt?: Date;
@@ -107,23 +103,7 @@ export const WaAccountSchema = new Schema<IWaAccount>(
       type: [String],
       default: [],
     },
-    aiChat: { type: AIChatSchema },
-    apiToken: {
-      type: String,
-      unique: true,
-      sparse: true,
-      set: (value?: string | null) => {
-        if (!value) return null;
-        return encrypt(String(value));
-      },
-      get: (value?: string | null) => {
-        if (!value) return null;
-        return safeDecrypt(value) ?? null;
-      },
-    },
-    apiTokenHashed: String,
-    apiTokenCreatedAt: { type: Date },
-    apiTokenUpdatedAt: { type: Date },
+    aiChat: { type: AIChatSchema }
   },
   {
     // _id: true,
@@ -132,15 +112,5 @@ export const WaAccountSchema = new Schema<IWaAccount>(
     timestamps: true,
   }
 );
-
-WaAccountSchema.methods.generateApiToken = function () {
-  const rawToken = `wa_agent_${crypto.randomBytes(32).toString("hex")}`;
-  this.apiToken = rawToken;
-  this.apiTokenHashed = hmacHash(rawToken);
-  const now = new Date();
-  this.apiTokenCreatedAt ??= now;
-  this.apiTokenUpdatedAt = now;
-  return rawToken; // return for user display
-};
 
 export const WaAccountModel = models.WaAccount || model<IWaAccount>("WaAccount", WaAccountSchema);

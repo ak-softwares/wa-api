@@ -103,6 +103,7 @@ export async function POST(req: NextRequest) {
           const newMessage = await handleIncomingMessage({
             userId: user._id,
             chatId: chat._id!,
+            waAccountId: waAccount._id!,
             phone_number_id,
             rowMessageJson: msg,
           })

@@ -10,10 +10,6 @@ export type WaAccount = {
   is_phone_number_registered?: boolean;
   is_app_subscribed?: boolean;
   aiChat?: AIChat;
-  apiToken?: string;
-  apiTokenHashed?: string;
-  apiTokenCreatedAt?: string;
-  apiTokenUpdatedAt?: string;
   phone_number?: string;
   blockedNumbers?: string[];
   createdAt?: string;

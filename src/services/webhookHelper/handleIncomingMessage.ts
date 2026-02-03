@@ -7,6 +7,7 @@ import { MediaType } from "@/utiles/enums/mediaTypes";
 interface handleIncomingMessageArgs {
   userId: Types.ObjectId;
   chatId: Types.ObjectId;
+  waAccountId: Types.ObjectId;
   phone_number_id: string;
   rowMessageJson: any;
 }
@@ -14,6 +15,7 @@ interface handleIncomingMessageArgs {
 export async function handleIncomingMessage({
   userId,
   chatId,
+  waAccountId,
   phone_number_id,
   rowMessageJson
 }: handleIncomingMessageArgs) {
@@ -30,6 +32,7 @@ export async function handleIncomingMessage({
   let messageData: IMessage = {
     userId,
     chatId,
+    waAccountId,
     to: phone_number_id,
     from,
     waMessageId,

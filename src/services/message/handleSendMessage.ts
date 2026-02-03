@@ -79,6 +79,7 @@ export async function handleSendMessage({
     broadcastMasterMessage = await MessageModel.create({
       userId,
       chatId: messagePayload.chatId,
+      waAccountId: waAccount._id!,
       isBroadcastMaster: true,
       to: ChatType.BROADCAST,
       participants,
@@ -161,6 +162,7 @@ export async function handleSendMessage({
     const dbMessage = await MessageModel.create({
       userId,
       chatId: isBroadcast ? messagePayload.chatId : chat?._id,
+      waAccountId: waAccount._id!,
       isBroadcastMaster: isBroadcast ? false : undefined,
       parentMessageId: broadcastMasterMessage ? broadcastMasterMessage?._id : undefined,  // 👇 link to master message for report
       to: participant.number,

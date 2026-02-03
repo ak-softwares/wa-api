@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ToolModel } from "@/models/Tool";
-import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
+import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 import { ApiResponse } from "@/types/apiResponse";
-import { ToolStatus, ToolPayload } from "@/types/Tool";
+import { ToolPayload } from "@/types/Tool";
 import { maskCredentialValues } from "@/lib/tools/maskCredentialValues";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
-    if (errorResponse) return errorResponse;
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const { id } = await params;
 
@@ -35,7 +35,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const existingTool = await ToolModel.findOne({
       _id: id,
       userId: user._id,
-      waAccountId: waAccount._id,
+      waAccountId: user.defaultWaAccountId,
     });
 
     if (!existingTool) {
@@ -93,7 +93,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse;
 
     const { id } = await params;
@@ -110,7 +110,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const deletedTool = await ToolModel.findOneAndDelete({
       _id: id,
       userId: user._id,
-      waAccountId: waAccount._id,
     });
 
     if (!deletedTool) {

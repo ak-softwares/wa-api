@@ -22,7 +22,7 @@ const decryptCredentials = (obj: Record<string, string>) => {
 
 export interface ITool extends mongoose.Document {
   userId: Types.ObjectId;
-  waAccountId: Types.ObjectId;
+  waAccountId?: Types.ObjectId;
 
   id: string;
   name: string;
@@ -39,7 +39,7 @@ export interface ITool extends mongoose.Document {
 const ToolSchema = new Schema<ITool>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "UserModel", required: true },
-    waAccountId: { type: Schema.Types.ObjectId, ref: "WaAccountModel", required: true },
+    waAccountId: { type: Schema.Types.ObjectId, ref: "WaAccountModel" },
 
     id: { type: String, required: true }, // tool id (shopify, webhook etc.)
     name: { type: String, required: true },

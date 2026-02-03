@@ -1,10 +1,10 @@
-
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/providers/providers";
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 
 const geistSans = Geist({
@@ -40,6 +40,7 @@ export default function RootLayout({
         </Providers>
         <Toaster />
       </body>
+      <GoogleAnalytics gaId="G-ZB2WY4PFX4" />
     </html>
   );
 }

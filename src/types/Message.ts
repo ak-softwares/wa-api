@@ -22,6 +22,7 @@ export type Message = {
   _id?: string;
   userId: string;
   chatId: string;
+  waAccountId?: string;
   parentMessageId?: string;
   to: string;
   from: string;

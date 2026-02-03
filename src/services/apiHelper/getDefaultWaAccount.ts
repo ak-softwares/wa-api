@@ -6,16 +6,20 @@ import { ApiResponse } from "@/types/apiResponse";
 import { NextRequest, NextResponse } from "next/server";
 import { hmacHash } from "@/lib/crypto";
 import { WaAccountModel } from "@/models/WaAccount";
+import { ApiTokenModel } from "@/models/ApiToken";
+import { Types } from "mongoose";
 
-/**
- * Finds a WA account by plain (unencrypted) API token
- */
-export async function findWaAccountByApiToken(token: string) {
+export async function findUserIdByApiToken(token: string) {
   if (!token) return null;
 
   const hashed = hmacHash(token);
 
-  return await WaAccountModel.findOne({ apiTokenHashed: hashed });
+  const tokenDoc = await ApiTokenModel
+    .findOne<{ userId: Types.ObjectId }>({ tokenHashed: hashed, isRevoked: false })
+    .select("userId")
+    .lean();
+
+  return tokenDoc?.userId ?? null;
 }
 
 
@@ -36,13 +40,36 @@ export function getBearerToken(req?: NextRequest) {
   return { token };
 }
 
-/**
- * ✅ Helper function to get authenticated user session and database record.
- * Handles authorization and database connection errors.
- */
-export async function fetchAuthenticatedUser() {
+export async function fetchAuthenticatedUser(req?: NextRequest) {
   await connectDB();
 
+    // 1️⃣ Try Bearer token first
+  const { token } = getBearerToken(req);
+  if (token) {
+    const userId = await findUserIdByApiToken(token);
+
+    if (!userId) {
+      const response: ApiResponse = {
+        success: false,
+        message: "Invalid or expired API token",
+      };
+      return { errorResponse: NextResponse.json(response, { status: 401 }) };
+    }
+
+    // 🔑 Fetch user from waAccount
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      const response: ApiResponse = {
+        success: false,
+        message: "User not found for this API token",
+      };
+      return { errorResponse: NextResponse.json(response, { status: 404 }) };
+    }
+
+    // ✅ API-token case returns BOTH
+    return { user };
+  }
+  
   // Try session-based authentication
   const session = await getServerSession(authOptions);
   const id = session?.user?.id;
@@ -52,7 +79,7 @@ export async function fetchAuthenticatedUser() {
     return { errorResponse: NextResponse.json(response, { status: 401 }) };
   }
 
-  const user = await UserModel.findOne({ _id: id });
+  const user = await UserModel.findById(id);
 
   if (!user) {
     const response: ApiResponse = { success: false, message: "User not found", data: null };
@@ -62,54 +89,10 @@ export async function fetchAuthenticatedUser() {
   return { user };
 }
 
-/**
- * ✅ Get the authenticated user's default WhatsApp account.
- * Includes validation for waAccounts, default account, and token existence.
- */
 export async function getDefaultWaAccount(req?: NextRequest) {
   
-  // 1️⃣ Try Bearer token first
-  const { token } = getBearerToken(req);
-  if (token) {
-    const waAccount = await findWaAccountByApiToken(token);
-
-    if (!waAccount) {
-      const response: ApiResponse = {
-        success: false,
-        message: "Invalid or expired API token",
-      };
-      return { errorResponse: NextResponse.json(response, { status: 401 }) };
-    }
-
-    // 🔑 Fetch user from waAccount
-    const user = await UserModel.findById(waAccount.userId);
-
-    if (!user) {
-      const response: ApiResponse = {
-        success: false,
-        message: "User not found for this API token",
-      };
-      return { errorResponse: NextResponse.json(response, { status: 404 }) };
-    }
-
-    // Optional: ensure WA account is usable
-    if (!waAccount.permanent_token) {
-      const response: ApiResponse = {
-        success: false,
-        message: "Permanent token not found",
-      };
-      return { errorResponse: NextResponse.json(response, { status: 400 }) };
-    }
-
-    waAccount.apiTokenUpdatedAt = new Date();
-    await waAccount.save();
-
-    // ✅ API-token case returns BOTH
-    return { user, waAccount };
-  }
-
   // 2️⃣ Session-based auth (no Bearer token)
-  const { user, errorResponse } = await fetchAuthenticatedUser();
+  const { user, errorResponse } = await fetchAuthenticatedUser(req);
   if (errorResponse) return { errorResponse };
 
 

@@ -33,6 +33,7 @@ export interface IMessage {
   _id?: Types.ObjectId;
   userId: Types.ObjectId;
   chatId: Types.ObjectId;
+  waAccountId?: Types.ObjectId;
   parentMessageId?: Types.ObjectId;
   to: string;
   from: string;
@@ -96,6 +97,7 @@ const MessageSchema = new Schema<IMessage>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "UserModel", required: true },
     chatId: { type: Schema.Types.ObjectId, ref: "ChatModel", required: true },
+    waAccountId: { type: Schema.Types.ObjectId, ref: "WaAccountModel" },
     parentMessageId: { type: Schema.Types.ObjectId, ref: "MessageModel" },
     to: { type: String, required: true },
     from: { type: String, required: true },

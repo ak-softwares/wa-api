@@ -285,7 +285,7 @@ export default function WhatsAppSetupCard() {
                     </div>
 
                     {/* {!waSetupStatus.isPhoneVerified  && ( */}
-                    {/* {phoneNumber?.code_verification_status !== "VERIFIED"  && (
+                    {phoneNumber?.code_verification_status !== "VERIFIED" && !allDone && (
                       <>
                       <Button
                         variant="outline"
@@ -298,7 +298,7 @@ export default function WhatsAppSetupCard() {
                       </Button>
                       <VerifyPhoneDialog open={openVerifyPhoneDialog} setOpen={setOpenVerifyPhoneDialog} />
                       </>
-                    )} */}
+                    )}
                     
                     <Button 
                     variant="ghost" 
