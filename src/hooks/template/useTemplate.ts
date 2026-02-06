@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { ApiResponse } from "@/types/apiResponse";
 import { toast } from "@/components/ui/sonner";
 import { Template } from "@/types/Template";
+import { ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
 
 interface UseTemplatesProps {
   sidebarRef?: React.RefObject<HTMLDivElement | null>;
@@ -18,8 +19,6 @@ export function useTemplates({ sidebarRef, isSend }: UseTemplatesProps = {}) {
   const [after, setAfter] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
 
-  const PER_PAGE = "10";
-
   // -------------------------------
   // FETCH TEMPLATES
   // -------------------------------
@@ -29,7 +28,7 @@ export function useTemplates({ sidebarRef, isSend }: UseTemplatesProps = {}) {
 
       try {
         const url = new URL("/api/wa-accounts/templates", window.location.origin);
-        url.searchParams.set("limit", PER_PAGE);
+        url.searchParams.set("limit", ITEMS_PER_PAGE.toString());
         if (loadMore && cursor) {
           url.searchParams.set("after", cursor);
         }

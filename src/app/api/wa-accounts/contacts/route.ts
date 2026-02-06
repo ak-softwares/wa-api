@@ -3,6 +3,7 @@ import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { ContactModel, IContact } from "@/models/Contact";
 import { ImportedContact } from "@/types/Contact";
+import { ITEMS_PER_PAGE, MAX_ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
 
 // GET contacts (paginated, with optional search functionality)
 export async function GET(req: NextRequest) {
@@ -12,10 +13,12 @@ export async function GET(req: NextRequest) {
 
     // Pagination + filters + search
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const perPage = parseInt(searchParams.get("per_page") || "10", 10);
-    const searchQuery = searchParams.get("q") || "";
+    const pageParam = Number(searchParams.get("page"));
+    const perPageParam = Number(searchParams.get("per_page"));
+    const page = Math.max(pageParam || 1, 1);
+    const perPage  = Math.min(Math.max(perPageParam || ITEMS_PER_PAGE, 1), MAX_ITEMS_PER_PAGE);
     const skip = (page - 1) * perPage;
+    const searchQuery = searchParams.get("q") || "";
 
     let contacts: IContact[] = [];
     let total = 0;
@@ -104,6 +107,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(response, { status: 200 });
   } catch (err: any) {
+    console.log("Error in GET /contacts:", err);
     const response: ApiResponse = {
       success: false,
       message: err.message || "Unexpected error",

@@ -1,7 +1,7 @@
 "use client";
 
-import CreateTemplatePage from "@/components/dashboard/templates/CreateTemplatePage";
-import TemplateDetailsDefaultPage from "@/components/dashboard/templates/TemplateDefaultPage";
+import CreateTemplatePage from "@/components/dashboard/templates/pages/CreateTemplatePage";
+import TemplateDetailsDefaultPage from "@/components/dashboard/templates/pages/TemplateDefaultPage";
 import { useTemplateStore } from "@/store/templateStore";
 
 export default function AiDetailPage() {

@@ -60,7 +60,7 @@ export default function TemplateSearchSelect({
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="
-          w-full px-4 py-3 rounded-full
+          w-full min-w-0 px-4 py-3 rounded-full
           bg-gray-50 dark:bg-[#2A2B2B]
           transition-all duration-200
           flex items-center justify-between
@@ -72,13 +72,14 @@ export default function TemplateSearchSelect({
         <div className="flex items-center gap-3 min-w-0">
           {selectedTemplate ? (
             <>
-              <div className="min-w-0">
-                <p className="font-medium truncate">
+              <div className="min-w-0 flex items-center gap-2 min-w-0">
+                <p className="font-medium truncate flex-1">
                   {selectedTemplate.name}
-                  <span className="ml-2 inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-                      <span>{`(${selectedTemplate.category})`}</span>
-                  </span>
                 </p>
+
+                <span className="text-xs text-gray-600 dark:text-gray-400 shrink-0">
+                  ({selectedTemplate.category})
+                </span>
               </div>
             </>
           ) : (

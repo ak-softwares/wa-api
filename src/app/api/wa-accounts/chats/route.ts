@@ -4,6 +4,7 @@ import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { ChatParticipant } from "@/types/Chat";
 import { getOrCreateChat } from "@/services/apiHelper/getOrCreateChat";
+import { ITEMS_PER_PAGE, MAX_ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,11 +12,13 @@ export async function GET(req: NextRequest) {
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const { searchParams } = new URL(req.url);
+    const pageParam = Number(searchParams.get("page"));
+    const perPageParam = Number(searchParams.get("per_page"));
+    const page = Math.max(pageParam || 1, 1);
+    const perPage  = Math.min(Math.max(perPageParam || ITEMS_PER_PAGE, 1), MAX_ITEMS_PER_PAGE);
+    const skip = (page - 1) * perPage;
     const searchQuery = searchParams.get("q") || "";
     const filter = searchParams.get("filter") || "all";
-    const perPage = Math.min(parseInt(searchParams.get("per_page") || "10"), 100);
-    const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
-    const skip = (page - 1) * perPage;
 
     let chats: IChat[] = [];
     let totalChats = 0;

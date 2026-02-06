@@ -6,9 +6,9 @@ import { MessagePayload } from "@/types/MessageType";
 import { handleSendMessage } from "@/services/message/handleSendMessage";
 import { MESSAGE_TAGS } from "@/utiles/enums/messageTags";
 import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
-import { WalletModel } from "@/models/Wallet";
 import { checkMessageCreditsAvailability } from "@/services/wallet/checkMessageCreditsAvailability";
 import { Types } from "mongoose";
+import { ITEMS_PER_PAGE, MAX_ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
 
 // https://wa-api.me/api/wa-accounts/messages
 export async function GET(req: NextRequest) {
@@ -16,12 +16,14 @@ export async function GET(req: NextRequest) {
     const { user, errorResponse } = await fetchAuthenticatedUser();
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    // Extract query params (?chatId=...&per_page=...&page=...)
     const { searchParams } = new URL(req.url);
+    const pageParam = Number(searchParams.get("page"));
+    const perPageParam = Number(searchParams.get("per_page"));
+    const page = Math.max(pageParam || 1, 1);
+    const perPage  = Math.min(Math.max(perPageParam || ITEMS_PER_PAGE, 1), MAX_ITEMS_PER_PAGE);
+    const skip = (page - 1) * perPage;
+    const searchQuery = searchParams.get("q") || "";
     const chatId = searchParams.get("chatId");
-    const per_page = Math.min(parseInt(searchParams.get("per_page") || "10"), 100);
-    const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
-    const skip = (page - 1) * per_page;
 
     if (!chatId) {
       return NextResponse.json(
@@ -45,7 +47,7 @@ export async function GET(req: NextRequest) {
       {
         $facet: {
           metadata: [{ $count: "total" }],
-          data: [{ $skip: skip }, { $limit: per_page }],
+          data: [{ $skip: skip }, { $limit: perPage }],
         },
       },
     ]);
@@ -60,8 +62,8 @@ export async function GET(req: NextRequest) {
       pagination: {
         total: totalMessages,
         page,
-        perPage: per_page,
-        totalPages: Math.ceil(totalMessages / per_page),
+        perPage: perPage,
+        totalPages: Math.ceil(totalMessages / perPage),
       },
     };
     return NextResponse.json(response, { status: 200 });

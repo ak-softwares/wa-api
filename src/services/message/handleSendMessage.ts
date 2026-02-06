@@ -14,6 +14,7 @@ import { getTemplateByName } from "../template/getTemplateByName";
 import { ITemplate } from "@/models/Template";
 import { replaceActualTemplateValue } from "@/lib/mapping/replaceActualTemplateValue";
 import { TemplatePayload } from "@/types/Template";
+import { FB_GRAPH_VERSION } from "@/utiles/constans/apiConstans";
 
 interface HandleSendMessageParams {
   messagePayload: MessagePayload;
@@ -43,7 +44,7 @@ export async function handleSendMessage({
     throw new ApiError(400, "broadcastId is required when chatType is BROADCAST");
   }
 
-  const url = `https://graph.facebook.com/v23.0/${waAccount.phone_number_id}/messages`;
+  const url = `https://graph.facebook.com/${FB_GRAPH_VERSION}/${waAccount.phone_number_id}/messages`;
   const headers = {
     Authorization: `Bearer ${waAccount.permanent_token}`,
     "Content-Type": "application/json",
@@ -116,8 +117,7 @@ export async function handleSendMessage({
     try {
       const whatsAppPayload: WhatsAppPayload = buildWhatsAppPayload({
         messagePayload,
-        participant: participant.number,
-        waAccount,
+        participant: participant,
       });
 
       const fbResponse = await axios.post(url, whatsAppPayload, { headers });

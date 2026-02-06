@@ -1,23 +1,22 @@
 // services/whatsappPayloadBuilder.ts
+import { ChatParticipant } from "@/types/Chat";
 import {
   MessagePayload,
   MessageType,
   WhatsAppPayload,
 } from "@/types/MessageType";
-import { IWaAccount } from "@/models/WaAccount";
+import { injectParticipantVariables } from "../mapping/injectParticipantVariables";
+import { TemplatePayload } from "@/types/Template";
 
-interface HandleSendTextMessageParams {
+interface Params {
   messagePayload: MessagePayload;
-  participant: string;
-  waAccount: IWaAccount;
+  participant: ChatParticipant;
 }
 
-export function buildWhatsAppPayload({
-  messagePayload, participant, waAccount
-}: HandleSendTextMessageParams): WhatsAppPayload {
+export function buildWhatsAppPayload({ messagePayload, participant }: Params): WhatsAppPayload {
   const { messageType, message, media, context, template, location } = messagePayload;
 
-  const to = participant;
+  const to = participant.number;
 
   if (!to) {
     throw new Error("Recipient number missing");
@@ -69,11 +68,13 @@ export function buildWhatsAppPayload({
   if (messageType === MessageType.TEMPLATE) {
     if (!template) throw new Error("Template payload missing");
     try {
-      // const metaTemplate = validateAndPrepareTemplate({ templatePayload: template, waAccount });
+      // console.log("Building template payload:", JSON.stringify(template, null, 2));
+      const injectedTemplate: TemplatePayload = injectParticipantVariables({ template: template as TemplatePayload, participant });
+      // console.log("Injected template payload:", JSON.stringify(injectedTemplate, null, 2));
       return {
         ...basePayload,
         type: "template",
-        template: template,
+        template: injectedTemplate,
       };
     } catch (err) {
       throw new Error("Template validation failed");
@@ -95,3 +96,23 @@ export function buildWhatsAppPayload({
 
   throw new Error(`Unsupported message type: ${messageType}`);
 }
+
+
+
+// Building template payload: {
+//   "name": "send_personalised_message",
+//   "language": {
+//     "code": "en"
+//   },
+//   "components": [
+//     {
+//       "type": "BODY",
+//       "parameters": [
+//         {
+//           "type": "TEXT",
+//           "text": "{{user_name}}"
+//         }
+//       ]
+//     }
+//   ]
+// }

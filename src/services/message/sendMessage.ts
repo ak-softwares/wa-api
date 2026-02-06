@@ -13,8 +13,8 @@ export async function sendMessage({
   if (messagePayload.messageType === MessageType.TEMPLATE && messagePayload.template) {
     // console.log("Sending message payload:", messagePayload);
     const convertedTemplate = convertToMetaSendTemplate({ template: messagePayload.template! as Template });
-    // console.log("Converted template:", convertedTemplate);
     messagePayload.template = convertedTemplate;
+    console.log("Converted template:", JSON.stringify(messagePayload, null, 2));
   }
 
   const res = await fetch("/api/wa-accounts/messages", {

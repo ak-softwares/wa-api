@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { get_order, get_product_by_slug, search_products } from './executors/woocommerce';
+import { get_coupons, get_order, get_payment_methods, get_product_by_url, search_products, cancel_order, add_customer_note } from './executors/woocommerce';
 import { ITool } from '@/models/Tool';
 
 type ToolExecutor = (args: any, tool: ITool) => Promise<any>;
@@ -25,13 +25,13 @@ export const ACTION_REGISTRY: Record<
       execute: get_order,
     },
 
-    get_product_by_slug: {
+    get_product_by_url: {
       title: 'Get Product',
-      description: 'Fetch product details by slug',
+      description: 'Fetch product details by URL',
       schema: z.object({
-        slug: z.string(),
+        url: z.string().url(),
       }),
-      execute: get_product_by_slug,
+      execute: get_product_by_url,
     },
 
     search_products: {
@@ -42,6 +42,37 @@ export const ACTION_REGISTRY: Record<
         limit: z.number().optional(),
       }),
       execute: search_products,
-    }
+    },
+
+    get_coupons: {
+      schema: z.object({
+        code: z.string().optional(),
+        limit: z.number().optional(),
+      }),
+      execute: get_coupons,
+    },
+
+    get_payment_methods: {
+      schema: z.object({}),
+      execute: get_payment_methods,
+    },
+
+    cancel_order: {
+      schema: z.object({
+        order_id: z.number(),
+        reason: z.string().optional(),
+      }),
+      execute: cancel_order,
+    },
+
+    add_customer_note: {
+      schema: z.object({
+        order_id: z.number(),
+        note: z.string(),
+        visible_to_customer: z.boolean().optional(),
+      }),
+      execute: add_customer_note,
+    },
+
   },
 };

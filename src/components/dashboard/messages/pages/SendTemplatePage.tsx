@@ -1,23 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Template, TemplateBodyComponentCreate, TemplateButtonsComponentCreate, TemplateHeaderComponentCreate } from "@/types/Template";
 import { toast } from "@/components/ui/sonner";
 import { fetchMediaBlob, uploadMediaApi } from "@/services/message/media.service";
 import { MessagePayload, MessageStatus, MessageType } from "@/types/MessageType";
 import { useChatStore } from "@/store/chatStore";
 import { ChatType } from "@/types/Chat";
-import MessagesHeader from "../messages/common/MessageHeader";
+import MessagesHeader from "../common/MessageHeader";
 import IconButton from "@/components/common/IconButton";
-import MessagePreviewPage from "../messages/pages/MessagePreviewPage";
+import MessagePreviewPage from "./MessagePreviewPage";
 import { Message } from "@/types/Message";
-import TemplateSearchSelect from "./widgets/SearchableTemplateSelect";
+import TemplateSearchSelect from "../../templates/widgets/SearchableTemplateSelect";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import { Plus, Upload, X } from "lucide-react";
 import { TemplateButtonType, TemplateComponentType, TemplateHeaderType } from "@/utiles/enums/template";
-import TemplateMediaPreview from "./TemplateMediaPreview";
+import TemplateMediaPreview from "../../templates/TemplateMediaPreview";
+import { VariableInput } from "../common/VariableInput";
 
 interface SendTemplatePageProps {
   onClose: () => void;
@@ -198,7 +199,7 @@ export default function SendTemplatePage({
     const match = headerComp.text.match(/{{(\d+)}}/);
     
     // Header example values (first example row)
-    const exampleValues = headerComp.example?.header_text?.[0] ?? [];
+    const exampleValues = headerComp.example?.header_text?.[0] ?? "";
 
     if (match) {
       return {
@@ -587,12 +588,11 @@ export default function SendTemplatePage({
                                 Header Variable
                                 <span className="text-red-500 ml-1">*</span>
                               </Label>
-                              <input
-                                type="text"
+                              <VariableInput
                                 value={headerVar.value || ""}
-                                onChange={(e) => updateHeaderVariable(e.target.value)}
+                                onChange={(val) => updateHeaderVariable(val)}
                                 placeholder={`Enter value for ${headerVar.placeholder}`}
-                                className="w-full border rounded-md px-3 py-2 text-sm"
+                                variables={["user_name"]}
                               />
                             </div>
                           );
@@ -772,19 +772,15 @@ export default function SendTemplatePage({
                     {bodyVariables.map((variable) => (
                       <div key={variable.key} className="grid gap-2">
                         <Label className="mb-2 block">
-                          Variable {variable.placeholder}
+                          Variables {variable.placeholder}
                           <span className="text-red-500 ml-1">*</span>
                         </Label>
-
-                        <input
-                          type="text"
-                          value={variable.value || ""}
-                          onChange={(e) =>
-                            updateBodyVariable(variable.key, e.target.value)
-                          }
-                          placeholder={`Enter value for ${variable.placeholder}`}
-                          className="w-full border rounded-md px-3 py-2 text-sm"
-                        />
+                          <VariableInput
+                            value={variable.value || ""}
+                            onChange={(val) => updateBodyVariable(variable.key, val)}
+                            placeholder={`Enter value for ${variable.placeholder}`}
+                            variables={["user_name"]}
+                          />
                       </div>
                     ))}
                   </CardContent>

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { ApiResponse } from "@/types/apiResponse";
 import { Contact } from "@/types/Contact";
 import { toast } from "@/components/ui/sonner";
+import { ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
 
 interface UseContactsProps {
   sidebarRef?: React.RefObject<HTMLDivElement | null>;
@@ -14,7 +15,6 @@ export function useContacts({ sidebarRef }: UseContactsProps) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [totalContacts, setTotalContacts] = useState(0);
   const [page, setPage] = useState(1);
-  const [perPage] = useState(10);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -29,8 +29,8 @@ export function useContacts({ sidebarRef }: UseContactsProps) {
       try {
         const res = await fetch(
           query
-            ? `/api/wa-accounts/contacts?q=${encodeURIComponent(query)}&page=${pageToFetch}&per_page=${perPage}`
-            : `/api/wa-accounts/contacts?page=${pageToFetch}&per_page=${perPage}`
+            ? `/api/wa-accounts/contacts?q=${encodeURIComponent(query)}&page=${pageToFetch}&per_page=${ITEMS_PER_PAGE}`
+            : `/api/wa-accounts/contacts?page=${pageToFetch}&per_page=${ITEMS_PER_PAGE}`
         );
         const json: ApiResponse = await res.json();
 
@@ -48,7 +48,7 @@ export function useContacts({ sidebarRef }: UseContactsProps) {
         pageToFetch === 1 ? setLoading(false) : setLoadingMore(false);
       }
     },
-    [perPage, query]
+    [query]
   );
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import { toast } from "@/components/ui/sonner";
 import { Chat } from "@/types/Chat";
 import { useChatStore } from "@/store/chatStore";
 import { ChatFilterType } from "@/utiles/enums/chatFilters";
+import { ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
 
 interface UseChatsProps {
   sidebarRef?: React.RefObject<HTMLDivElement | null>;
@@ -16,7 +17,6 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
   const [chats, setChats] = useState<Chat[]>([]);
   const [totalChats, setTotalChats] = useState(0);
   const [page, setPage] = useState(1);
-  const [perPage] = useState(10);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -75,13 +75,13 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
 
         if (query) {
           // 🔍 Searching
-          url = `/api/wa-accounts/chats?q=${encodeURIComponent(query)}&page=${pageToFetch}&per_page=${perPage}`;
+          url = `/api/wa-accounts/chats?q=${encodeURIComponent(query)}&page=${pageToFetch}&per_page=${ITEMS_PER_PAGE}`;
         } else if (phone && activeChat == null) {
           // 📱 fetch by phone (ensure temp chat is included)
-          url = `/api/wa-accounts/chats?page=${pageToFetch}&per_page=${perPage}&phone=${phone}`;
+          url = `/api/wa-accounts/chats?page=${pageToFetch}&per_page=${ITEMS_PER_PAGE}&phone=${phone}`;
         } else {
           // 📦 regular fetch
-          url = `/api/wa-accounts/chats?page=${pageToFetch}&per_page=${perPage}&filter=${filter}`;
+          url = `/api/wa-accounts/chats?page=${pageToFetch}&per_page=${ITEMS_PER_PAGE}&filter=${filter}`;
         }
 
         const res = await fetch(url);
@@ -105,7 +105,7 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
         pageToFetch === 1 ? setLoading(false) : setLoadingMore(false);
       }
     },
-    [perPage, query, phone, filter]
+    [query, phone, filter]
   );
 
   useEffect(() => {

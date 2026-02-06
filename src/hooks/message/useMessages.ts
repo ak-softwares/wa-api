@@ -10,6 +10,7 @@ import { useMessageStore } from "@/store/messageStore";
 import { MessagePayload } from "@/types/MessageType";
 import { sendMessage } from "@/services/message/sendMessage";
 import { Template } from "@/types/Template";
+import { ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
 
 interface UseMessagesProps {
   containerRef?: React.RefObject<HTMLDivElement | null>;
@@ -20,7 +21,6 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
   // console.trace("fetchChats called");
   const [messages, setMessages] = useState<Message[]>([]);
   const [page, setPage] = useState(1);
-  const [perPage] = useState(10);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -107,7 +107,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
       
       try {
         const res = await fetch(
-          `/api/wa-accounts/messages?chatId=${chatId}&page=${pageToFetch}&per_page=${perPage}`
+          `/api/wa-accounts/messages?chatId=${chatId}&page=${pageToFetch}&per_page=${ITEMS_PER_PAGE}`
         );
         const json: ApiResponse = await res.json();
         // 🛑 IGNORE STALE RESPONSE
@@ -132,7 +132,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
         else setLoadingMore(false);
       }
     },
-    [chatId, perPage]
+    [chatId]
   );
 
   // fetch on chat/page/refresh

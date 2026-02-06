@@ -3,6 +3,7 @@ import axios from "axios";
 import { TemplateModel } from "@/models/Template";
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { ApiResponse } from "@/types/apiResponse";
+import { ITEMS_PER_PAGE, MAX_ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,11 +14,12 @@ export async function GET(req: NextRequest) {
 
     // Pagination support from query params
     const { searchParams } = new URL(req.url);
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const perPageParam = Number(searchParams.get("limit"));
+    const perPage  = Math.min(Math.max(perPageParam || ITEMS_PER_PAGE, 1), MAX_ITEMS_PER_PAGE);
     const after = searchParams.get("after") || null;
 
     // Facebook Graph API endpoint
-    let fbUrl = `https://graph.facebook.com/v23.0/${waba_id}/message_templates?limit=${limit}`;
+    let fbUrl = `https://graph.facebook.com/v23.0/${waba_id}/message_templates?limit=${perPage}`;
     if (after) fbUrl += `&after=${after}`;
 
     const fbHeaders = {
