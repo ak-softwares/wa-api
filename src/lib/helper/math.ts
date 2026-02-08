@@ -9,3 +9,14 @@ export function calcPercentage({part, total, decimals = 0}: CalcPercentageParams
   const percent = (part / total) * 100;
   return Number(percent.toFixed(decimals));
 }
+
+// interface RoundParams {
+//   number: number;
+//   decimals?: number;
+// }
+
+// export function round({ number, decimals = 6 }: RoundParams): number {
+//   return Number(number.toFixed(decimals));
+// }
+export const round = (num: number, decimals = 6): number => Number(num.toFixed(decimals));
+

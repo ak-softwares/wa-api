@@ -1,4 +1,4 @@
-import { AIChat } from "./AIChat";
+import { AIChat } from "./Ai";
 
 export type WaAccount = {
   _id?: string;

@@ -4,10 +4,10 @@ export type IAiUsage = {
   waAccountId?: string;
   chatId?: string;
   model: string;
-  promptTokens: number;
-  completionTokens: number;
+  inputTokens: number;
+  outputTokens: number;
   totalTokens: number;
-  promptCost?: number;
-  completionCost?: number;
+  inputCost?: number;
+  outputCost?: number;
   totalCost?: number;
 }

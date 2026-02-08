@@ -102,21 +102,21 @@ export async function POST(req: NextRequest) {
     // ============================================================
     // ✅ 2nd Query: AI usage cost
     // ============================================================
-    // const [aiStats] = await AiUsageModel.aggregate([
-    //   {
-    //     $match: {
-    //       userId: user._id,
-    //       createdAt: { $gte: start, $lte: end },
-    //     },
-    //   },
-    //   {
-    //     $group: {
-    //       _id: null,
-    //       totalCost: { $sum: "$totalCost" },
-    //     },
-    //   },
-    //   { $project: { _id: 0, totalCost: 1 } },
-    // ]);
+    const [aiStats] = await AiUsageModel.aggregate([
+      {
+        $match: {
+          userId: user._id,
+          createdAt: { $gte: start, $lte: end },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalCost: { $sum: "$totalCost" },
+        },
+      },
+      { $project: { _id: 0, totalCost: 1 } },
+    ]);
 
     const data: AnalyticsData = {
       totalMessages: msgStats?.totalMessages ?? 0,
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
       readMessages: msgStats?.readMessages ?? 0,
       aIReplies: msgStats?.aIReplies ?? 0,
       failedMessages: msgStats?.failedMessages ?? 0,
-      // aICost: aiStats?.totalCost ?? 0,
+      aICost: aiStats?.totalCost ?? 0,
     };
 
     return NextResponse.json({
@@ -141,9 +141,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
-
-// aramarket
-// {userId: ObjectId('68b6bb87fa0f518b401cac8b')}
-// {$or:[{from:'968318086361596'},{to:'968318086361596'}]}
-// {userId:ObjectId('68b6bb87fa0f518b401cac8b'),$nor:[{from:'968318086361596'},{to:'968318086361596'}]}

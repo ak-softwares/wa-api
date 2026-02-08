@@ -4,11 +4,10 @@ import { connectDB } from "../../../lib/mongoose";
 import { IChat } from "@/models/Chat";
 import { AiUsageModel } from "@/models/AiUsage";
 import { Types } from "mongoose";
-import { getReplyFromChatAgent } from "../aiSDK/agents/chatAgent";
+import { AI_PROVIDERS } from "../ai/providers/providers";
 
-/**
- * Get AI reply from OpenAI for a specific chat
- */
+// Get AI reply from OpenAI for a specific chat
+
 interface GetAIReplyParams {
   userId: Types.ObjectId;
   prompt: string;
@@ -60,9 +59,10 @@ Do NOT overuse the name.
   ];
 
   try {
+    const aiProvider = AI_PROVIDERS.GPT_4O_MINI.id;
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: aiProvider,
       messages,
       temperature: 0.4,
       max_tokens: 200,
@@ -95,7 +95,7 @@ Do NOT overuse the name.
     const created = await AiUsageModel.create({
       userId,
       chatId: chat._id,
-      model: "gpt-4o-mini",
+      model: aiProvider,
       promptTokens: usage.prompt_tokens,
       completionTokens: usage.completion_tokens,
       totalTokens: usage.total_tokens,

@@ -172,7 +172,7 @@ export default function BroadcastMessageReportPage({
               label="FB Accepted"
               value={loading ? "..." : summary?.fbAcceptedMessages ?? 0}
               icon={<CheckCircle className="h-4 w-4 text-muted-foreground" />}
-              percentage={calcPercentage({
+              subValue={calcPercentage({
                 total: summary?.totalMessages ?? 0,
                 part: summary?.fbAcceptedMessages ?? 0,
               })}
@@ -182,7 +182,7 @@ export default function BroadcastMessageReportPage({
               label="Delivered"
               value={loading ? "..." : summary?.deliveredMessages ?? 0}
               icon={<Truck className="h-4 w-4 text-muted-foreground" />}
-              percentage={calcPercentage({
+              subValue={calcPercentage({
                 total: summary?.totalMessages ?? 0,
                 part: summary?.deliveredMessages ?? 0,
               })}
@@ -192,7 +192,7 @@ export default function BroadcastMessageReportPage({
               label="Read"
               value={loading ? "..." : summary?.readMessages ?? 0}
               icon={<Eye className="h-4 w-4 text-muted-foreground" />}
-              percentage={calcPercentage({
+              subValue={calcPercentage({
                 total: summary?.totalMessages ?? 0,
                 part: summary?.readMessages ?? 0,
               })}

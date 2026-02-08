@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "@/components/ui/sonner";
-import { AIChat } from "@/types/AIChat";
+import { AIChat } from "@/types/Ai";
 
 export function useUpdateAiChat(getPayload?: () => Partial<AIChat>) {
   const [isSaving, setIsSaving] = useState(false);

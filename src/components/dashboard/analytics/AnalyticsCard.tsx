@@ -75,7 +75,7 @@ export default function AnalyticsCard() {
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
           {/* Total Messages */}
           <MetricCard
-            label="Total Messages"
+            label="Total Msg"
             value={loading ? "..." : data?.totalMessages ?? 0}
             icon={<MessageSquare className="h-4 w-4 text-muted-foreground" />}
           />
@@ -108,7 +108,7 @@ export default function AnalyticsCard() {
             label="Read"
             value={loading ? "..." : data?.readMessages ?? 0}
             icon={<Eye className="h-4 w-4 text-muted-foreground" />}
-            percentage={calcPercentage({total: data?.deliveredMessages ?? 0, part: data?.readMessages ?? 0})}
+            subValue={`${calcPercentage({total: data?.deliveredMessages ?? 0, part: data?.readMessages ?? 0})}%`}
           />
 
           {/* Credit Spend */}
@@ -123,13 +123,14 @@ export default function AnalyticsCard() {
             label="AI Replies"
             value={loading ? "..." : data?.aIReplies ?? 0}
             icon={<Sparkles className="h-4 w-4 text-muted-foreground" />}
+            subValue={`$${(data?.aICost ?? 0).toFixed(4)}`}
           />
 
           {/* AI Cost */}
           {/* <MetricCard
-            label="AI Cost ($)"
-            value={loading ? "..." : (data?.aICost ?? 0).toFixed(4)}
-            icon={<DollarSign className="h-4 w-4 text-purple-500" />}
+            label="AI Cost"
+            value={loading ? "..." : `$${(data?.aICost ?? 0).toFixed(4)}`}
+            icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
           /> */}
         </div>
 
@@ -143,13 +144,13 @@ export function MetricCard({
   value,
   icon,
   trend,
-  percentage,
+  subValue,
 }: {
   label: string;
   value: any;
   icon?: React.ReactNode;
   trend?: number;
-  percentage?: number;
+  subValue?: any;
 }) {
   return (
     <div className="p-3 border rounded-lg">
@@ -162,9 +163,9 @@ export function MetricCard({
         <div className="flex items-baseline gap-1">
           <p className="text-xl font-bold">{value}</p>
 
-          {percentage !== undefined && (
+          {subValue !== undefined && (
             <span className="text-xs text-muted-foreground">
-              ({percentage}%)
+              ({subValue})
             </span>
           )}
         </div>

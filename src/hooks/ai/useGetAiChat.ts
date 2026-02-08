@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "@/components/ui/sonner";
-import { AIChat } from "@/types/AIChat";
+import { AIChat } from "@/types/Ai";
 
 export function useGetAiChat() {
   const [isLoading, setIsLoading] = useState(false);

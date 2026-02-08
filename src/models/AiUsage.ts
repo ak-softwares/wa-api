@@ -7,11 +7,11 @@ export interface IAiUsage {
   waAccountId?: Types.ObjectId;
   chatId?: Types.ObjectId;
   model: string;
-  promptTokens: number;
-  completionTokens: number;
+  inputTokens: number;
+  outputTokens: number;
   totalTokens: number;
-  promptCost?: number;
-  completionCost?: number;
+  inputCost?: number;
+  outputCost?: number;
   totalCost?: number;
 }
 
@@ -20,11 +20,11 @@ const AiUsageSchema = new Schema<IAiUsage>({
   chatId: { type: Schema.Types.ObjectId, ref: "Chat" },
   waAccountId: { type: Schema.Types.ObjectId, ref: "WaAccount" },
   model: { type: String, required: true },
-  promptTokens: { type: Number, required: true },
-  completionTokens: { type: Number, required: true },
+  inputTokens: { type: Number, required: true },
+  outputTokens: { type: Number, required: true },
   totalTokens: { type: Number, required: true },
-  promptCost: { type: Number },
-  completionCost: { type: Number },
+  inputCost: { type: Number },
+  outputCost: { type: Number },
   totalCost: { type: Number },
 }, { timestamps: true });
 

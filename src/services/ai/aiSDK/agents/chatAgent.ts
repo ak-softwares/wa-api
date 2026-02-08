@@ -6,10 +6,11 @@ import { getIntegratedToolsRaw } from '../../tools/getTools';
 import { IMessage } from '@/models/Message';
 import { mapToAIMessages } from '../messages/mapToAIMessages';
 import { mapToAISystemPrompt } from '../prompts/systemPrompt';
+import { AI_PROVIDERS, ProviderKey } from '../../ai/providers/providers';
+import { saveAiUsage } from '../../ai/saveAiUsage/saveAiUsage';
   
 interface Params {
   userId: Types.ObjectId;
-  waAccountId: Types.ObjectId;
   systemPrompt?: string;
   messages?: IMessage[];
   phone_number_id: string;
@@ -19,13 +20,14 @@ interface Params {
 
 export async function getReplyFromChatAgent({
   userId,
-  waAccountId,
   systemPrompt,
   messages,
   phone_number_id,
   user_name,
   user_phone
 }: Params) {
+  const providerKey: ProviderKey = "GPT_4O_MINI";
+  const aiProvider = AI_PROVIDERS[providerKey];
   const integratedTools = await getIntegratedToolsRaw({ userId });
   const aiTools:ToolSet | undefined = mapToolsToToolSet(integratedTools);
   const aiSystemPrompt = mapToAISystemPrompt({ systemPrompt, name: user_name, number: user_phone });
@@ -33,7 +35,7 @@ export async function getReplyFromChatAgent({
 
   // console.log('AI System Prompt:', aiSystemPrompt);
   const response = await generateText({
-    model: openai.chat('gpt-4o-mini'),
+    model: openai.chat(aiProvider.id),
     providerOptions: {
       openai: {
         // reasoningEffort: 'low',
@@ -54,6 +56,15 @@ export async function getReplyFromChatAgent({
     messages: aiMessages,
   });
 
+  const aiUsage = await saveAiUsage({
+    provider: providerKey,
+    usage: response.totalUsage,
+    userId: userId.toString(),
+  });
+
+  // console.log('AI Usage saved:', aiUsage);
+  // console.log('AI Response Total Uses:', response.totalUsage);
+  // console.log('AI Response Usage:', response.usage);
   // console.log('AI Response:', JSON.stringify(response, null, 2));
   // console.log('AI Response:', JSON.stringify(response.text, null, 2));
   return { aiGeneratedReply: response.text };
