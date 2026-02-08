@@ -23,6 +23,8 @@ import MessagePreviewPage from "../../messages/pages/MessagePreviewPage";
 import { MessageType } from "@/types/MessageType";
 import { MessageStatus } from "@/types/MessageType";
 import { Message } from "@/types/Message";
+import { YOUTUBE_VIDEOS } from "@/utiles/constans/youtubeHelp";
+import { YouTubeHelpButton } from "@/components/common/iframe/youTubeEmbedIframe";
 
 export default function CreateTemplatePage() {
   const [isSaving, setIsSaving] = useState(false);
@@ -671,6 +673,7 @@ export default function CreateTemplatePage() {
           />
           <h1 className="text-xl font-semibold">{`${isEdit ? "Edit" : "Add"} Template`}</h1>
         </div>
+        <YouTubeHelpButton videoId={YOUTUBE_VIDEOS.broadcast.videoId} />
       </div>
 
       <div className="flex flex-col md:flex-row gap-6 p-6">

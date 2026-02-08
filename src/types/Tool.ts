@@ -1,3 +1,6 @@
+import { ITool } from "@/models/Tool";
+import z from "zod";
+
 export enum ToolPasswordMasking {
   MASKED = "**************************",
   NONE = "",
@@ -86,4 +89,14 @@ export type ToolPayload = {
   active?: boolean;
   status?: ToolStatus;
   credentials?: Record<string, string>;
+};
+
+
+export type ToolExecutor = (args: any, tool: ITool) => Promise<any>;
+
+export type ActionConfig = {
+  title?: string;
+  description?: string;
+  schema: z.ZodTypeAny;
+  execute: ToolExecutor;
 };

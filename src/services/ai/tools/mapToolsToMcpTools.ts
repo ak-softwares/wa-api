@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { ACTION_REGISTRY, ActionConfig } from './actionRegistry';
+import { ACTION_REGISTRY } from './actionRegistry';
 import { ITool } from '@/models/Tool';
+import { ActionConfig } from '@/types/Tool';
 
 export function mapToolsToMcpTools(server: McpServer, tools: ITool[]) {
   for (const dbTool of tools) {
@@ -10,10 +11,11 @@ export function mapToolsToMcpTools(server: McpServer, tools: ITool[]) {
     if (!actions) continue;
 
     for (const [actionId, config] of Object.entries(actions)) {
+      const toolName = `${dbTool.id}_${actionId}`;
       server.registerTool(
-        actionId,
+        toolName,
         {
-          title: config.title ?? actionId,
+          title: config.title ?? toolName,
           description:
             config.description ??
             `Action "${actionId}" for ${dbTool.name}`,
