@@ -1,5 +1,6 @@
 import { ITool } from "@/models/Tool";
 import z from "zod";
+import { AuthType } from "./OAuth";
 
 export enum ToolPasswordMasking {
   MASKED = "**************************",
@@ -73,6 +74,7 @@ export type ToolCatalog = {
   desc?: string;
   logo?: string;
 
+  authType?: AuthType;
   status: ToolStatus;
   active: boolean;
   credentials: ToolCredential[];

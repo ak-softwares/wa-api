@@ -1,8 +1,8 @@
 import { generateText, ModelMessage, stepCountIs, ToolSet } from 'ai';
 import { openai, OpenAIResponsesProviderOptions } from '@ai-sdk/openai';
-import { mapToolsToToolSet } from '../../tools/mapToolsToToolSet';
+import { mapToolsToToolSet } from '../../tools/mapTools/mapToolsToToolSet';
 import { Types } from 'mongoose';
-import { getIntegratedToolsRaw } from '../../tools/getTools';
+import { getIntegratedToolsRaw } from '../../tools/comman/getTools';
 import { IMessage } from '@/models/Message';
 import { mapToAIMessages } from '../messages/mapToAIMessages';
 import { mapToAISystemPrompt } from '../prompts/systemPrompt';
@@ -65,7 +65,7 @@ export async function getReplyFromChatAgent({
   // console.log('AI Usage saved:', aiUsage);
   // console.log('AI Response Total Uses:', response.totalUsage);
   // console.log('AI Response Usage:', response.usage);
-  // console.log('AI Response:', JSON.stringify(response, null, 2));
+  console.log('AI Response:', JSON.stringify(response, null, 2));
   // console.log('AI Response:', JSON.stringify(response.text, null, 2));
   return { aiGeneratedReply: response.text };
 }

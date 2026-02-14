@@ -2,10 +2,29 @@
 
 import MenuTile from "@/components/common/MenuTile";
 import SearchBar from "@/components/common/SearchBar";
+import { toast } from "@/components/ui/sonner";
 import { useAiStore } from "@/store/aiStore";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 export default function AiPage() {
   const { selectedAiMenu, setSelectedAiMenu } = useAiStore();
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  useEffect(() => {
+    const toolName = searchParams.get("connected");
+
+    if (toolName) {
+      console.log("tool name : " + toolName)
+      toast.success(`${toolName} connected successfully!`);
+
+      // ✅ remove query params without reload
+      router.replace(pathname);
+    }
+  }, [searchParams, router, pathname]);
 
   return (
     <div className="flex flex-col h-full">

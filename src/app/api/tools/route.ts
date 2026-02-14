@@ -4,7 +4,8 @@ import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/services/apiHelpe
 import { ITool, ToolModel } from "@/models/Tool";
 import { maskCredentialValues } from "@/lib/tools/maskCredentialValues";
 import { ToolPayload, ToolStatus } from "@/types/Tool";
-import { getIntegratedToolsSafe } from "@/services/ai/tools/getTools";
+import { getIntegratedToolsSafe } from "@/services/ai/tools/comman/getTools";
+import { upsertTool } from "@/services/ai/tools/comman/upsertTool";
 
 export async function GET(req: NextRequest) {
   try {
@@ -53,7 +54,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(response, { status: 400 });
     }
 
-    // credentials can be optional (some tools have no credentials)
     if (tool.credentials && typeof tool.credentials !== "object") {
       const response: ApiResponse = {
         success: false,
@@ -77,26 +77,11 @@ export async function POST(req: NextRequest) {
     }
 
     // ✅ create
-    const createdTool = await ToolModel.create({
+    const safeTool = await upsertTool({
       userId: user._id,
       waAccountId: user.defaultWaAccountId,
-
-      id: tool.id,
-      name: tool.name || tool.id,
-      category: tool.category,
-
-      status: tool.status || ToolStatus.NOT_CONNECTED,
-      active: typeof tool.active === "boolean" ? tool.active : true,
-
-      credentials: tool.credentials || {}, // 🔐 encrypted by schema setter
+      tool,
     });
-
-    // ✅ return safe tool
-    const plain = createdTool.toObject({ getters: true });
-    const safeTool = {
-      ...plain,
-      credentials: maskCredentialValues(createdTool.id, plain.credentials || {}),
-    };
 
     const response: ApiResponse = {
       success: true,

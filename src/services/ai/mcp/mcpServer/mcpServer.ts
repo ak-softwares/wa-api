@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { getIntegratedToolsRaw } from '../../tools/getTools';
+import { getIntegratedToolsRaw } from '../../tools/comman/getTools';
 import { ITool } from '@/models/Tool';
-import { mapToolsToMcpTools } from '../../tools/mapToolsToMcpTools';
+import { mapToolsToMcpTools } from '../../tools/mapTools/mapToolsToMcpTools';
 import { Types } from 'mongoose';
 import z from 'zod';
 

@@ -57,7 +57,6 @@ export async function handleAIMessage({
 
     const { aiGeneratedReply } = await getReplyFromChatAgent({
       userId: userId,
-      waAccountId: waAccount._id!,
       systemPrompt: systemPrompt,
       messages,
       phone_number_id,

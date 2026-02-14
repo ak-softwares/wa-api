@@ -3,7 +3,7 @@
 import AIChatPage from "@/components/dashboard/ai/pages/AiChatPage";
 import DefaultAiPage from "@/components/dashboard/ai/pages/DefaultAIPage";
 import APITokenPage from "@/components/dashboard/ai/pages/APITokenPage";
-import ToolsIntegrationPage from "@/components/dashboard/tools/pages/ToolsIntegrationPage";
+import ToolsIntegrationPage from "@/components/dashboard/ai/tools/pages/ToolsIntegrationPage";
 import { useAiStore } from "@/store/aiStore";
 
 export default function AiDetailPage() {

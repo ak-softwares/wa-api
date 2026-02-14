@@ -2,26 +2,33 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { GoogleService } from "@/types/OAuth";
 
 export function useGoogleImport() {
   const [loading, setLoading] = useState(false);
+  const service = GoogleService.CONTACTS_IMPORT
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
-  // ✅ Show toast if redirected back after successful import
   useEffect(() => {
     const imported = searchParams.get("imported");
     const count = searchParams.get("count");
+
     if (imported === "true") {
       toast.success(`${count} contacts imported successfully!`);
+
+      // ✅ remove query params without reload
+      router.replace(pathname);
     }
-  }, [searchParams]);
+  }, [searchParams, router, pathname]);
 
   // ✅ Handle Google Contacts import
   const handleGoogleImport = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/google/get-contact-url");
+      const res = await fetch(`/api/oauth/google?tool=${service}`);
       const data = await res.json();
 
       if (!data.success) {
@@ -31,7 +38,7 @@ export function useGoogleImport() {
       }
 
       // Redirect user to Google OAuth consent screen
-      window.location.href = data.url;
+      window.location.href = data.data;
     } catch (err) {
       toast.error("Something went wrong");
     } finally {

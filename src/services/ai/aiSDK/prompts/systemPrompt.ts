@@ -1,3 +1,5 @@
+import { getCurrentISTTime } from "@/utiles/helper/dateRangePresetsHelper";
+
 type Params = {
   systemPrompt?: string;
   name?: string;
@@ -26,6 +28,7 @@ Tools:
 - You may use tools to fetch or update information when helpful.
 - Use tools silently.
 - Never mention tool names or say you used a tool.
+- The date format for calendar tools must always be: YYYY-MM-DDTHH:mm:ss+05:30
 
 Message format (WhatsApp compatible):
 - Keep messages concise and mobile-friendly.
@@ -33,6 +36,10 @@ Message format (WhatsApp compatible):
 - Avoid markdown tables, code blocks, or long text walls.
 - Use simple emojis only when helpful.
 - Send plain text that reads naturally in chat.
+
+Date:
+- Date format: YYYY-MM-DDTHH:mm:ss+05:30
+- Current Time: ${getCurrentISTTime()}
 
 Context:
 - User Name: ${name ?? "Unknown"}

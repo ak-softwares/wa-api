@@ -20,7 +20,7 @@ export async function get_order(
   const api = createApi(tool);
 
   const { data } = await api.get(`orders/${args.orderId}`);
-
+  // console.log(`data: ${JSON.stringify(data, null, 2)}`)
   return {
     id: data.id,
     status: data.status,

@@ -51,3 +51,18 @@ export const dateRanges = {
     return { start, end: new Date() };
   },
 };
+
+export function getCurrentISTTime() {
+  const now = new Date();
+  const ist = new Date(
+    now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  return `${ist.getFullYear()}-${pad(ist.getMonth() + 1)}-${pad(
+    ist.getDate()
+  )}T${pad(ist.getHours())}:${pad(ist.getMinutes())}:${pad(
+    ist.getSeconds()
+  )}+05:30`;
+}

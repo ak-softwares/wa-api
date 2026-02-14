@@ -1,5 +1,5 @@
 import { tool, ToolSet } from 'ai';
-import { ACTION_REGISTRY } from './actionRegistry';
+import { ACTION_REGISTRY } from '../actionRegistry/actionRegistry';
 import { ITool } from '@/models/Tool';
 
 export function mapToolsToToolSet(tools: ITool[]): ToolSet {
@@ -11,7 +11,8 @@ export function mapToolsToToolSet(tools: ITool[]): ToolSet {
       if (!actions) return acc;
 
       Object.entries(actions).forEach(([actionId, config]) => {
-        acc[actionId] = tool({
+        const toolName = `${dbTool.id}_${actionId}`;
+        acc[toolName] = tool({
           description: `${actionId.replaceAll('_', ' ')} (${dbTool.id})`,
           inputSchema: config.schema,
 

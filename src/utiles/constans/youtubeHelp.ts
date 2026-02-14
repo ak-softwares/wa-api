@@ -16,10 +16,10 @@ export const YOUTUBE_VIDEOS = {
     description:
       "Understand dashboard essentials including broadcasts, setup, and template usage.",
   },
-  templates: {
-    title: "How to Create WhatsApp Templates",
-    videoId: "dQw4w9WgXcQ",
+  n8nIntegration: {
+    title: "WhatsApp API + n8n Integration Tutorial",
+    videoId: "bOyoTLc2p3A",
     description:
-      "Learn how to create approved templates and use them effectively in your campaigns.",
+      "WhatsApp API + n8n Integration Tutorial | Auto Replies, Workflows & Chat History Storage.",
   },
 };

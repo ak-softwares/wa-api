@@ -26,7 +26,7 @@ export default function DashboardPage() {
           videos={[
             { title: "Setup Number", videoId: YOUTUBE_VIDEOS.setup.videoId },
             { title: "Send Broadcast", videoId: YOUTUBE_VIDEOS.broadcast.videoId },
-            // { title: "Create Template", videoId: YOUTUBE_VIDEOS.templates.videoId },
+            { title: "n8n Integration", videoId: YOUTUBE_VIDEOS.n8nIntegration.videoId },
           ]}
         />
       </div>

@@ -1,5 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { ACTION_REGISTRY } from './actionRegistry';
+import { ACTION_REGISTRY } from '../actionRegistry/actionRegistry';
 import { ITool } from '@/models/Tool';
 import { ActionConfig } from '@/types/Tool';
 

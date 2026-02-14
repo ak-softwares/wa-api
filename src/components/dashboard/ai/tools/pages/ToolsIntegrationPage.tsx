@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import IconButton from "@/components/common/IconButton";
 import { useAiStore } from "@/store/aiStore";
 import { ToolTile, ToolTileSkeleton } from "../comman/ToolTile";
-import { TOOLS_LIST } from "@/data/tools/toolsList";
+import { TOOLS_LIST } from "@/services/ai/tools/data/toolsList";
 import { Tool, ToolCatalog, ToolPayload, ToolStatus } from "@/types/Tool";
 import { ToolConnectDialog } from "./ToolConnectDialog";
 import { useTools } from "@/hooks/tools/useTools";

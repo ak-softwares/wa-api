@@ -22,6 +22,7 @@ import { useToolMutation } from "@/hooks/tools/useToolMutation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AuthType } from "@/types/OAuth";
 
 type Props = {
   open: boolean;
@@ -53,6 +54,7 @@ const getInputType = (type: ToolCredentialType) => {
 export function ToolConnectDialog({ open, tool, mode = "connect", onClose, onSuccess }: Props) {
   const { createTool, updateTool, loading } = useToolMutation();
 
+  const isOAuth = tool?.authType === AuthType.OAUTH;
   const fields = tool?.credentials ?? [];
 
   // ✅ dynamic zod schema based on tool credential fields
@@ -209,37 +211,50 @@ export function ToolConnectDialog({ open, tool, mode = "connect", onClose, onSuc
               No credentials required for this tool.
             </p>
           ) : (
-            fields.map((field) => {
-              const fieldError = errors.credentials?.[field.key];
+            isOAuth ? (
+                <Button
+                  type="button"
+                  className="w-full"
+                  onClick={async () => {
+                    const res = await fetch(`/api/oauth/google/?tool=${tool.id}`);
+                    const data = await res.json();
+                    window.location.href = data.data;
+                  }}
+                >
+                  Continue with Google
+                </Button>
+              ) : (  
+                  fields.map((field) => {
+                    const fieldError = errors.credentials?.[field.key];
 
-              return (
-                <div key={field.key} className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    {field.label}
-                    {field.required ? " *" : ""}
-                  </Label>
+                    return (
+                      <div key={field.key} className="space-y-2">
+                        <Label className="text-sm font-medium">
+                          {field.label}
+                          {field.required ? " *" : ""}
+                        </Label>
 
-                  <Input
-                    type={getInputType(field.type)}
-                    placeholder={field.placeholder}
-                    {...register(`credentials.${field.key}`)}
-                    className={
-                      fieldError
-                        ? "border-red-500 focus-visible:ring-red-500"
-                        : ""
-                    }
-                  />
+                        <Input
+                          type={getInputType(field.type)}
+                          placeholder={field.placeholder}
+                          {...register(`credentials.${field.key}`)}
+                          className={
+                            fieldError
+                              ? "border-red-500 focus-visible:ring-red-500"
+                              : ""
+                          }
+                        />
 
-                  {fieldError && (
-                    <p className="text-xs text-red-500">
-                      {String(fieldError.message)}
-                    </p>
-                  )}
-                </div>
-              );
-            })
+                        {fieldError && (
+                          <p className="text-xs text-red-500">
+                            {String(fieldError.message)}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })
+                )
           )}
-
           {/* Active Toggle */}
           <div className="mt-4 flex items-center justify-between rounded-xl border border-gray-200 dark:border-white/10 p-4">
             <div className="space-y-1">

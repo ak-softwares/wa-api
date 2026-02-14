@@ -75,8 +75,8 @@ export function ToolTile({
         </div>
       </CardHeader>
 
-      <CardContent className="px-4 pb-4">
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+      <CardContent className="px-4 pb-4 -mt-5">
+        <p className="text-sm text-gray-600 dark:text-gray-300 pb-5">
           {tool.desc || "No description available."}
         </p>
 

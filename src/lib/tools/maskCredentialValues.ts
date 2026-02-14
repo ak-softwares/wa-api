@@ -1,4 +1,4 @@
-import { TOOLS_LIST } from "@/data/tools/toolsList";
+import { TOOLS_LIST } from "@/services/ai/tools/data/toolsList";
 import { ToolCredentialType, ToolCredentialTypeMeta, ToolPasswordMasking } from "@/types/Tool";
 
 export function maskCredentialValues(toolId: string, values: Record<string, string>) {

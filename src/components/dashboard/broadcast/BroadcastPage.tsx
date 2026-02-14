@@ -86,10 +86,7 @@ export default function BroadcastPage({ onBack, broadcastId, initialBroadcastNam
         participants: contacts,
       });
     }
-    if (onBack) {
-      onBack();
-      // window.location.reload(); // ❗hard reload
-    }
+    handelOnBack();
   };
 
   // ✅ when import done, merge contacts into broadcast contacts
