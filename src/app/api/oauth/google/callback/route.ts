@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const { user, errorResponse } = await fetchAuthenticatedUser();
   if (errorResponse) {
     return NextResponse.redirect(
-      new URL("/dashboard/ai?error=unauthorized", req.url)
+      new URL(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/ai?error=unauthorized`, req.url)
     );
   }
 
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   // ❌ always redirect instead of JSON
   if (!code || !serviceName) {
     return NextResponse.redirect(
-      new URL("/dashboard/ai?error=missing_code", req.url)
+      new URL(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/ai?error=missing_code`, req.url)
     );
   }
 
@@ -46,14 +46,14 @@ export async function GET(req: NextRequest) {
         tokens,
       });
       return NextResponse.redirect(
-        new URL(`/dashboard/contacts?imported=true&count=${importedCount}`, req.url)
+        new URL(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/contacts?imported=true&count=${importedCount}`, req.url)
       );
     } else {
       const tool: ToolCatalog | undefined = getToolById(serviceName);
 
       if (!tool) {
         return NextResponse.redirect(
-          new URL("/dashboard/ai?error=tool_not_found", req.url)
+          new URL(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/ai?error=tool_not_found`, req.url)
         );
       }
 
@@ -79,13 +79,14 @@ export async function GET(req: NextRequest) {
       });
 
       return NextResponse.redirect(
-        new URL(`/dashboard/ai?connected=${serviceName}`, req.url)
+        new URL(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/ai?connected=${serviceName}`, req.url)
       );
     }
   } catch (e) {
     return NextResponse.redirect(
-      new URL("/dashboard/ai?error=oauth_failed", req.url)
+      new URL(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/ai?error=oauth_failed`, req.url)
     );
   }
 }
 
+// `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/contacts?imported=true&count=${importedCount}`
