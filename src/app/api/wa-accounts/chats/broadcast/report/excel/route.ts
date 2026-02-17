@@ -5,6 +5,7 @@ import ExcelJS from "exceljs";
 import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 import { MessageModel } from "@/models/Message";
 import { ApiResponse } from "@/types/apiResponse";
+import { formatDateIST } from "@/utiles/formatTime/formatTime";
 
 export async function GET(req: NextRequest) {
   try {
@@ -70,12 +71,12 @@ export async function GET(req: NextRequest) {
         to: r.to || "",
         status: r.status || "",
         fbAccepted: r.sentAt ? "Yes" : "No",
-        sentAt: r.sentAt ? new Date(r.sentAt).toLocaleString() : "",
-        deliveredAt: r.deliveredAt ? new Date(r.deliveredAt).toLocaleString() : "",
-        readAt: r.readAt ? new Date(r.readAt).toLocaleString() : "",
-        failedAt: r.failedAt ? new Date(r.failedAt).toLocaleString() : "",
+        sentAt: formatDateIST(r.sentAt),
+        deliveredAt: formatDateIST(r.deliveredAt),
+        readAt: formatDateIST(r.readAt),
+        failedAt: formatDateIST(r.failedAt),
         errorMessage: r.errorMessage || "",
-        createdAt: r.createdAt ? new Date(r.createdAt).toLocaleString() : "",
+        createdAt: formatDateIST(r.createdAt),
       });
     });
 

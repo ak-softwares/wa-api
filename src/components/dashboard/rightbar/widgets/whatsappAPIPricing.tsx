@@ -16,7 +16,12 @@ export function WhatsappAPIPricingCard() {
   return (
     <Card className="w-full shadow-sm">
       <CardHeader className="flex flex-row items-center gap-2 pb-2">
-        <Facebook className="h-5 w-5 text-blue-500 flex-shrink-0" />
+        <img 
+          src="/assets/logos/whatsapp.svg" 
+          alt="chat" 
+          className="h-8"
+        />
+        {/* <Facebook className="h-5 w-5 text-blue-500 flex-shrink-0" /> */}
         <div>
           <CardTitle className="text-sm font-medium">WhatsApp API Pricing</CardTitle>
           <CardDescription className="text-xs">

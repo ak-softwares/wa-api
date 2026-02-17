@@ -59,7 +59,7 @@ export function useBroadcastMessageReport({
         if (messageId) query.set("messageId", messageId);
 
         // optional filters
-        if (search.trim()) query.set("search", search.trim());
+        if (search.trim()) query.set("q", search.trim());
         if (statusFilter !== "all") query.set("status", statusFilter);
         if (fbFilter !== "all") query.set("fb", fbFilter);
 
@@ -158,6 +158,13 @@ export function useBroadcastMessageReport({
     return list;
   }, [rows, search, statusFilter, fbFilter]);
 
+  const searchMessages = (newQuery: string) => {
+    setSearch(newQuery);
+    setRows([]);
+    setPage(1);
+    setHasMore(true);
+  };
+
   return {
     // data
     rows: filteredRows,
@@ -172,8 +179,7 @@ export function useBroadcastMessageReport({
     loadingMore,
 
     // filters
-    search,
-    setSearch,
+    searchMessages,
     statusFilter,
     setStatusFilter,
     fbFilter,

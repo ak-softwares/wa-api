@@ -4,6 +4,7 @@ import { UserModel } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { signInSchema } from "@/schemas/signInSchema";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 export async function POST(req: Request) {
   try {
@@ -48,15 +49,26 @@ export async function POST(req: Request) {
       return NextResponse.json(response, { status: 401 });
     }
 
+    const token = jwt.sign(
+      {
+        id: user._id,
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: "30d" }
+    );
+
     // ✅ Success
     const response: ApiResponse = {
       success: true,
       message: "Login successful",
       data: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+        }
       },
     };
     return NextResponse.json(response, { status: 200 });

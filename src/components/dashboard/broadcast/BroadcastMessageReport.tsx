@@ -82,7 +82,7 @@ export default function BroadcastMessageReportPage({
   messageId,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const { rows, summary, loading, loadingMore, hasMore, search, setSearch, refreshReport } 
+  const { rows, summary, loading, loadingMore, hasMore, searchMessages, refreshReport } 
   = useBroadcastMessageReport({
     containerRef,
     chatId,
@@ -204,16 +204,9 @@ export default function BroadcastMessageReportPage({
       {/* SEARCH */}
       <div className="px-5 py-2 shrink-0">
         <SearchBar
-          value={search}
           placeholder="Search number..."
-          onSearch={(q) => setSearch(q)}
+          onSearch={searchMessages}
         />
-        {/* <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search number..."
-          className="max-w-md"
-        /> */}
       </div>
 
       {/* TABLE */}

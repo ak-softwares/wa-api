@@ -46,3 +46,13 @@ export const formatFullDateTime = (date?: string) => {
 
   return `${day} ${month} ${year}, ${hours}:${minutes} ${ampm}`;
 };
+
+export const formatDateIST = (date?: string | Date) => {
+  if (!date) return "";
+
+  return new Date(date).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+};

@@ -1,6 +1,5 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import { useMessages } from "@/hooks/message/useMessages";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,10 +26,11 @@ import { ConfirmDialog } from "@/components/common/dialog/ConfirmDialog";
 import MessageInfoDialog from "@/components/dashboard/messages/dialogs/MessageInfoDialog";
 import BroadcastPage from "../../broadcast/BroadcastPage";
 import BroadcastMessageReportPage from "../../broadcast/BroadcastMessageReport";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function MessagePage() {
   const { theme } = useTheme(); // or use your theme context
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
   const {activeChat, setActiveChat} = useChatStore();
@@ -179,6 +179,10 @@ export default function MessagePage() {
       onSend({messagePayload});
       setMessage("");
       setMessageContext(null);
+      // reset height after send:
+      if (inputRef.current) {
+        inputRef.current.style.height = "48px";
+      }
     }
   };
 
@@ -391,7 +395,7 @@ export default function MessagePage() {
 
             </div>
             {/* Input box */}
-            <div className="bg-transparent p-4">
+            <div className="bg-transparent pt-2 pr-4 pl-4 pb-4">
               {/* PREFIX buttons (left side inside input) */}
               {messageContext && (
                 <div className="p-2 dark:bg-[#2E2F2F] bg-white rounded-t-xl">
@@ -415,8 +419,8 @@ export default function MessagePage() {
                   </div>
                 </div>
               )}
-              <div className="relative flex items-center">
-                <div className="absolute left-1.5 flex gap-2 items-center">
+              <div className="relative flex items-end">
+                <div className="absolute left-1.5 flex gap-2 items-center pb-1">
                   <AttachButton
                     onImage={() => handleMediaSelection(MediaType.IMAGE)}
                     onVideo={() => handleMediaSelection(MediaType.VIDEO)}
@@ -443,16 +447,18 @@ export default function MessagePage() {
                     </div>
                   )}
                 </div>
-                <Input
+                <Textarea
                   ref={inputRef}   // 👈 attach ref
                   placeholder="Type a message"
+                  rows={1}
                   className={`
                     flex-1
-                    px-25
+                    pl-25
+                    pr-15
+                    py-[12px]
                     bg-white
-                    ${messageContext ? "rounded-t-none rounded-b-3xl" : "rounded-full"}
+                    ${messageContext ? "rounded-t-none rounded-b-3xl" : "rounded-3xl"}
                     dark:bg-[#2E2F2F]
-                    h-12
                     border-none
                     !focus:ring-0 !focus-visible:ring-0 !ring-0
                     !focus:border-transparent 
@@ -461,18 +467,36 @@ export default function MessagePage() {
                     placeholder:text-base placeholder:text-gray-400
                     dark:text-white
                     !text-base
+                    min-h-[48px] 
+                    max-h-[200px]
+                    leading-[1.4]
+                    transition: height 0.1s ease;
+                    leading-5                /* ⭐ important */
+                    resize-none
+                    overflow-y-auto
                   `}
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                    // ✅ auto height
+                    const el = e.target;
+                    el.style.height = "0px";
+                    el.style.height = el.scrollHeight + "px";
+                  }}
+                  // onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
                       messageSend();
                     }
+                    // if (e.key === "Enter" && e.shiftKey) {
+                    //   messageSend();
+                    // }
                   }}
                 />
                 {/* Send button inside the input */}
                 {/* SUFFIX buttons (right side inside input) */}
-                <div className="absolute right-3 flex gap-2 items-center">
+                <div className="absolute right-3 flex gap-2 items-center pb-1">
                   {
                     message.trim() === "" 
                       ? (

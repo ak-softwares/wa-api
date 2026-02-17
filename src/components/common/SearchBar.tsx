@@ -56,7 +56,8 @@ export default function SearchBar({
     const normalizedPhone = normalizePhoneForSearch(q);
 
     // send both: raw query + normalized phone
-    onSearch(q || normalizedPhone);
+    const finalQuery = normalizedPhone || q;
+    onSearch(finalQuery);
   }, [debouncedSearchTerm]);
 
 

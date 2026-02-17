@@ -36,7 +36,7 @@ export default function CreditStatsDemo() {
   
   return (
     <>    
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-6">
         {/* Monthly Usage Card */}
         <Card className="flex-1 p-3">
           <CardHeader className="px-4">

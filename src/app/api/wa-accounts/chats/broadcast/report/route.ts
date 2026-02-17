@@ -6,6 +6,7 @@ import { MessageModel } from "@/models/Message";
 import { ApiResponse } from "@/types/apiResponse";
 import { MessageStatus } from "@/types/MessageType";
 import { AnalyticsData } from "@/types/Analytics";
+import { ITEMS_PER_PAGE, MAX_ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,13 +15,16 @@ export async function GET(req: NextRequest) {
 
     // Extract directly from body
     const { searchParams } = new URL(req.url);
+    const pageParam = Number(searchParams.get("page"));
+    const perPageParam = Number(searchParams.get("per_page"));
+    const page = Math.max(pageParam || 1, 1);
+    const perPage  = Math.min(Math.max(perPageParam || ITEMS_PER_PAGE, 1), MAX_ITEMS_PER_PAGE);
+    const skip = (page - 1) * perPage;
+    const searchQuery = searchParams.get("q") || "";
+    const filter = searchParams.get("filter") || "all";
 
     const chatId = searchParams.get("chatId"); // broadcast chatId
     const messageId = searchParams.get("messageId"); // broadcast master messageId (optional)
-
-    const per_page = Math.min(parseInt(searchParams.get("per_page") || "10"), 100);
-    const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
-    const skip = (page - 1) * per_page;
 
     if (!chatId || !messageId) {
       const response: ApiResponse = { success: false, message: "Missing chatId or messageId" };
@@ -82,35 +86,60 @@ export async function GET(req: NextRequest) {
     };
 
     // ============================================================
-    // 4) PAGINATED DATA (10 rows default)
+    // 3) SEARCH PIPELINE
     // ============================================================
-    const [result] = await MessageModel.aggregate([
-      { $match: match },
-      { $sort: { createdAt: -1 } },
-      {
-        $facet: {
-          metadata: [{ $count: "total" }],
-          data: [
-            { $skip: skip },
-            { $limit: per_page },
-            {
-              $project: {
-                _id: 1,
-                to: 1,
-                waMessageId: 1,
-                status: 1,
-                sentAt: 1,
-                deliveredAt: 1,
-                readAt: 1,
-                failedAt: 1,
-                errorMessage: 1,
-                createdAt: 1,
-              },
+    const pipeline: any[] = [];
+
+    if (searchQuery) {
+      pipeline.push({
+        $search: {
+          index: "default",
+          text: {
+            query: searchQuery,
+            path: {
+              wildcard: "*",
             },
-          ],
+          },
         },
+      });
+    }
+
+    pipeline.push({
+      $match: match,
+    });
+
+    pipeline.push({
+      $sort: { createdAt: -1 },
+    });
+
+    pipeline.push({
+      $facet: {
+        metadata: [{ $count: "total" }],
+        data: [
+          { $skip: skip },
+          { $limit: perPage },
+          {
+            $project: {
+              _id: 1,
+              to: 1,
+              waMessageId: 1,
+              status: 1,
+              sentAt: 1,
+              deliveredAt: 1,
+              readAt: 1,
+              failedAt: 1,
+              errorMessage: 1,
+              createdAt: 1,
+            },
+          },
+        ],
       },
-    ]);
+    });
+
+    // ============================================================
+    // EXECUTE PIPELINE
+    // ============================================================
+    const [result] = await MessageModel.aggregate(pipeline);
 
     const rows = result?.data || [];
     const total = result?.metadata?.[0]?.total || 0;
@@ -126,8 +155,8 @@ export async function GET(req: NextRequest) {
       pagination: {
         total,
         page,
-        perPage: per_page,
-        totalPages: Math.ceil(total / per_page),
+        perPage,
+        totalPages: Math.ceil(total / perPage),
       },
     };
 
