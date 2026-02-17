@@ -65,7 +65,7 @@ export async function getReplyFromChatAgent({
   // console.log('AI Usage saved:', aiUsage);
   // console.log('AI Response Total Uses:', response.totalUsage);
   // console.log('AI Response Usage:', response.usage);
-  console.log('AI Response:', JSON.stringify(response, null, 2));
+  // console.log('AI Response:', JSON.stringify(response, null, 2));
   // console.log('AI Response:', JSON.stringify(response.text, null, 2));
   return { aiGeneratedReply: response.text };
 }

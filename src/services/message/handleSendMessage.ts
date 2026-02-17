@@ -15,6 +15,7 @@ import { ITemplate } from "@/models/Template";
 import { replaceActualTemplateValue } from "@/lib/mapping/replaceActualTemplateValue";
 import { TemplatePayload } from "@/types/Template";
 import { FB_GRAPH_VERSION } from "@/utiles/constans/apiConstans";
+import { checkMessageCreditsAvailability } from "../wallet/checkMessageCreditsAvailability";
 
 interface HandleSendMessageParams {
   messagePayload: MessagePayload;
@@ -30,8 +31,14 @@ export async function handleSendMessage({
 }: HandleSendMessageParams) {
   const { participants, context, chatType, tag } = messagePayload;
 
+  // ✅ only check (no debit here)
+  const creditCheck = await checkMessageCreditsAvailability({ userId, credits: participants.length });
+  if (!creditCheck.allowed) {
+    throw new ApiError(402, "Insufficient credits");
+  }
+
   // ✅ Basic validation
-  if (!messagePayload.participants || messagePayload.participants.length === 0) { // TODO: remove after makeing all
+  if (!messagePayload.participants || messagePayload.participants.length === 0) {
     throw new ApiError(400, "Participants are required");
   }
   
@@ -67,6 +74,7 @@ export async function handleSendMessage({
   const isTemplate = messagePayload.messageType === MessageType.TEMPLATE;
   let template: ITemplate | undefined = undefined;
   if(isTemplate) {
+    // console.log(JSON.stringify(messagePayload.template, null, 2))
     const metaTemplate: ITemplate = await getTemplateByName({ templateName: messagePayload.template?.name!, waAccount });
     template = replaceActualTemplateValue({metaTemplate: metaTemplate, messagePayload: messagePayload.template! as TemplatePayload});
   }

@@ -45,7 +45,7 @@ export default function CreditStatsDemo() {
                 <Zap className="text-[#0B8576] dark:text-[#11B8A2]" size={15} />
                 Free Message Quota
               </div>
-              <Badge variant={isLow ? "destructive" : "outline"} className="mt-2">
+              <Badge variant={isLow ? "destructive" : "outline"} className={`mt-2 ${isLow ? "text-white" : ""}`}>
                 {loading ? "..." : `${percentage}%`}
               </Badge>
             </CardTitle>

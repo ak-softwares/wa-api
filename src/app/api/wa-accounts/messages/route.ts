@@ -92,13 +92,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(response, { status: 400 });
     }
 
-    // ✅ only check (no debit here)
-    const creditCheck = await checkMessageCreditsAvailability({ userId: user._id, credits: participantsLength });
-    if (!creditCheck.allowed) {
-      const response: ApiResponse = { success: false, message: "Insufficient credits" };
-      return NextResponse.json(response, { status: 402 });
-    }
-
     // console.log("Building template payload:", JSON.stringify(messagePayload.template));
     const result = await handleSendMessage({
       messagePayload,
