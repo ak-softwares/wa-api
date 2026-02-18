@@ -1,7 +1,7 @@
 // components/chat/MessageMetaInfo.tsx
 import React from "react";
 import { MessageStatus } from "@/types/MessageType";
-import { formatTime } from "@/utiles/formatTime/formatTime";
+import { formatTimeOnly  } from "@/utiles/formatTime/formatTime";
 import { Message } from "@/types/Message";
 import { MessageType } from "@/types/MessageType";
 import { ChatType } from "@/types/Chat";
@@ -50,7 +50,7 @@ export default function MessageMetaInfo({ message }: MessageMetaInfoProps) {
       )}
 
       {/* Time */}
-      {formatTime(message.createdAt)}
+      {formatTimeOnly(message.createdAt)}
 
       {/* Status Icons */}
       {message.status === MessageStatus.Pending && (

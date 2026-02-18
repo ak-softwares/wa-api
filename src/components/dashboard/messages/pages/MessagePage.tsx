@@ -27,6 +27,7 @@ import MessageInfoDialog from "@/components/dashboard/messages/dialogs/MessageIn
 import BroadcastPage from "../../broadcast/BroadcastPage";
 import BroadcastMessageReportPage from "../../broadcast/BroadcastMessageReport";
 import { Textarea } from "@/components/ui/textarea";
+import { getDateLabel } from "@/utiles/formatTime/formatTime";
 
 export default function MessagePage() {
   const { theme } = useTheme(); // or use your theme context
@@ -352,19 +353,36 @@ export default function MessagePage() {
                           </div>
                       );
                   })
-                  : messages.map((message) => (
-                      <MessageBubble 
-                        key={message._id?.toString()}
-                        message={message}
-                        onDelete={handleDeleteMessage}
-                        onReply={() => onReply(message)}
-                        onForward={() => {
-                          setForwardMessage(message);
-                          setIsForwardMessageOpen(true);
-                        }}
-                        onInfo={() => handleOpenInfo(message)}   // ✅ correct
-                      />
-                    ))
+                  : messages.map((message, index) => {
+                      const prevMsg = messages[index + 1];
+
+                      const showDate = !prevMsg || new Date(prevMsg.createdAt ?? "").toDateString() !==
+                          new Date(message.createdAt ?? "").toDateString();
+                      return (
+                        <div key={message._id?.toString()}>
+
+                          {showDate && (
+                            <div className="flex justify-center my-2">
+                              <span className="text-xs bg-white dark:bg-[#2E2F2F] px-3 py-1 rounded-full shadow">
+                                {getDateLabel(message.createdAt ?? "")}
+                              </span>
+                            </div>
+                          )}
+
+                          <MessageBubble 
+                            key={message._id?.toString()}
+                            message={message}
+                            onDelete={handleDeleteMessage}
+                            onReply={() => onReply(message)}
+                            onForward={() => {
+                              setForwardMessage(message);
+                              setIsForwardMessageOpen(true);
+                            }}
+                            onInfo={() => handleOpenInfo(message)}   // ✅ correct
+                          />
+                        </div>
+                      );
+                    })
                   }
               </div>
 

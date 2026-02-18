@@ -1,4 +1,4 @@
-export const formatTime = (date?: string) => {
+export const formatMessageDateOrTime = (date?: string) => {
   if (!date) return "";
 
   const d = new Date(date);
@@ -29,6 +29,21 @@ export const formatTime = (date?: string) => {
   });
 };
 
+export const formatTimeOnly = (date?: string) => {
+  if (!date) return "";
+
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "";
+
+  let hours = d.getHours();
+  const minutes = d.getMinutes().toString().padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
+
+  hours = hours % 12 || 12;
+
+  return `${hours}:${minutes} ${ampm}`;
+};
+
 export const formatFullDateTime = (date?: string) => {
   if (!date) return "";
 
@@ -54,5 +69,25 @@ export const formatDateIST = (date?: string | Date) => {
     timeZone: "Asia/Kolkata",
     dateStyle: "medium",
     timeStyle: "short",
+  });
+};
+
+export const getDateLabel = (date: string | Date) => {
+  const msgDate = new Date(date);
+  const today = new Date();
+  const yesterday = new Date();
+
+  yesterday.setDate(today.getDate() - 1);
+
+  const isSameDay = (d1: Date, d2: Date) =>
+    d1.toDateString() === d2.toDateString();
+
+  if (isSameDay(msgDate, today)) return "Today";
+  if (isSameDay(msgDate, yesterday)) return "Yesterday";
+
+  return msgDate.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
   });
 };

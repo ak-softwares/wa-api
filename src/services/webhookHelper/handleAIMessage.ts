@@ -78,7 +78,8 @@ export async function handleAIMessage({
       const result = await handleSendMessage({
         messagePayload,
         userId: userId,
-        waAccount
+        waAccount,
+        isCreditAlreadyCheck: true,
       });
 
       if (result.sent > 0 && result.message) {

@@ -21,6 +21,7 @@ interface HandleSendMessageParams {
   messagePayload: MessagePayload;
   userId: Types.ObjectId;
   waAccount: IWaAccount;
+  isCreditAlreadyCheck?: boolean,
 }
 
 // Send a WhatsApp message via Cloud API and save in DB
@@ -28,13 +29,16 @@ export async function handleSendMessage({
   messagePayload,
   userId,
   waAccount,
+  isCreditAlreadyCheck = false,
 }: HandleSendMessageParams) {
   const { participants, context, chatType, tag } = messagePayload;
 
   // ✅ only check (no debit here)
-  const creditCheck = await checkMessageCreditsAvailability({ userId, credits: participants.length });
-  if (!creditCheck.allowed) {
-    throw new ApiError(402, "Insufficient credits");
+  if (!isCreditAlreadyCheck) {
+    const creditCheck = await checkMessageCreditsAvailability({ userId, credits: participants.length });
+    if (!creditCheck.allowed) {
+      throw new ApiError(402, "Insufficient credits");
+    }
   }
 
   // ✅ Basic validation

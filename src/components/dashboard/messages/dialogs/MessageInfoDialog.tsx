@@ -18,7 +18,42 @@ type Props = {
   message: Message
 }
 
+const Row = ({
+  icon,
+  label,
+  value,
+  title,
+  iconClassName,
+}: {
+  icon?: string
+  label: string
+  value?: string | null
+  title?: string,
+  iconClassName?: string;
+}) => (
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-2 text-muted-foreground">
+      {icon && 
+        <img
+          src={icon}
+          className={`w-4 h-4 ${
+            iconClassName || ""
+          }`}
+          alt={label}
+          title={title}
+        />
+      }
+      <span>{label}</span>
+    </div>
+    <span className="font-medium">
+      {value ? formatFullDateTime(value) : "—"}
+    </span>
+  </div>
+)
+
 export default function MessageInfoDialog({ open, setOpen, message }: Props) {
+  const isFailed = Boolean(message.failedAt)
+  const isReceivedOnly = message.status === "received"
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -31,65 +66,67 @@ export default function MessageInfoDialog({ open, setOpen, message }: Props) {
         </DialogHeader>
 
         {/* Message preview */}
-        <div className="rounded-lg border p-3 text-sm">
+        <div className="rounded-lg border p-3 text-sm bg-muted/30">
           {message.message || "No text content"}
         </div>
 
+        {/* Status */}
         <div className="flex items-center gap-2">
-          <Badge variant="outline">{message.status}</Badge>
+          <Badge variant={"outline"}>
+            {message.status}
+          </Badge>
         </div>
 
         <Separator />
 
         <div className="space-y-3 text-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <img
-                src="/assets/icons/status-check.svg"
-                className="w-4 h-4 dark:invert opacity-60"
-                alt="sent/delivered"
-              />
-              <span>Sent</span>
-            </div>
-            <span className="font-medium">{message.sentAt ? formatFullDateTime(message.sentAt) : "—"}</span>
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <img
-                src="/assets/icons/status-dblcheck.svg"
-                className="w-4 h-4 dark:invert opacity-60"
-                alt="sent/delivered"
-              />
-              <span>Delivered</span>
-            </div>
-            <span className="font-medium">{message.deliveredAt ? formatFullDateTime(message.deliveredAt) : "—"}</span>
-          </div>
+          {/* FAILED */}
+          {isFailed && (
+            <Row
+              icon="/assets/icons/warning.svg"
+              label="Failed"
+              value={message.failedAt}
+              title={
+                message.errorMessage
+                  ? `Error: ${message.errorMessage}`
+                  : "Message failed"
+              }
+            />
+          )}
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <img
-                src="/assets/icons/status-dblcheck-1.svg"
-                className="w-4 h-4"
-                alt="read"
-              />
-              <span>Read</span>
-            </div>
-            <span className="font-medium">{message.readAt ? formatFullDateTime(message.readAt) : "—"}</span>
-          </div>
+          {/* RECEIVED ONLY */}
+          {isReceivedOnly && !isFailed && (
+            <Row
+              label="Received"
+              value={message.createdAt}
+            />
+          )}
 
-          {message.failedAt && <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <img
-                src="/assets/icons/warning.svg"
-                className="w-4 h-4"
-                alt="failed"
-                title={message.errorMessage ? `Error: ${message.errorMessage}` : "Message failed"}
+          {/* NORMAL FLOW */}
+          {!isFailed && !isReceivedOnly && (
+            <>
+              <Row
+                icon="/assets/icons/status-check.svg"
+                label="Sent"
+                value={message.sentAt}
+                iconClassName="dark:invert opacity-60"
               />
-              <span>Read</span>
-            </div>
-            <span className="font-medium">{message.failedAt ? formatFullDateTime(message.failedAt) : "—"}</span>
-          </div>}
+
+              <Row
+                icon="/assets/icons/status-dblcheck.svg"
+                label="Delivered"
+                value={message.deliveredAt}
+                iconClassName="dark:invert opacity-60"
+              />
+
+              <Row
+                icon="/assets/icons/status-dblcheck-1.svg"
+                label="Read"
+                value={message.readAt}
+              />
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>

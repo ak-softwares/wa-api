@@ -1,7 +1,7 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatTime } from "@/utiles/formatTime/formatTime";
+import { formatMessageDateOrTime  } from "@/utiles/formatTime/formatTime";
 import ChatMenu from "@/components/dashboard/chats/menus/ChatMenu";
 import ContactAvatar from "@/components/dashboard/contacts/common/ContactAvatar";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
@@ -256,7 +256,7 @@ export default function ChatList() {
                             (chat?.unreadCount ?? 0) > 0 ? "text-green-500 font-medium" : "text-gray-500"
                           }`}
                         >
-                        {formatTime(chat.lastMessageAt)}
+                        {formatMessageDateOrTime(chat.lastMessageAt)}
                       </span>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="w-5 h-5" />
