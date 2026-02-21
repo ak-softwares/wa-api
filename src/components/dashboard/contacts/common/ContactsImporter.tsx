@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import SearchBar from "@/components/common/SearchBar";
 import ContactAvatar from "@/components/dashboard/contacts/common/ContactAvatar";
 import IconButtonSend from "@/components/common/IconButtonSend";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { Contact } from "@/types/Contact";
 import IconButton from "@/components/common/IconButton";
 import GenericMenu from "@/components/common/DropDownMenu";
@@ -57,7 +57,7 @@ export default function ContactImporter({ onBack, onImportContacts }: Props) {
 
   const handleImportSelected = () => {
     if (selectedContacts.length === 0) {
-      toast.error("Please select at least one contact");
+      showToast.error("Please select at least one contact");
       return;
     }
 

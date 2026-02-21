@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { GoogleService } from "@/types/OAuth";
 
@@ -17,7 +17,7 @@ export function useGoogleImport() {
     const count = searchParams.get("count");
 
     if (imported === "true") {
-      toast.success(`${count} contacts imported successfully!`);
+      showToast.success(`${count} contacts imported successfully!`);
 
       // ✅ remove query params without reload
       router.replace(pathname);
@@ -32,7 +32,7 @@ export function useGoogleImport() {
       const data = await res.json();
 
       if (!data.success) {
-        toast.error(data.message || "Failed to get Google OAuth URL");
+        showToast.error(data.message || "Failed to get Google OAuth URL");
         setLoading(false);
         return;
       }
@@ -40,7 +40,7 @@ export function useGoogleImport() {
       // Redirect user to Google OAuth consent screen
       window.location.href = data.data;
     } catch (err) {
-      toast.error("Something went wrong");
+      showToast.error("Something went wrong");
     } finally {
       setLoading(false);
     }

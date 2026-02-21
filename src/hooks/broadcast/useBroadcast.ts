@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { useRouter } from "next/navigation";
 import { useChatStore } from "@/store/chatStore";
 import { ChatParticipant } from "@/types/Chat";
@@ -27,7 +27,7 @@ export const useBroadcast = (onSuccess?: () => void) => {
   const createBroadcast = async ({broadcastName, participants}: CreateProps) => {
 
     if (!participants.length) {
-      toast.error("Please select at least one contact!");
+      showToast.error("Please select at least one contact!");
       return;
     }
 
@@ -54,10 +54,10 @@ export const useBroadcast = (onSuccess?: () => void) => {
       setNewMessageData(null, chat);
       setActiveChat(chat);
 
-      toast.success("Broadcast list created");
+      showToast.success("Broadcast list created");
       router.push("/dashboard/chats");
     } catch (err: any) {
-      toast.error(err.message || "Broadcast creation failed");
+      showToast.error(err.message || "Broadcast creation failed");
     } finally {
       setCreatingBroadcast(false);
     }
@@ -65,7 +65,7 @@ export const useBroadcast = (onSuccess?: () => void) => {
 
   const updateBroadcast = async ({ broadcastId, broadcastName, participants }: UpdateProps) => {
     if (!participants?.length) {
-      toast.error("Please select at least one contact!");
+      showToast.error("Please select at least one contact!");
       return;
     }
 
@@ -95,9 +95,9 @@ export const useBroadcast = (onSuccess?: () => void) => {
       setNewMessageData(null, chat);
       setActiveChat(chat);
 
-      toast.success("Broadcast updated");
+      showToast.success("Broadcast updated");
     } catch (err: any) {
-      toast.error(err.message || "Broadcast update failed");
+      showToast.error(err.message || "Broadcast update failed");
     } finally {
       setUpdatingBroadcast(false);
     }

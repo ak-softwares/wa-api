@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { forgotPasswordSchema } from "@/schemas/forgotPassword";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -62,11 +62,11 @@ export default function ForgotPasswordPage() {
         const result: ApiResponse = await res.json();
 
         if (!res.ok) {
-          toast.error("Failed to send reset link", { description: result.message });
+          showToast.error("Failed to send reset link", { description: result.message });
           return;
         }
 
-        toast.success("Reset link sent", {
+        showToast.success("Reset link sent", {
         description: "Please check your email for the reset link.",
         });
         startCountdown();
@@ -74,7 +74,7 @@ export default function ForgotPasswordPage() {
         const axiosError = error as AxiosError<ApiResponse>;
         const errorMessage =
         axiosError.response?.data?.message || "Something went wrong";
-        toast.error("Failed to send reset link", { description: errorMessage });
+        showToast.error("Failed to send reset link", { description: errorMessage });
     }
   };
 

@@ -1,4 +1,5 @@
 import { withAuth } from "next-auth/middleware";
+import { LOGIN_PATH } from "./utiles/auth/auth";
 
 export default withAuth(
   function middleware() {
@@ -23,7 +24,7 @@ export default withAuth(
       },
     },
     pages: {
-      signIn: "/auth/login",
+      signIn: LOGIN_PATH,
     },
   }
 );

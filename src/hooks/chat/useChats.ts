@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { ApiResponse } from "@/types/apiResponse";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { Chat } from "@/types/Chat";
 import { useChatStore } from "@/store/chatStore";
 import { ChatFilterType } from "@/utiles/enums/chatFilters";
@@ -97,10 +97,10 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
         } else {
           setChats(prev => (pageToFetch === 1 ? [] : prev));
           setHasMore(false);
-          toast.error("Error: " + json.message);
+          showToast.error("Error: " + json.message);
         }
       } catch {
-        toast.error("Failed to load chats.");
+        showToast.error("Failed to load chats.");
       } finally {
         pageToFetch === 1 ? setLoading(false) : setLoadingMore(false);
       }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { ApiToken } from "@/types/ApiToken";
 
 export function useApiToken(autoLoad: boolean = true) {
@@ -38,14 +38,14 @@ export function useApiToken(autoLoad: boolean = true) {
 
       const { data } = await res.json();
 
-      toast.success("New API token generated!");
+      showToast.success("New API token generated!");
 
       // update metadata immediately
       setApiToken(data?.token ?? null);
 
       return data?.token?.token ?? ""; // raw token
     } catch (error: any) {
-      toast.error(error?.message || "Failed to generate token");
+      showToast.error(error?.message || "Failed to generate token");
       throw error;
     } finally {
       setIsLoading(false);
@@ -63,13 +63,13 @@ export function useApiToken(autoLoad: boolean = true) {
 
       if (!res.ok) throw new Error("Failed to revoke token");
 
-      toast.success("API token revoked");
+      showToast.success("API token revoked");
 
       setApiToken(null);
 
       return true;
     } catch (error: any) {
-      toast.error(error?.message || "Failed to revoke token");
+      showToast.error(error?.message || "Failed to revoke token");
       throw error;
     } finally {
       setIsLoading(false);
@@ -78,7 +78,7 @@ export function useApiToken(autoLoad: boolean = true) {
 
   const copyToClipboard = useCallback(async (text: string) => {
     await navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard");
+    showToast.success("Copied to clipboard");
   }, []);
 
   useEffect(() => {

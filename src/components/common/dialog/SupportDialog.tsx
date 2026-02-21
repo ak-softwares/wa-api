@@ -6,7 +6,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 
 import { Phone, Mail, Copy, MessageCircle } from "lucide-react";
 
@@ -24,9 +24,9 @@ export function SupportDialog({ open, onClose }: Props) {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(phoneNumber);
-      toast.success("Support number copied!");
+      showToast.success("Support number copied!");
     } catch {
-      toast.error("Failed to copy number");
+      showToast.error("Failed to copy number");
     }
   };
 

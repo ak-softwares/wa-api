@@ -4,7 +4,7 @@ import { UserModel } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { signInSchema } from "@/schemas/signInSchema";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { generateToken } from "@/lib/auth/jwt";
 
 export async function POST(req: Request) {
   try {
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     if (!user) {
       const response: ApiResponse = {
         success: false,
-        message: "User not found",
+        message: "Invalid credentials",
       };
       return NextResponse.json(response, { status: 404 });
     }
@@ -49,13 +49,9 @@ export async function POST(req: Request) {
       return NextResponse.json(response, { status: 401 });
     }
 
-    const token = jwt.sign(
-      {
-        id: user._id,
-      },
-      process.env.JWT_SECRET!,
-      { expiresIn: "30d" }
-    );
+    const token = generateToken({
+      id: user._id.toString(),
+    });
 
     // ✅ Success
     const response: ApiResponse = {
@@ -75,7 +71,7 @@ export async function POST(req: Request) {
   } catch (error) {
     const response: ApiResponse = {
       success: false,
-      message: "Something went wrong: " + (error as Error).message,
+      message: "Internal server error"
     };
     return NextResponse.json(response, { status: 500 });
   }

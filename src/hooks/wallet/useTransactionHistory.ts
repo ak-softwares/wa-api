@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { ApiResponse } from "@/types/apiResponse";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { WalletTransactionType } from "@/types/WalletTransaction";
 import { WalletTransaction } from "@/types/WalletTransaction";
 
@@ -58,7 +58,7 @@ export function useTransactionHistory({
           setHasMore(false);
         }
       } catch {
-        toast.error("Failed to load transaction history.");
+        showToast.error("Failed to load transaction history.");
       } finally {
         pageToFetch === 1 ? setLoading(false) : setLoadingMore(false);
       }

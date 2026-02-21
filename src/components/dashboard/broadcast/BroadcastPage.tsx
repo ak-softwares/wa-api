@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import ExcelContactsImporter from "@/components/common/Excel/ExcelContactsImporter";
 import { ChatParticipant } from "@/types/Chat";
 import { useBroadcast } from "@/hooks/broadcast/useBroadcast";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import ContactImporter from "../contacts/common/ContactsImporter";
 import { useChatMenuStore } from "@/store/chatMenu";
 
@@ -63,12 +63,12 @@ export default function BroadcastPage({ onBack, broadcastId, initialBroadcastNam
 
   const handleCreateBroadcast = async () => {
     if (!broadcastName.trim()) {
-      toast.error("Please enter broadcast name");
+      showToast.error("Please enter broadcast name");
       return;
     }
 
     if (contacts.length === 0) {
-      toast.error("Please select at least one contact");
+      showToast.error("Please select at least one contact");
       return;
     }
 

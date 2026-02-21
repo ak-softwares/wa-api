@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { ImportedContact } from "@/types/Contact";
 
 export function useVCFImport() {
@@ -95,10 +95,10 @@ export function useVCFImport() {
 
       setImportProgress(90);
       setImportedContacts(parsed);
-      toast.success(`Processed ${parsed.length} VCF contacts`);
+      showToast.success(`Processed ${parsed.length} VCF contacts`);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to parse VCF");
+      showToast.error("Failed to parse VCF");
     } finally {
       setIsImporting(false);
       setImportProgress(100);

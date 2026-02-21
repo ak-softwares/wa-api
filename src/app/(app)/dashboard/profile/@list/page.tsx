@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { toast } from "@/components/ui/sonner"
+import { showToast } from "@/components/ui/sonner"
 import { useForm, Controller } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -57,12 +57,12 @@ export default function ProfilePage() {
       const result = await res.json()
 
       if (!res.ok) {
-        toast.error("Failed", { description: result.message })
+        showToast.error("Failed", { description: result.message })
       } else {
-        toast.success("Success", { description: result.message })
+        showToast.success("Success", { description: result.message })
       }
     } catch {
-      toast.error("Error", { description: "Something went wrong" })
+      showToast.error("Error", { description: "Something went wrong" })
     }
   }
 

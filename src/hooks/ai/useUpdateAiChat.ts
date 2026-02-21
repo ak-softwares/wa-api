@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { AIChat } from "@/types/Ai";
 
 export function useUpdateAiChat(getPayload?: () => Partial<AIChat>) {
@@ -20,11 +20,11 @@ export function useUpdateAiChat(getPayload?: () => Partial<AIChat>) {
       if (!response.ok) throw new Error("Failed to update AI Chat config");
 
       const updated = await response.json();
-      toast.success("AI Chat updated successfully!");
+      showToast.success("AI Chat updated successfully!");
 
       return updated.data ?? updated;
     } catch (error: any) {
-      toast.error(`Error updating AI Chat: ${error?.message || error}`);
+      showToast.error(`Error updating AI Chat: ${error?.message || error}`);
       throw error;
     } finally {
       setIsSaving(false);

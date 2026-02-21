@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef, useLayoutEffect } from "react";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { Message } from "@/types/Message";
 import { MessageStatus } from "@/types/MessageType";
 import { ApiResponse } from "@/types/apiResponse";
@@ -125,7 +125,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
           setHasMore(false);
         }
       } catch (err) {
-        toast.error("Failed to load messages.");
+        showToast.error("Failed to load messages.");
       } finally {
         if (chatId !== currentChatIdRef.current) return;
         if (pageToFetch === 1) setLoading(false);
@@ -198,7 +198,7 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "Failed to send message";
       // 🔔 Show toast on error
-      toast.error(errorMsg);
+      showToast.error(errorMsg);
       setMessages((prev) => prev.map((msg) => msg._id === tempId ? { ...msg, status: MessageStatus.Failed } : msg ));
     }
   };

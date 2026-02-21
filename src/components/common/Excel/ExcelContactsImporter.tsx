@@ -10,7 +10,7 @@ import {
 
 import SearchBar from "@/components/common/SearchBar";
 import ContactAvatar from "@/components/dashboard/contacts/common/ContactAvatar";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { useExcelImport } from "@/hooks/contact/useExcelImport";
 import IconButton from "../IconButton";
 import IconButtonSend from "../IconButtonSend";
@@ -85,7 +85,7 @@ export default function ExcelContactsImporter({
   // IMPORT
   const handleImportSelected = () => {
     if (selectedContacts.length === 0) {
-      toast.error("Please select at least one contact");
+      showToast.error("Please select at least one contact");
       return;
     }
 

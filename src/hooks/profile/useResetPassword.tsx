@@ -13,15 +13,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/sonner";
-import { useLogoutDialog } from "./useLogoutDialog";
+import { showToast } from "@/components/ui/sonner";
+import { useLogout } from "./useLogout";
 
 export function useResetPasswordDialog() {
   const [open, setOpen] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { logout } = useLogoutDialog();
+  const { logout } = useLogout();
 
   const handleResetPassword = async () => {
     setLoading(true);
@@ -35,9 +35,9 @@ export function useResetPasswordDialog() {
       const result = await res.json();
 
       if (!res.ok) {
-        toast.error(result.message || "Failed to reset password");
+        showToast.error(result.message || "Failed to reset password");
       } else {
-        toast.success("Password reset successful! Please login again.");
+        showToast.success("Password reset successful! Please login again.");
         logout();
       }
     } finally {

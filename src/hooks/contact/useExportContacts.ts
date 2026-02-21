@@ -1,11 +1,11 @@
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { Contact } from "@/types/Contact";
 import * as XLSX from "xlsx";
 
 export const useExportContacts = () => {
   const exportContacts = (selectedContacts: Contact[]) => {
     if (!selectedContacts || selectedContacts.length === 0) {
-      toast.error("No contacts selected for export");
+      showToast.error("No contacts selected for export");
       return;
     }
 
@@ -28,10 +28,10 @@ export const useExportContacts = () => {
       // Download file
       XLSX.writeFile(workbook, "contacts_export.xlsx");
 
-      toast.success("Contacts exported successfully");
+      showToast.success("Contacts exported successfully");
     } catch (error) {
       console.error("Export error:", error);
-      toast.error("Failed to export contacts");
+      showToast.error("Failed to export contacts");
     }
   };
 

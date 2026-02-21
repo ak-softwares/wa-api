@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Tool } from "@/types/Tool";
 import { ApiResponse } from "@/types/apiResponse";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 
 export function useTools() {
   const [tools, setTools] = useState<Tool[]>([]);
@@ -18,12 +18,12 @@ export function useTools() {
       const json: ApiResponse<Tool[]> = await res.json();
 
       if (!res.ok || !json.success) {
-        toast.error(json.message || "Failed to fetch tools");
+        showToast.error(json.message || "Failed to fetch tools");
       }
 
       setTools(json.data || []);
     } catch (err: any) {
-      toast.error(err.message || "Something went wrong");
+      showToast.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }

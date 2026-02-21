@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { CURRENCY_CONFIG, CurrencyCode, PRICE_PER_CREDIT_USD } from "@/utiles/constans/wallet";
 import { useRazorpayPayment } from "@/hooks/razorpay/useRazorpayPayment";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { detectCurrency } from "@/lib/wallet/pricing";
 import {
   Select,
@@ -99,7 +99,7 @@ export default function AddCreditPopup({
       name: 'Pro Plan',
       description: 'Subscription upgrade',
       onSuccess: () => {
-        toast.success("Payment successfull")
+        showToast.success("Payment successfull")
         onAddCredits(credits); // optimistic
         onClose(); // ✅ close AFTER success
       },

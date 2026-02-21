@@ -15,27 +15,26 @@ import { Label } from "@/components/ui/label";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios, { AxiosError } from "axios";
-import { toast } from "@/components/ui/sonner";
 import { LoginSchema } from "@/schemas/loginSchema";
-import { ApiResponse } from "@/types/apiResponse";
 import { useEffect } from "react";
-import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
 import FooterTerms from "@/components/global/footer/footerTerms";
+import { DASHBOARD_PATH } from "@/utiles/auth/auth";
+import { usePhoneOtpAuth } from "@/hooks/auth/useOtpAuth";
+import { useSignIn } from "@/hooks/auth/useSignIn";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  
+  const { signInWithGoogle, googleLoading } = useSignIn();
+  const { sendOtp, sendLoading } = usePhoneOtpAuth();
+
   const { status } = useSession();
 
   // Always call hooks unconditionally
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace("/dashboard");
+      router.replace(DASHBOARD_PATH);
     }
   }, [status, router]);
 
@@ -49,49 +48,15 @@ export default function LoginPage() {
   const { register, handleSubmit, control, formState: { errors, isSubmitting } } = form;
 
   const onSubmit = async (data: z.infer<typeof LoginSchema>) => {
-    try {
-      const response = await axios.post<ApiResponse>("/api/auth/send-otp", {
-        phone: data.phone, // assuming your form has `phone`
-      });
-
-      if (response.data.success) {
-        toast.success("OTP sent successfully", {
-          description: response.data.message,
-        });
-        router.push(`/auth/verify-otp?phone=${data.phone}`);
-      } else {
-        toast.error("Failed to send OTP", {
-          description: response.data.message,
-        });
-      }
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      const errorMessage =
-        axiosError.response?.data?.message || "Something went wrong";
-      toast.error("Failed to send OTP", { description: errorMessage });
+    const success = await sendOtp(data.phone);
+    if (success) {
+      router.push(`/auth/verify-otp?phone=${data.phone}`);
     }
   };
 
   // ✅ Google SignIn handler
   const onGoogleSignIn = async () => {
-    try {
-      setLoading(true);
-      const result = await signIn("google", {
-        redirect: false, // prevent auto redirect
-      });
-      if (result?.error) {
-        toast.error("Google sign-in failed", { description: result.error });
-      } else {
-        toast.success("Signed in successfully");
-        router.push("/dashboard");
-      }
-    } catch (error) {
-      toast.error("Google sign-in failed", {
-        description: error instanceof Error ? error.message : "Something went wrong",
-      });
-    } finally {
-      setLoading(false);
-    }
+    await signInWithGoogle();
   };
 
   const gotoSignIn = () => {
@@ -128,8 +93,8 @@ export default function LoginPage() {
                   {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Connecting..." : "Login with WhatsApp"}
+                <Button type="submit" className="w-full" disabled={sendLoading}>
+                  {sendLoading ? "Otp Sending..." : "Login with WhatsApp"}
                 </Button>
 
                 <div className="relative text-center text-sm after:border-t after:border-border after:inset-0 after:top-1/2 after:absolute after:z-0">
@@ -155,7 +120,7 @@ export default function LoginPage() {
 
                     Login with Email and Password
                   </Button>
-                  <Button variant="outline" className="w-full" type="button" disabled={loading} onClick={() => onGoogleSignIn()}>
+                  <Button variant="outline" className="w-full" type="button" disabled={googleLoading} onClick={() => onGoogleSignIn()}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -166,7 +131,7 @@ export default function LoginPage() {
                         fill="currentColor"
                       />
                     </svg>
-                    {loading ? "Signing in with Google..." : "Continue with Google"}
+                    {googleLoading ? "Signing in with Google..." : "Continue with Google"}
                   </Button>
                 </div>
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { toast } from "@/components/ui/sonner"
+import { showToast } from "@/components/ui/sonner"
 import { ApiResponse } from "@/types/apiResponse"
 import { WabaAccount, WaSetupStatus } from "@/types/WabaAccount"
 
@@ -16,7 +16,7 @@ export function useWaSetupData() {
       const result: ApiResponse = await res.json()
       if (result.success) setWaSetupStatus(result.data)
     } catch (err: any) {
-      toast.error("Error loading setup status: " + err.message)
+      showToast.error("Error loading setup status: " + err.message)
     } finally{
       setLoadingWaba(false);
     }

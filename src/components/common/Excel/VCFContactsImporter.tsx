@@ -5,7 +5,7 @@ import { AlertCircle, Upload } from "lucide-react";
 
 import SearchBar from "@/components/common/SearchBar";
 import ContactAvatar from "@/components/dashboard/contacts/common/ContactAvatar";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 
 import IconButton from "@/components/common/IconButton";
 import IconButtonSend from "@/components/common/IconButtonSend";
@@ -84,7 +84,7 @@ export default function VCFContactsImporter({ onBack, onImportContacts }: Props)
   // IMPORT
   const handleImportSelected = () => {
     if (selectedContacts.length === 0) {
-      toast.error("Please select at least one contact");
+      showToast.error("Please select at least one contact");
       return;
     }
 

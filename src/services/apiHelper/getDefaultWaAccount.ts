@@ -8,6 +8,26 @@ import { hmacHash } from "@/lib/crypto";
 import { WaAccountModel } from "@/models/WaAccount";
 import { ApiTokenModel } from "@/models/ApiToken";
 import { Types } from "mongoose";
+import jwt from "jsonwebtoken";
+
+function verifyJwtToken(token: string) {
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET!
+    ) as { id: string };
+
+    return decoded?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function looksLikeJwt(token: string) {
+  const parts = token.split(".");
+  return parts.length === 3 && parts.every(Boolean);
+}
+
 
 export async function findUserIdByApiToken(token: string) {
   if (!token) return null;
@@ -43,10 +63,24 @@ export function getBearerToken(req?: NextRequest) {
 export async function fetchAuthenticatedUser(req?: NextRequest) {
   await connectDB();
 
-    // 1️⃣ Try Bearer token first
-  const { token } = getBearerToken(req);
-  if (token) {
-    const userId = await findUserIdByApiToken(token);
+  // 1️⃣ Try Bearer token first
+  const bearer = getBearerToken(req);
+  if (!("errorResponse" in bearer) && bearer.token) {
+    const token = bearer.token;
+    let userId: any = null;
+
+    // ✅ 1. Try JWT token first
+    if (looksLikeJwt(token)) {
+      const jwtUserId = verifyJwtToken(token);
+      if (jwtUserId) {
+        userId = jwtUserId;
+      }
+    }
+
+    // ✅ 2. If not JWT → Try API token
+    if (!userId) {
+      userId = await findUserIdByApiToken(token);
+    }
 
     if (!userId) {
       const response: ApiResponse = {
@@ -56,7 +90,7 @@ export async function fetchAuthenticatedUser(req?: NextRequest) {
       return { errorResponse: NextResponse.json(response, { status: 401 }) };
     }
 
-    // 🔑 Fetch user from waAccount
+    // 🔑 Fetch user
     const user = await UserModel.findById(userId);
     if (!user) {
       const response: ApiResponse = {

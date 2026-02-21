@@ -5,7 +5,7 @@ import { useContacts } from "@/hooks/contact/useContacts";
 import ContactAvatar from "../common/ContactAvatar";
 import { useState, useRef } from "react";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import ContactMenu from "../menus/ContactMenu";
 import ContactsMenu from "../menus/ContactsMenu";
 import IconButton from "@/components/common/IconButton";
@@ -81,7 +81,7 @@ export default function ContactList() {
   
   const handleDeleteSelected = () => {
     if (!selectedContacts || selectedContacts.length === 0) {
-      toast.error("No contacts selected");
+      showToast.error("No contacts selected");
       return;
     }
 

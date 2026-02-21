@@ -11,13 +11,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "@/components/ui/sonner";
-import { useLogoutDialog } from "./useLogoutDialog";
+import { showToast } from "@/components/ui/sonner";
+import { useLogout } from "./useLogout";
 
 export function useDeleteAccountDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { logout } = useLogoutDialog();
+  const { logout } = useLogout();
 
   const handleDelete = async () => {
     try {
@@ -30,13 +30,13 @@ export function useDeleteAccountDialog() {
       const data = await res.json();
 
       if (data.success) {
-        toast.success(data.message);
+        showToast.success(data.message);
         logout();
       } else {
-        toast.error(data.message || "Failed to delete account");
+        showToast.error(data.message || "Failed to delete account");
       }
     } catch (err: any) {
-      toast.error(err.message || "Unexpected error");
+      showToast.error(err.message || "Unexpected error");
     } finally {
       setLoading(false);
     }

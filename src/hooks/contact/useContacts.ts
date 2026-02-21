@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { ApiResponse } from "@/types/apiResponse";
 import { Contact } from "@/types/Contact";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
 
 interface UseContactsProps {
@@ -43,7 +43,7 @@ export function useContacts({ sidebarRef }: UseContactsProps) {
           setHasMore(false);
         }
       } catch {
-        toast.error("Failed to load contacts.");
+        showToast.error("Failed to load contacts.");
       } finally {
         pageToFetch === 1 ? setLoading(false) : setLoadingMore(false);
       }

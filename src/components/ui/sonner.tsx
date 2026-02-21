@@ -57,7 +57,7 @@ const renderDescription = (desc: any) => {
   return typeof desc === "function" ? desc() : desc;
 };
 
-export const toast = {
+export const showToast = {
   success: (msg: string, options?: ExternalToast) =>
     sonnerToast.success(msg, {
       ...options,

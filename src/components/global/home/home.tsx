@@ -4,11 +4,12 @@ import React, { useState } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
+import { DASHBOARD_PATH, LOGIN_PATH } from "@/utiles/auth/auth"
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
   const { data: session } = useSession()
-  const href = session ? "/dashboard" : "/auth/login";
+  const href = session ? DASHBOARD_PATH : LOGIN_PATH;
 
   const features = [
     { title: "Seamless WhatsApp Integration", desc: "Connect your business systems effortlessly with WhatsApp for smooth communication." },

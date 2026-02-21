@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { ApiResponse } from "@/types/apiResponse";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { Template } from "@/types/Template";
 import { ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
 
@@ -61,7 +61,7 @@ export function useTemplates({ sidebarRef, isSend }: UseTemplatesProps = {}) {
         setAfter(nextCursor);
         setHasMore(Boolean(nextCursor));
       } catch {
-        toast.error("Failed to load templates.");
+        showToast.error("Failed to load templates.");
       } finally {
         setLoading(false);
         setLoadingMore(false);

@@ -14,14 +14,11 @@ import { Label } from "@/components/ui/label";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios, { AxiosError } from "axios";
-import { toast } from "@/components/ui/sonner";
-import { ApiResponse } from "@/types/apiResponse";
-import { signIn } from "next-auth/react";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
 import { VerifyOtpSchema } from "@/schemas/verifyOtpSchema";
 import { useEffect, useState } from "react";
+import { usePhoneOtpAuth } from "@/hooks/auth/useOtpAuth";
 
 export default function VerifyOtpForm() {
   const router = useRouter();
@@ -30,7 +27,7 @@ export default function VerifyOtpForm() {
 
   // Countdown state for resend OTP
   const [counter, setCounter] = useState(60);
-  const [isResending, setIsResending] = useState(false);
+  const { verifyOtp, verifyLoading, sendOtp, sendLoading } = usePhoneOtpAuth();
 
   useEffect(() => {
     if (counter > 0) {
@@ -47,38 +44,15 @@ export default function VerifyOtpForm() {
   const { handleSubmit, control, formState: { errors, isSubmitting } } = form;
 
   const onSubmit = async (data: z.infer<typeof VerifyOtpSchema>) => {
-    try {
-        const result = await signIn("phone-otp", {
-            redirect: false,
-            phone,
-            otp: data.otp,
-        });
-
-      if (result?.error) {
-        toast.error("Failed to login", { description: result.error });
-      } else {
-        toast.success("Login in successfully");
-        router.push("/dashboard");
-      }
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      const errorMessage =
-        axiosError.response?.data?.message || "Something went wrong";
-      toast.error("Failed to verify OTP", { description: errorMessage });
-    }
+    await verifyOtp({
+      phone: phone!,
+      otp: data.otp,
+    });
   };
 
   const handleResendOtp = async () => {
-    try {
-      setIsResending(true);
-      await axios.post("/api/auth/send-otp", { phone }); // 👈 replace with your OTP API
-      toast.success("OTP resent successfully!");
-      setCounter(60); // restart countdown
-    } catch (error) {
-      toast.error("Failed to resend OTP");
-    } finally {
-      setIsResending(false);
-    }
+    const success = await sendOtp(phone!);
+    setCounter(60); // restart countdown
   };
 
   return (
@@ -122,7 +96,7 @@ export default function VerifyOtpForm() {
               </div>
 
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Verifying..." : "Verify OTP"}
+                {verifyLoading ? "Verifying..." : "Verify OTP"}
               </Button>
 
               {/* Resend OTP Feature */}
@@ -135,10 +109,10 @@ export default function VerifyOtpForm() {
                   <Button
                     type="button"
                     variant="link"
-                    disabled={isResending}
+                    disabled={sendLoading}
                     onClick={handleResendOtp}
                   >
-                    {isResending ? "Resending..." : "Resend OTP"}
+                    {sendLoading ? "Resending..." : "Resend OTP"}
                   </Button>
                 )}
               </div>

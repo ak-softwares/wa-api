@@ -5,14 +5,14 @@ import SearchBar from "@/components/common/SearchBar";
 import { useTheme } from "next-themes";
 import { History, Moon, Sun } from "lucide-react";
 import { useSettingsStore } from "@/store/settingsStore";
-import { useLogoutDialog } from "@/hooks/profile/useLogoutDialog";
+import { useLogout } from "@/hooks/profile/useLogout";
 import { ConfirmDialog } from "@/components/common/dialog/ConfirmDialog";
 import { useState } from "react";
 import { SupportDialog } from "@/components/common/dialog/SupportDialog";
 
 export default function SettingsPage() {
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
-  const { logout } = useLogoutDialog();
+  const { logout } = useLogout();
 
 
   const { theme, setTheme } = useTheme();

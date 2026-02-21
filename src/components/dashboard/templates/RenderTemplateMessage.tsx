@@ -7,7 +7,7 @@ import React from "react";
 import { formatRichText } from "../../common/FormatRichText";
 import MessageMetaInfo from "../messages/common/MessageMetaInfo";
 import { Message } from "@/types/Message";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import TemplateMediaPreview from "./TemplateMediaPreview";
 
 interface TemplateMessageProps {
@@ -174,7 +174,7 @@ export default function TemplateMessage({ message, template }: TemplateMessagePr
                   const otpCode = btn.example?.[0];
                   const handleCopy = async () => {
                     await navigator.clipboard.writeText(otpCode);
-                    toast.success(`Copied to clipboard ${otpCode}`);
+                    showToast.success(`Copied to clipboard ${otpCode}`);
                   };
                   return (
                       <div

@@ -1,4 +1,4 @@
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { useState } from "react";
 
 type CodeMethod = "SMS" | "VOICE";
@@ -21,14 +21,14 @@ export function usePhoneCodeVerification() {
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data?.message || "Failed to request verification code");
+        showToast.error(data?.message || "Failed to request verification code");
         return false;
       }
 
-      toast.success("Verification code sent successfully");
+      showToast.success("Verification code sent successfully");
       return true;
     } catch (err: any) {
-      toast.error(err.message || "Failed to request verification code");
+      showToast.error(err.message || "Failed to request verification code");
       return false;
     } finally {
       setRequestCodeLoading(false);
@@ -41,7 +41,7 @@ export function usePhoneCodeVerification() {
       setVerifyCodeLoading(true);
 
       if (!code) {
-        toast.error("Verification code is required");
+        showToast.error("Verification code is required");
         return false;
       }
 
@@ -54,14 +54,14 @@ export function usePhoneCodeVerification() {
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data?.message || "Verification failed");
+        showToast.error(data?.message || "Verification failed");
         return false;
       }
 
-      toast.success("Phone number verified successfully");
+      showToast.success("Phone number verified successfully");
       return true;
     } catch (err: any) {
-      toast.error(err.message || "Verification failed");
+      showToast.error(err.message || "Verification failed");
       return false;
     } finally {
       setVerifyCodeLoading(false);

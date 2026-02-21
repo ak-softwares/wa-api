@@ -13,7 +13,7 @@ import EmojiPicker, { Theme } from "emoji-picker-react";
 import { useTheme } from "next-themes";
 import { ChatType } from "@/types/Chat";
 import { MessagePayload, MessageType } from "@/types/MessageType";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { uploadMediaApi } from "@/services/message/media.service";
 
 interface MediaSendPageProps {
@@ -145,7 +145,7 @@ export default function MediaSendPage({ mediaList, onSend, onClose, onSendSucces
 
       onSendSuccess ? onSendSuccess() : onClose();
     } catch (error) {
-      toast.error("error");
+      showToast.error("error");
     } finally {
       setIsSending(false);
     }

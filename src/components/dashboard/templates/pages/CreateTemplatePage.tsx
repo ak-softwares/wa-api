@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Info, Plus, X, Upload, Image as ImageIcon, Video, File, Trash2 } from "lucide-react";
 import { TemplateBodyComponentCreate, TemplateButton, TemplateButtonsComponentCreate, TemplateComponentCreate, TemplateFooterComponentCreate, TemplateHeaderComponentCreate } from "@/types/Template";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { useRouter } from "next/navigation";
 import IconButton from "@/components/common/IconButton";
 import { useTemplateStore } from "@/store/templateStore";
@@ -233,23 +233,23 @@ export default function CreateTemplatePage() {
       // Validate file size (e.g., 5MB max for WhatsApp templates)
       const maxSize = 5 * 1024 * 1024; // 5MB
       if (file.size > maxSize) {
-        toast.error("File size must be less than 5MB");
+        showToast.error("File size must be less than 5MB");
         return;
       }
 
       // Validate file type based on header format
       if (headerFormat === TemplateHeaderType.IMAGE && !file.type.startsWith('image/')) {
-        toast.error("Please select an image file");
+        showToast.error("Please select an image file");
         return;
       }
       
       if (headerFormat === TemplateHeaderType.VIDEO && !file.type.startsWith('video/')) {
-        toast.error("Please select a video file");
+        showToast.error("Please select a video file");
         return;
       }
       
       if (headerFormat === TemplateHeaderType.DOCUMENT && !['application/pdf', 'application/vnd.ms-excel', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].some(type => file.type.includes(type))) {
-        toast.error("Please select a valid document (PDF, Excel, Word)");
+        showToast.error("Please select a valid document (PDF, Excel, Word)");
         return;
       }
 
@@ -262,10 +262,10 @@ export default function CreateTemplatePage() {
         fileName: file.name
       });
       
-      toast.success("Media uploaded successfully");
+      showToast.success("Media uploaded successfully");
       
     } catch (error) {
-      toast.error("Failed to upload media");
+      showToast.error("Failed to upload media");
       console.error(error);
     } finally {
       setIsUploading(false);
@@ -462,18 +462,18 @@ export default function CreateTemplatePage() {
       
       // Validate required fields
       if (!templateName.trim()) {
-        toast.error("Template name is required");
+        showToast.error("Template name is required");
         return;
       }
       
       if (templateCategory !== TemplateCategory.AUTHENTICATION && !bodyText.trim()) {
-        toast.error("Body text is required");
+        showToast.error("Body text is required");
         return;
       }
 
       // Validate media for media-based headers
       if ([TemplateHeaderType.IMAGE, TemplateHeaderType.VIDEO, TemplateHeaderType.DOCUMENT].includes(headerFormat) && !headerMedia.file) {
-        toast.error(`Please upload a ${headerFormat.toLowerCase()} for the header`);
+        showToast.error(`Please upload a ${headerFormat.toLowerCase()} for the header`);
         return;
       }
 
@@ -561,7 +561,7 @@ export default function CreateTemplatePage() {
               }),
             });
           } catch (uploadError) {
-            toast.error("Failed to upload media file");
+            showToast.error("Failed to upload media file");
             throw uploadError;
           }
         }
@@ -636,7 +636,7 @@ export default function CreateTemplatePage() {
       const data = await res.json();
 
       if (data.success) {
-        toast.success(data.message);
+        showToast.success(data.message);
         // Reset form
         setTemplateCategory(TemplateCategory.UTILITY);
         setTemplateName("");
@@ -652,10 +652,10 @@ export default function CreateTemplatePage() {
         setSelectedTemplateMenu(null);
         router.refresh();
       } else {
-        toast.error(data.message)
+        showToast.error(data.message)
       }
     } catch (error: any) {
-      toast.error("Something went wrong " + error.message)
+      showToast.error("Something went wrong " + error.message)
     } finally {
       setIsSaving(false);
     }

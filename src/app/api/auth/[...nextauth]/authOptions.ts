@@ -4,6 +4,7 @@ import { connectDB } from "../../../../lib/mongoose";
 import { UserModel } from "@/models/User";
 import bcrypt from "bcryptjs";
 import Google from "next-auth/providers/google";
+import axios from "axios";
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -40,41 +41,53 @@ export const authOptions: NextAuthOptions = {
 
         // 📌 New OTP login provider
         Credentials({
-            id: "phone-otp", // unique id for phone login
-            name: "Phone OTP",
-            credentials: {
-                phone: { label: "Phone", type: "text" },
-                otp: { label: "OTP", type: "text" },
-            },
-            async authorize(credentials) {
-                if (!credentials?.phone || !credentials?.otp) {
-                    throw new Error("Missing phone or OTP");
+          id: "phone-otp",
+          name: "Phone OTP",
+          credentials: {
+            phone: { label: "Phone", type: "text" },
+            otp: { label: "OTP", type: "text" },
+          },
+
+          async authorize(credentials) {
+            if (!credentials?.phone || !credentials?.otp) {
+              throw new Error("Missing phone or OTP");
+            }
+
+            try {
+              // 🔹 Call your backend verify OTP API
+              const res = await axios.post(
+                `${process.env.NEXTAUTH_URL}/api/auth/verify-otp`,
+                {
+                  phone: credentials.phone,
+                  otp: credentials.otp,
                 }
-                try{
-                    // ✅ Validate OTP from otpStore
-                    const otpRecord = globalThis.otpStore?.[credentials.phone];
-                    if (!otpRecord) throw new Error("OTP expired or not found");
+              );
 
-                    if (otpRecord.code !== credentials.otp) throw new Error("Invalid OTP");
-                    if (Date.now() > otpRecord.expiresAt) throw new Error("OTP expired");
+              const data = res.data;
 
-                    // OTP is valid → check if user exists
-                    await connectDB();
-                    let user = await UserModel.findOne({ phone: credentials.phone });
+              if (!data.success) {
+                  throw new Error(data.message || "Invalid OTP");
+              }
 
-                    if (!user) {
-                        throw new Error("User not found, Please Sign Up");
-                    }
+              const user = data.data.user;
 
-                    // ✅ OTP can only be used once
-                    delete globalThis.otpStore[credentials.phone];
+              if (!user) {
+                  throw new Error("User not found");
+              }
 
-                    // ✅ Must return a plain object with id, phone, email, etc.
-                    return user;
-                }catch(e){
-                    throw e;
-                }
-            },
+              // ✅ Return plain object (important for NextAuth)
+              return {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+              };
+            } catch (error: any) {
+              throw new Error(
+                  error?.response?.data?.message || error.message || "Login failed"
+              );
+            }
+          },
         }),
         // ...add google provider
         Google({

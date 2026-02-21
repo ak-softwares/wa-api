@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongoose";
 import { UserModel } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { signUpSchema } from "@/schemas/signUpSchema";
+import { generateToken } from "@/lib/auth/jwt";
 
 export async function POST(req: Request) {
   try {
@@ -16,6 +17,7 @@ export async function POST(req: Request) {
         .flat()
         .filter(Boolean)
         .join(", ");
+
       const response: ApiResponse = {
         success: false,
         message:  errors || "Invalid request",
@@ -28,22 +30,14 @@ export async function POST(req: Request) {
     // ✅ Connect DB
     await connectDB();
 
-    // ✅ Check if email already exists
-    const existingUserByEmail = await UserModel.findOne({ email });
-    if (existingUserByEmail) {
-      const response: ApiResponse = {
-        success: false,
-        message: "Email already in use",
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
+    const existingUser = await UserModel.findOne({
+      $or: [{ email }, { phone }],
+    });
 
-    // ✅ Check if phone already exists
-    const existingUserByPhone = await UserModel.findOne({ phone });
-    if (existingUserByPhone) {
+    if (existingUser) {
       const response: ApiResponse = {
         success: false,
-        message: "Phone number already in use",
+        message: "User already exists",
       };
       return NextResponse.json(response, { status: 400 });
     }
@@ -57,16 +51,35 @@ export async function POST(req: Request) {
     });
     await user.save();
 
+    const token = generateToken({
+      id: user._id.toString(),
+    });
+
     const response: ApiResponse = {
       success: true,
       message: "User signed up successfully",
-      data: { id: user._id, name, email, phone },
+      data: {
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+        }
+      },
     };
     return NextResponse.json(response, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.code === 11000) {
+      const response: ApiResponse = {
+        success: false,
+        message: "User already exists",
+      };
+      return NextResponse.json(response, { status: 500 });
+    }
     const response: ApiResponse = {
       success: false,
-      message: "Something went wrong: " + (error as Error).message,
+      message: "Internal server error",
     };
     return NextResponse.json(response, { status: 500 });
   }

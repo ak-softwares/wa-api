@@ -1,6 +1,6 @@
 "use client";
 
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { useState } from "react";
 
 type Props = {
@@ -13,7 +13,7 @@ export function useBroadcastReportExcel() {
 
   const downloadExcel = async ({ chatId, messageId }: Props) => {
     if (!chatId || !messageId) {
-      toast.error("chatId and messageId are required");
+      showToast.error("chatId and messageId are required");
       return;
     }
 
@@ -40,9 +40,9 @@ export function useBroadcastReportExcel() {
 
       window.URL.revokeObjectURL(url);
 
-      toast.success("Excel downloaded");
+      showToast.success("Excel downloaded");
     } catch (err: any) {
-      toast.error(err.message || "Excel download failed");
+      showToast.error(err.message || "Excel download failed");
     } finally {
       setDownloading(false);
     }

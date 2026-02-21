@@ -8,7 +8,7 @@ import ContactAvatar from "../../contacts/common/ContactAvatar";
 import { Skeleton } from "@/components/ui/skeleton"; // <-- Make sure this exists
 import BlockContactsPopup from "../popups/BlockContactsPopup";
 import { useState } from "react";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 
 export default function BlockedContactsPage() {
     const { blockedList, confirmBlock, confirmUnblock, confirmBlockDialog, loading, blockNumber } = useBlockedContacts();

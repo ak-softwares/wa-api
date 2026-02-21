@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { toast } from "@/components/ui/sonner"
+import { showToast } from "@/components/ui/sonner"
 import { useRouter } from "next/navigation"
 import { ApiResponse } from "@/types/apiResponse"
 
@@ -14,16 +14,16 @@ export function useDeleteWabaAccount(onSuccess?: () => void) {
       const result: ApiResponse = await res.json()
 
       if (!result.success) {
-        toast.error(result.message || "Failed to delete waba account")
+        showToast.error(result.message || "Failed to delete waba account")
         return false
       }
 
-      toast.success("Waba account deleted successfully")
+      showToast.success("Waba account deleted successfully")
       onSuccess?.()
       router.refresh()
       return true
     } catch (err: any) {
-      toast.error("Failed to delete waba account: " + err.message)
+      showToast.error("Failed to delete waba account: " + err.message)
       return false
     } finally {
       setDeleting(false)

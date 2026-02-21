@@ -12,22 +12,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { toast } from "@/components/ui/sonner";
 import { signInSchema } from "@/schemas/signInSchema";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { AxiosError } from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ApiResponse } from "@/types/apiResponse";
-import { signIn } from "next-auth/react";
-import { useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import FooterTerms from "@/components/global/footer/footerTerms";
+import { DASHBOARD_PATH } from "@/utiles/auth/auth";
+import { useSignIn } from "@/hooks/auth/useSignIn";
 
 export default function SignInPage() {
-  const [loading, setLoading] = useState(false);
+  const { signInWithCredentials, signInWithGoogle, googleLoading, credentialsLoading } = useSignIn();
 
   const router = useRouter();
   const { status } = useSession();
@@ -35,7 +32,7 @@ export default function SignInPage() {
   // Always call hooks unconditionally
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace("/dashboard");
+      router.replace(DASHBOARD_PATH);
     }
   }, [status, router]);
 
@@ -50,47 +47,12 @@ export default function SignInPage() {
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = form;
 
-  // ✅ Submit handler
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
-    try {
-      const result = await signIn("credentials", {
-        redirect: false,
-        email: data.email,
-        password: data.password,
-      });
-      if (result?.error) {
-        toast.error("Failed to sign in", { description: result.error });
-      } else {
-        toast.success("Signed in successfully");
-        router.push("/dashboard");
-      }
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      const errorMessage = axiosError.response?.data?.message || "Something went wrong";
-      toast.error("Failed to sign in", { description: errorMessage });
-    }
+    await signInWithCredentials(data);
   };
 
-  // ✅ Google SignIn handler
   const onGoogleSignIn = async () => {
-    try {
-      setLoading(true);
-      const result = await signIn("google", {
-        redirect: false, // prevent auto redirect
-      });
-      if (result?.error) {
-        toast.error("Google sign-in failed", { description: result.error });
-      } else {
-        toast.success("Signed in successfully");
-        router.push("/dashboard");
-      }
-    } catch (error) {
-      toast.error("Google sign-in failed", {
-        description: error instanceof Error ? error.message : "Something went wrong",
-      });
-    } finally {
-      setLoading(false);
-    }
+    await signInWithGoogle();
   };
 
   const gotoLogin = () => {
@@ -148,8 +110,8 @@ export default function SignInPage() {
                   )}
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Logging in..." : "Login"}
+                <Button type="submit" className="w-full" disabled={credentialsLoading}>
+                  {credentialsLoading ? "Logging in..." : "Login"}
                 </Button>
 
                 <div className="relative text-center text-sm after:border-t after:border-border after:inset-0 after:top-1/2 after:absolute after:z-0">
@@ -192,7 +154,7 @@ export default function SignInPage() {
                         fill="currentColor"
                       />
                     </svg>
-                    {loading ? "Signing in with Google..." : "Continue with Google"}
+                    {googleLoading ? "Signing in with Google..." : "Continue with Google"}
                   </Button>
                 </div>
 

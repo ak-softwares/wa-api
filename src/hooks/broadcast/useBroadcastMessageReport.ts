@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { ApiResponse } from "@/types/apiResponse";
 import { MessageStatus } from "@/types/MessageType";
 import { AnalyticsData } from "@/types/Analytics"; // use your AnalyticsData type
@@ -88,7 +88,7 @@ export function useBroadcastMessageReport({
         const totalPages = json.pagination?.totalPages || 1;
         setHasMore(pageToFetch < totalPages);
       } catch (err: any) {
-        toast.error(err.message || "Failed to load broadcast report");
+        showToast.error(err.message || "Failed to load broadcast report");
       } finally {
         if (pageToFetch === 1) setLoading(false);
         else setLoadingMore(false);

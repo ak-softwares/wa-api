@@ -6,7 +6,7 @@ import { ChatParticipant, ChatType } from "@/types/Chat";
 import { useEffect, useState } from "react";
 import MessageMenu from "../menus/MessageMenu";
 import { useDeleteMessages } from "@/hooks/message/useDeleteMessages";
-import { toast } from "../../../ui/sonner";
+import { showToast } from "../../../ui/sonner";
 import { useFindOrCreateChat } from "@/hooks/chat/useFindOrCreateChat";
 import { MessageType } from "@/types/MessageType";
 import TemplateMessage from "../../templates/RenderTemplateMessage";
@@ -78,7 +78,7 @@ export default function MessageBubble({ message, onDelete, onReply, onForward, o
       words.length > 5 ? words.slice(0, 5).join(" ") + "..." : fullText;
 
     navigator.clipboard.writeText(fullText);
-    toast.success("Message copied: " + preview);
+    showToast.success("Message copied: " + preview);
   };
 
   const handleDownload = async (mediaId?: string, fileName?: string) => {
@@ -97,7 +97,7 @@ export default function MessageBubble({ message, onDelete, onReply, onForward, o
       a.click();
       document.body.removeChild(a);
     } catch (err) {
-      toast.error("Failed to download file");
+      showToast.error("Failed to download file");
     }
   };
 

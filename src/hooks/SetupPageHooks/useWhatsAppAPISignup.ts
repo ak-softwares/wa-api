@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { ApiResponse } from "@/types/apiResponse";
 import { FB_GRAPH_VERSION } from "@/utiles/constans/apiConstans";
 
@@ -22,14 +22,14 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // for initial check
 
-    // ✅ Check existing Facebook connection on mount
+  // ✅ Check existing Facebook connection on mount
   useEffect(() => {
     const checkFacebookConnection = async () => {
       setIsLoading(true);
       try {
         const res = await fetch("/api/wa-accounts/check-status");
-         const result: ApiResponse = await res.json()
-        if (result.success && result.data.token) {
+        const result: ApiResponse = await res.json()
+        if (result.success && result.data.isTokenAvailable) {
           setFacebookConnected(true);
           return;
         }
@@ -77,9 +77,9 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
           if (data.event === "FINISH") {
             setSessionInfo(data);
           } else if (data.event === "CANCEL") {
-            toast.error("User cancelled at: " + data.data.current_step);
+            showToast.error("User cancelled at: " + data.data.current_step);
           } else if (data.event === "ERROR") {
-            toast.error("Facebook error: " + data.data.error_message);
+            showToast.error("Facebook error: " + data.data.error_message);
           }
         }
       } catch {}
@@ -112,14 +112,14 @@ export function useWhatsAppSignup(): UseWhatsAppSignupReturn {
           });
 
           if (tokenData?.success) {
-            toast.success("WhatsApp account registered successfully ✅");
+            showToast.success("WhatsApp account registered successfully ✅");
           } else {
-            toast.error(
+            showToast.error(
               "Token exchange failed: " + (tokenData?.message || "Unknown error")
             );
           }
         } catch (err: any) {
-          toast.error("Something went wrong: " + err.message);
+          showToast.error("Something went wrong: " + err.message);
         } finally {
           setFacebookConnected(true);
           setIsSaving(false);

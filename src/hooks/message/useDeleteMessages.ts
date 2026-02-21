@@ -2,7 +2,7 @@
 "use client";
 import { useState } from "react";
 import { ApiResponse } from "@/types/apiResponse";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 
 export function useDeleteMessages(onDeleted?: () => void) {
   const [deleting, setDeleting] = useState(false);
@@ -18,15 +18,15 @@ export function useDeleteMessages(onDeleted?: () => void) {
       const json: ApiResponse = await res.json();
 
       if (json.success) {
-        toast.success(`Message deleted successfully`);
+        showToast.success(`Message deleted successfully`);
         onDeleted?.();
         return true;
       } else {
-        toast.error(json.message || "Failed to delete message");
+        showToast.error(json.message || "Failed to delete message");
         return false;
       }
     } catch (err) {
-      toast.error("Error deleting message");
+      showToast.error("Error deleting message");
       return false;
     } finally {
       setDeleting(false);
@@ -36,7 +36,7 @@ export function useDeleteMessages(onDeleted?: () => void) {
   // ✅ Bulk Delete Messages
   const deleteMessagesBulk = async (selectedMessages: string[]) => {
     if (selectedMessages.length === 0) {
-      toast.error("No messages selected");
+      showToast.error("No messages selected");
       return false;
     }
 
@@ -51,15 +51,15 @@ export function useDeleteMessages(onDeleted?: () => void) {
       const data: ApiResponse = await res.json();
 
       if (data.success) {
-        toast.success("Selected messages deleted successfully");
+        showToast.success("Selected messages deleted successfully");
         onDeleted?.();
         return true;
       } else {
-        toast.error(data.message || "Failed to delete selected messages");
+        showToast.error(data.message || "Failed to delete selected messages");
         return false;
       }
     } catch (err) {
-      toast.error("Error deleting selected messages");
+      showToast.error("Error deleting selected messages");
       return false;
     } finally {
       setDeleting(false);

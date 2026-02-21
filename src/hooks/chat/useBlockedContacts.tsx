@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ChatParticipant } from "@/types/Chat";
@@ -30,13 +30,13 @@ export function useBlockedContacts() {
       const json = await res.json();
 
       if (!json.success) {
-        toast.error("Failed to load blocked contacts");
+        showToast.error("Failed to load blocked contacts");
         return;
       }
 
       setBlockedList(json.data.blocked || []);
     } catch {
-      toast.error("Unable to fetch blocked contacts");
+      showToast.error("Unable to fetch blocked contacts");
     } finally {
       setLoading(false);
     }
@@ -58,12 +58,12 @@ export function useBlockedContacts() {
 
       if (json.success) {
         setBlockedList([...blockedList, participant]);
-        toast.success("Contact blocked");
+        showToast.success("Contact blocked");
       } else {
-        toast.error(json.message || "Failed to block contact");
+        showToast.error(json.message || "Failed to block contact");
       }
     } catch {
-      toast.error("Something went wrong while blocking");
+      showToast.error("Something went wrong while blocking");
     }
   };
 
@@ -81,12 +81,12 @@ export function useBlockedContacts() {
         setBlockedList(
           blockedList.filter((p) => p.number !== participant.number)
         );
-        toast.success("Contact unblocked");
+        showToast.success("Contact unblocked");
       } else {
-        toast.error(json.message || "Failed to unblock contact");
+        showToast.error(json.message || "Failed to unblock contact");
       }
     } catch {
-      toast.error("Something went wrong while unblocking");
+      showToast.error("Something went wrong while unblocking");
     }
   };
 

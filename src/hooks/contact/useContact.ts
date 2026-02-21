@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { ApiResponse } from "@/types/apiResponse";
 import { Contact } from "@/types/Contact"; // 👈 your contact type
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 
 export function useContact(contactId?: string) {
   const [contact, setContact] = useState<Contact | null>(null);
@@ -22,14 +22,14 @@ export function useContact(contactId?: string) {
 
         if (!res.ok || !data.success) {
           setError(data.message || "Failed to fetch contact");
-          toast.error(data.message || "Failed to fetch contact");
+          showToast.error(data.message || "Failed to fetch contact");
           return;
         }
 
         setContact(data.data || null);
       } catch (err: any) {
         setError("Something went wrong while fetching contact");
-        toast.error("Something went wrong while fetching contact");
+        showToast.error("Something went wrong while fetching contact");
       } finally {
         setLoading(false);
       }

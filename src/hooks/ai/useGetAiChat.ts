@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { AIChat } from "@/types/Ai";
 
 export function useGetAiChat() {
@@ -24,7 +24,7 @@ export function useGetAiChat() {
       setAiChat(data);
       return data;
     } catch (error: any) {
-      toast.error(`Error: ${error?.message || error}`);
+      showToast.error(`Error: ${error?.message || error}`);
       throw error;
     } finally {
       setIsLoading(false);

@@ -8,7 +8,7 @@ import IconButton from "@/components/common/IconButton";
 import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { useContacts } from "@/hooks/contact/useContacts";
 import { Contact } from "@/types/Contact";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { ChatParticipant } from "@/types/Chat";
 
 interface BlockContactsPopupProps {
@@ -63,7 +63,7 @@ export default function BlockContactsPopup({ isOpen, onClose, onBlock, blockedNu
 
   const handleBlock = async () => {
     if (!selectedContacts.length) {
-      toast.error("Please select at least one contact!");
+      showToast.error("Please select at least one contact!");
       return;
     }
 
@@ -75,7 +75,7 @@ export default function BlockContactsPopup({ isOpen, onClose, onBlock, blockedNu
       onClose();
     } catch (err) {
       console.error(err);
-      toast.error("Failed to block contacts.");
+      showToast.error("Failed to block contacts.");
     }
   };
 

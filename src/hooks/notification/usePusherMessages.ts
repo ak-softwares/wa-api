@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Pusher from "pusher-js";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { Message } from "@/types/Message";
 
 export function usePusherGlobalNotifications() {
@@ -23,7 +23,7 @@ export function usePusherGlobalNotifications() {
       const msg = data.message;
       console.log("📩 New Pusher message received:", data);
 
-      toast.default(`📨 New message from ${msg.from}`, {
+      showToast.default(`📨 New message from ${msg.from}`, {
         description: msg.message,
       });
     });

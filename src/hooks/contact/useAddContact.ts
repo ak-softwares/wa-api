@@ -1,6 +1,6 @@
 "use client";
 
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { ApiResponse } from "@/types/apiResponse";
 import { ImportedContact } from "@/types/Contact";
 import { useState } from "react";
@@ -22,13 +22,13 @@ export const useAddContact = (onSuccess?: () => void) => {
       const json: ApiResponse = await res.json();
 
       if (!json.success) {
-        toast.error(json.message || "Failed to save contact");
+        showToast.error(json.message || "Failed to save contact");
         return;
       }
       onSuccess?.();
-      toast.success("Contact saved successfully");
+      showToast.success("Contact saved successfully");
     } catch (e) {
-      toast.error("Error saving contact");
+      showToast.error("Error saving contact");
     }finally{
       setAddingContact(false);
     }
@@ -37,7 +37,7 @@ export const useAddContact = (onSuccess?: () => void) => {
   const addBulkContacts = async ({ contacts }: {contacts: ImportedContact[] }) => {
 
     if (contacts.length === 0) {
-        toast.error("No valid contacts selected");
+        showToast.error("No valid contacts selected");
         return;
     }
 
@@ -51,7 +51,7 @@ export const useAddContact = (onSuccess?: () => void) => {
 
       const data = await res.json()
       if (!res.ok) {
-          toast.error(data.message || "Failed to upload contacts");
+          showToast.error(data.message || "Failed to upload contacts");
           return;
       }
 
@@ -60,14 +60,14 @@ export const useAddContact = (onSuccess?: () => void) => {
 
       // --- Toast Messages ---
       if (uploaded > 0) {
-          toast.success(`Uploaded ${uploaded} contacts`);
+          showToast.success(`Uploaded ${uploaded} contacts`);
       }
       if (skipped > 0) {
-          toast.warning(`${skipped} contacts were skipped (invalid or missing fields)`);
+          showToast.warning(`${skipped} contacts were skipped (invalid or missing fields)`);
       }
       onSuccess?.(); // ✅ call only if provided
     } catch (err: any) {
-      toast.error("Failed to upload contacts");
+      showToast.error("Failed to upload contacts");
     } finally {
       setAddingBulkContacts(false);
     }
@@ -75,7 +75,7 @@ export const useAddContact = (onSuccess?: () => void) => {
 
   const updateContact = async ({ contact }: { contact: ImportedContact }) => {
     if (!contact.id) {
-      toast.error("Contact id missing");
+      showToast.error("Contact id missing");
       return;
     }
 
@@ -91,14 +91,14 @@ export const useAddContact = (onSuccess?: () => void) => {
       const json: ApiResponse = await res.json();
 
       if (!json.success) {
-        toast.error(json.message || "Failed to update contact");
+        showToast.error(json.message || "Failed to update contact");
         return;
       }
 
-      toast.success("Contact updated successfully");
+      showToast.success("Contact updated successfully");
       onSuccess?.();
     } catch (e) {
-      toast.error("Error updating contact");
+      showToast.error("Error updating contact");
     } finally {
       setUpdatingContact(false);
     }

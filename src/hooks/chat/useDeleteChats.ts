@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ApiResponse } from "@/types/apiResponse";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { useChatStore } from "@/store/chatStore";
 import { DeleteMode } from "@/utiles/enums/deleteMode";
 
@@ -26,7 +26,7 @@ export function useDeleteChats( onDeleted?: (payload: OnDeletedPayload) => void)
       const json: ApiResponse = await res.json();
 
       if (json.success) {
-        toast.success("Chat deleted successfully");
+        showToast.success("Chat deleted successfully");
 
         // 🔥 Reset active chat if needed
         if (activeChat?._id?.toString() === chatId) {
@@ -38,10 +38,10 @@ export function useDeleteChats( onDeleted?: (payload: OnDeletedPayload) => void)
           deletedIds: [chatId],
         });
       } else {
-        toast.error(json.message || "Failed to delete chat");
+        showToast.error(json.message || "Failed to delete chat");
       }
     } catch (err) {
-      toast.error("Error deleting chat");
+      showToast.error("Error deleting chat");
     } finally {
       setIsDeleting(false);
     }
@@ -50,7 +50,7 @@ export function useDeleteChats( onDeleted?: (payload: OnDeletedPayload) => void)
   // ✅ Bulk Delete Chats
   const deleteChatsBulk = async (chatIds: string[]) => {
     if (chatIds.length === 0) {
-      toast.error("No chats selected");
+      showToast.error("No chats selected");
       return;
     }
 
@@ -65,7 +65,7 @@ export function useDeleteChats( onDeleted?: (payload: OnDeletedPayload) => void)
       const json: ApiResponse = await res.json();
 
       if (json.success) {
-        toast.success("Selected chats deleted successfully");
+        showToast.success("Selected chats deleted successfully");
 
         // 🔥 If active chat was deleted in bulk
         if (activeChat && chatIds.includes(activeChat._id!.toString())) {
@@ -77,10 +77,10 @@ export function useDeleteChats( onDeleted?: (payload: OnDeletedPayload) => void)
           deletedIds: chatIds,
         });
       } else {
-        toast.error(json.message || "Failed to delete selected chats");
+        showToast.error(json.message || "Failed to delete selected chats");
       }
     } catch (err) {
-      toast.error("Error deleting selected chats");
+      showToast.error("Error deleting selected chats");
     } finally {
       setIsDeleting(false);
     }
@@ -102,7 +102,7 @@ export function useDeleteChats( onDeleted?: (payload: OnDeletedPayload) => void)
       if (json.success) {
         const count = json.data?.deletedCount ?? 0;
 
-        toast.success(
+        showToast.success(
           count > 0
             ? `${count} chats deleted successfully`
             : "No chats to delete"
@@ -116,10 +116,10 @@ export function useDeleteChats( onDeleted?: (payload: OnDeletedPayload) => void)
           deletedIds: [],
         });
       } else {
-        toast.error(json.message || "Failed to delete chats");
+        showToast.error(json.message || "Failed to delete chats");
       }
     } catch (err) {
-      toast.error("Error deleting chats");
+      showToast.error("Error deleting chats");
     } finally {
       setIsDeleting(false);
     }

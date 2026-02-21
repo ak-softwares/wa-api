@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { ApiResponse } from "@/types/apiResponse";
 import { Tool, ToolPayload } from "@/types/Tool";
 
@@ -24,18 +24,18 @@ export function useToolMutation(
       const json: ApiResponse<Tool> = await res.json();
 
       if (!res.ok || !json.success) {
-        toast.error(json.message || "Failed to create tool");
+        showToast.error(json.message || "Failed to create tool");
         return;
       }
       if (!json.data) {
-        toast.error("Tool created but no data returned");
+        showToast.error("Tool created but no data returned");
         return;
       }
-      toast.success("Tool connected successfully");
+      showToast.success("Tool connected successfully");
       onSuccess?.(json.data);
       return json.data;
     } catch (err: any) {
-      toast.error(err.message || "Something went wrong");
+      showToast.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -55,18 +55,18 @@ export function useToolMutation(
       const json: ApiResponse<Tool> = await res.json();
 
       if (!res.ok || !json.success) {
-        toast.error(json.message || "Failed to update tool");
+        showToast.error(json.message || "Failed to update tool");
         return;
       }
       if (!json.data) {
-        toast.error("Tool updated but no data returned");
+        showToast.error("Tool updated but no data returned");
         return;
       }
-      toast.success("Tool updated successfully");
+      showToast.success("Tool updated successfully");
       onSuccess?.(json.data);
       return json.data;
     } catch (err: any) {
-      toast.error(err.message || "Something went wrong");
+      showToast.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -84,16 +84,16 @@ export function useToolMutation(
       const json: ApiResponse<{ _id: string }> = await res.json();
 
       if (!res.ok || !json.success) {
-        toast.error(json.message || "Failed to delete tool");
+        showToast.error(json.message || "Failed to delete tool");
         return;
       }
 
-      toast.success("Tool deleted successfully");
+      showToast.success("Tool deleted successfully");
       onDeleteSuccess?.(toolDbId);
 
       return json.data;
     } catch (err: any) {
-      toast.error(err.message || "Something went wrong");
+      showToast.error(err.message || "Something went wrong");
     } finally {
       setIsDeleteLoading(false);
     }

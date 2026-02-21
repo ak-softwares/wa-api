@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import * as XLSX from "xlsx";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { ImportedContact } from "@/types/Contact";
 
 export function useExcelImport() {
@@ -88,10 +88,10 @@ export function useExcelImport() {
 
       setImportProgress(90);
       setImportedContacts(parsed);
-      toast.success(`Processed ${parsed.length} contacts`);
+      showToast.success(`Processed ${parsed.length} contacts`);
 
     } catch (err) {
-      toast.error("Failed to parse file");
+      showToast.error("Failed to parse file");
     } finally {
       setIsImporting(false);
       setImportProgress(100);

@@ -9,7 +9,7 @@ import ChatsMenu from "@/components/dashboard/chats/menus/ChatsMenu";
 import SearchBar from "@/components/common/SearchBar";
 import { useState, useRef } from "react";
 import IconButton from "@/components/common/IconButton";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { useDeleteChats } from "@/hooks/chat/useDeleteChats";
 import SelectedChatMenu from "@/components/dashboard/chats/menus/SelectedChatsMenu";
 import { useChatStore } from "@/store/chatStore";
@@ -63,7 +63,7 @@ export default function ChatList() {
 
   const handleDeleteSelectedChats = () => {
     if (!selectedChats || selectedChats.length === 0) {
-      toast.error("No chats selected");
+      showToast.error("No chats selected");
       return;
     }
 

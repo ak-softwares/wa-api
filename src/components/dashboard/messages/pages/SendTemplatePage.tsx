@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Template, TemplateBodyComponentCreate, TemplateButtonsComponentCreate, TemplateHeaderComponentCreate } from "@/types/Template";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { fetchMediaBlob, uploadMediaApi } from "@/services/message/media.service";
 import { MessagePayload, MessageStatus, MessageType } from "@/types/MessageType";
 import { useChatStore } from "@/store/chatStore";
@@ -106,14 +106,14 @@ export default function SendTemplatePage({
     ) as TemplateHeaderComponentCreate;
 
     if (!headerComp) {
-      toast.error("Header component missing");
+      showToast.error("Header component missing");
       return;
     }
 
     // Validate file size (5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB in bytes
     if (file.size > maxSize) {
-      toast.error("File size exceeds 5MB limit");
+      showToast.error("File size exceeds 5MB limit");
       return;
     }
 
@@ -124,7 +124,7 @@ export default function SendTemplatePage({
       const mediaId = await uploadMediaApi(file);
       
       if (!mediaId) {
-        toast.error("Upload failed");
+        showToast.error("Upload failed");
         return;
       }
       
@@ -151,9 +151,9 @@ export default function SendTemplatePage({
         return { ...prev, components };
       });
 
-      toast.success("Media uploaded successfully");
+      showToast.success("Media uploaded successfully");
     } catch (error) {
-      toast.error("Failed to upload media");
+      showToast.error("Failed to upload media");
     } finally {
       setUploading(false);
       // Clear file input
@@ -407,7 +407,7 @@ export default function SendTemplatePage({
 
   const validateTemplateBeforeSend = (): boolean => {
     if (!selectedTemplate) {
-      toast.error("No template selected");
+      showToast.error("No template selected");
       return false;
     }
 
@@ -418,7 +418,7 @@ export default function SendTemplatePage({
         if (comp.format === TemplateHeaderType.TEXT && headerVariable) {
           const value = comp.example?.header_text?.[0];
           if (!value || value.trim() === "") {
-            toast.error("Header text variable is required");
+            showToast.error("Header text variable is required");
             return false;
           }
         }
@@ -431,7 +431,7 @@ export default function SendTemplatePage({
         ) {
           const handle = comp.example?.header_handle?.[0];
           if (!handle) {
-            toast.error("Header media is required");
+            showToast.error("Header media is required");
             return false;
           }
         }
@@ -444,17 +444,17 @@ export default function SendTemplatePage({
             typeof loc.latitude !== "number" ||
             typeof loc.longitude !== "number"
           ) {
-            toast.error("Location latitude and longitude are required");
+            showToast.error("Location latitude and longitude are required");
             return false;
           }
 
           if (loc.latitude < -90 || loc.latitude > 90) {
-            toast.error("Latitude must be between -90 and 90");
+            showToast.error("Latitude must be between -90 and 90");
             return false;
           }
 
           if (loc.longitude < -180 || loc.longitude > 180) {
-            toast.error("Longitude must be between -180 and 180");
+            showToast.error("Longitude must be between -180 and 180");
             return false;
           }
         }
@@ -468,12 +468,12 @@ export default function SendTemplatePage({
           (comp.text?.match(/{{\d+}}/g) || []).length;
 
         if (bodyValues.length < variableCount) {
-          toast.error("All body variables are required");
+          showToast.error("All body variables are required");
           return false;
         }
 
         if (bodyValues.some((v: string) => !v || v.trim() === "")) {
-          toast.error("All body variables must be filled");
+          showToast.error("All body variables must be filled");
           return false;
         }
       }
@@ -484,7 +484,7 @@ export default function SendTemplatePage({
           // COPY_CODE
           if (button.type === TemplateButtonType.COPY_CODE) {
             if (!button.example?.[0]) {
-              toast.error("Copy code value is required");
+              showToast.error("Copy code value is required");
               return false;
             }
           }
@@ -495,7 +495,7 @@ export default function SendTemplatePage({
             /{{\d+}}/.test(button.url || "")
           ) {
             if (!button.example?.[0]) {
-              toast.error("Button URL variable is required");
+              showToast.error("Button URL variable is required");
               return false;
             }
           }
@@ -524,10 +524,10 @@ export default function SendTemplatePage({
 
       // Send to parent
       onSend({ messagePayload });
-      toast.success("Template sent successfully");
+      showToast.success("Template sent successfully");
       onClose();
     } catch (error) {
-      toast.error("Failed to send template");
+      showToast.error("Failed to send template");
     } finally {
       setIsSending(false);
     }

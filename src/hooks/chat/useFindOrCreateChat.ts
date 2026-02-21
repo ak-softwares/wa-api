@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { useChatStore } from "@/store/chatStore";
 import { ApiResponse } from "@/types/apiResponse";
 import { ChatParticipant } from "@/types/Chat";
@@ -20,14 +20,14 @@ export function useFindOrCreateChat(onSuccess?: () => void) {
       });
 
       if (!res.ok) {
-        toast.error("Failed to load chat.");
+        showToast.error("Failed to load chat.");
         return;
       }
       
       const data = await res.json();
       const chat = data?.data;
       if (!chat) {
-        toast.error("Chat not found.");
+        showToast.error("Chat not found.");
         return;
       }
 
@@ -36,7 +36,7 @@ export function useFindOrCreateChat(onSuccess?: () => void) {
       setActiveChat(chat);
       onSuccess?.();
     } catch (e) {
-      toast.error("Error creating chat");
+      showToast.error("Error creating chat");
     }finally{
       setLoading(false);
     }

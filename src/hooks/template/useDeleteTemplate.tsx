@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 import { ApiResponse } from "@/types/apiResponse";
 
 import {
@@ -71,14 +71,14 @@ export function useDeleteTemplate(onDeleteSuccess?: () => void) {
       const json: ApiResponse = await res.json();
 
       if (!json.success) {
-        toast.error(json.message || "Failed to delete template.");
+        showToast.error(json.message || "Failed to delete template.");
         return;
       }
 
-      toast.success("Template deleted successfully.");
+      showToast.success("Template deleted successfully.");
       onDeleteSuccess?.();
     } catch {
-      toast.error("Delete failed.");
+      showToast.error("Delete failed.");
     } finally {
       setSingleDeleting(false);
       closeDeleteDialog();
@@ -102,14 +102,14 @@ export function useDeleteTemplate(onDeleteSuccess?: () => void) {
       const json: ApiResponse = await res.json();
 
       if (!json.success) {
-        toast.error(json.message || "Bulk delete failed.");
+        showToast.error(json.message || "Bulk delete failed.");
         return;
       }
 
-      toast.success("Selected templates deleted successfully.");
+      showToast.success("Selected templates deleted successfully.");
       onDeleteSuccess?.();
     } catch {
-      toast.error("Bulk delete failed.");
+      showToast.error("Bulk delete failed.");
     } finally {
       setBulkDeleting(false);
       closeBulkDeleteDialog();

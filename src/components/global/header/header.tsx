@@ -5,12 +5,13 @@ import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { ThemeToggle } from "./themeToggle"
 import { Menu, X } from "lucide-react"
+import { DASHBOARD_PATH, LOGIN_PATH } from "@/utiles/auth/auth"
 
 export default function Header() {
   const { data: session } = useSession()
   const [open, setOpen] = useState(false)
 
-  const href = session ? "/dashboard" : "/auth/login"
+  const href = session ? DASHBOARD_PATH : LOGIN_PATH;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/70 backdrop-blur">

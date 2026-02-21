@@ -42,6 +42,7 @@
     "emoji-picker-react": "^4.16.1",
     "exceljs": "^4.4.0",
     "googleapis": "^160.0.0",
+    "ioredis": "^5.9.3",
     "js": "^0.1.0",
     "jsonwebtoken": "^9.0.3",
     "libphonenumber-js": "^1.12.24",

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import axios from "axios";
 import { ApiResponse } from "@/types/apiResponse";
+import { sendWhatsAppOtp } from "@/services/auth/sendWhatsAppOtp";
+import { connectDB } from "@/lib/mongoose";
+import { OtpModel } from "@/types/Otp";
 
 export async function POST(req: Request) {
   try {
@@ -13,99 +15,63 @@ export async function POST(req: Request) {
       };
       return NextResponse.json(response, { status: 400 });
     }
+    await connectDB();
+
+    const now = new Date();
+
+    // Check existing OTP
+    const existing = await OtpModel.findOne({ phone });
+    
+    // ✅ Rate limit resend (60 sec)
+    if (existing && now.getTime() - existing.lastSentAt.getTime() < 60000) {
+      const response: ApiResponse = {
+        success: false,
+        message: "Please wait before requesting another OTP",
+      };
+      return NextResponse.json(response, { status: 429 });
+    }
 
     // ✅ Generate a 4-digit OTP
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min
 
-    // ✅ Store OTP (replace with DB/Redis in production)
-    globalThis.otpStore = globalThis.otpStore || {};
-    globalThis.otpStore[phone] = { code: otp, expiresAt: Date.now() + 5 * 60 * 1000 }; // 5 minutes from now
+    // Upsert OTP
+    await OtpModel.findOneAndUpdate(
+      { phone },
+      {
+        code: otp,
+        expiresAt,
+        attempts: 0,
+        lastSentAt: now,
+      },
+      { upsert: true, new: true }
+    );
 
     // ✅ Send via WhatsApp
-    const sent = await sendOtpWhatsApp(phone, otp);
+    const waResponse = await sendWhatsAppOtp({phone, otp});
 
-    if (!sent) {
+    if (!waResponse.success) {
       const response: ApiResponse = {
         success: false,
-        message: "Failed to send OTP via WhatsApp",
+        message: waResponse.message || "Failed to send OTP",
       };
       return NextResponse.json(response, { status: 500 });
     }
 
     const response: ApiResponse = {
       success: true,
-      message: "OTP sent via WhatsApp successfully, Expires at: " + new Date(globalThis.otpStore[phone].expiresAt).toLocaleString(),
+      message: "OTP sent via WhatsApp successfully",
+      data: {
+        expiresAt: expiresAt,
+      },
     };
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     const response: ApiResponse = {
       success: false,
-      message: "Something went wrong: " + (error as Error).message,
+      message: "Internal server error",
     };
     return NextResponse.json(response, { status: 500 });
   }
 }
 
-// ✅ Send OTP via WhatsApp (Template Message)
-async function sendOtpWhatsApp(phone: string, otp: string): Promise<boolean> {
-  try {
-    const url = `${process.env.WHATSAPP_API_URL}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
-
-    const payload = {
-      messaging_product: "whatsapp",
-      to: phone, // must be in full international format (e.g. 9198xxxxxxx)
-      type: "template",
-      template: {
-        name: "otp_authentication", // your approved template name
-        language: {
-          code: "en",
-        },
-        components: [
-          {
-            type: "body",
-            parameters: [
-              {
-                type: "text",
-                text: otp,
-              },
-            ],
-          },
-          {
-            type: "button",
-            sub_type: "url",
-            index: 0,
-            parameters: [
-              {
-                type: "text",
-                text: otp,
-              },
-            ],
-          },
-        ],
-      },
-    };
-
-    const payload1 = {
-        messaging_product: "whatsapp",
-        to: phone, // must be in full international format, e.g., "9198xxxxxxx"
-        type: "text",
-        text: {
-            body: `Your OTP is: ${otp}`, // plain text message
-        },
-    };
-    const res = await axios.post(url, payload, {
-      headers: {
-        Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    return res.status === 200;
-  } catch (error: any) {
-    console.error(
-      "WhatsApp API error:",
-      error.response?.data || error.message
-    );
-    return false;
-  }
-}

@@ -5,7 +5,7 @@ import Pusher from "pusher-js";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useChatStore } from "@/store/chatStore";
-import { toast } from "../ui/sonner";
+import { showToast } from "../ui/sonner";
 import { MESSAGE_TAGS } from "@/utiles/enums/messageTags";
 
 
@@ -51,7 +51,7 @@ export default function PusherListener() {
         setActiveChat(chat);
         router.push("/dashboard/chats");
       };
-      toast.success(msg.from, {
+      showToast.success(msg.from, {
         description: shortMessage,
         duration: 5000,
         action: {

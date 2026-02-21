@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ApiResponse } from "@/types/apiResponse";
-import { toast } from "@/components/ui/sonner";
+import { showToast } from "@/components/ui/sonner";
 
 export function useSubscribeApp() {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,13 +16,13 @@ export function useSubscribeApp() {
       });
       const data: ApiResponse = await res.json();
       if (data.success) {
-        toast.success(data.message);
+        showToast.success(data.message);
         if (onSuccess) onSuccess();
       } else {
-        toast.error(data.message);
+        showToast.error(data.message);
       }
     } catch (error) {
-      toast.error("Something went wrong while subscribing app");
+      showToast.error("Something went wrong while subscribing app");
     } finally {
       setIsLoading(false);
     }
