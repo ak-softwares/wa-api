@@ -15,8 +15,7 @@ import SelectedChatMenu from "@/components/dashboard/chats/menus/SelectedChatsMe
 import { useChatStore } from "@/store/chatStore";
 import { useChats } from "@/hooks/chat/useChats";
 import NewChatPopup from "@/components/dashboard/chats/dialogs/NewChatPopup";
-import { ChatFilterType } from "@/utiles/enums/chatFilters";
-import { Chat, ChatType } from "@/types/Chat";
+import { Chat, ChatType, FILTERS } from "@/types/Chat";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import { DeleteMode } from "@/utiles/enums/deleteMode";
 import { ConfirmDialog } from "@/components/common/dialog/ConfirmDialog";
@@ -77,13 +76,6 @@ export default function ChatList() {
   };
 
   
-  const FILTERS: { key: ChatFilterType; label: string }[] = [
-    { key: "all", label: "All" },
-    { key: "unread", label: "Unread" },
-    { key: "favourite", label: "Favourite" },
-    { key: "broadcast", label: "Broadcasts" },
-  ];
-
   const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
     const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
     return phoneNumber ? phoneNumber.formatInternational() : number;

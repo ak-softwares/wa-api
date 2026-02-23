@@ -30,6 +30,7 @@ export default function Header() {
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
           <Link href="#features" className="hover:text-foreground">Features</Link>
           <Link href="#industries" className="hover:text-foreground">Industries</Link>
+          <Link href="/docs" className="hover:text-foreground">Docs</Link>
           <Link href="/pricing" className="hover:text-foreground">Pricing</Link>
           <Link href="/contact" className="hover:text-foreground">Contact us</Link>
         </nav>
@@ -72,6 +73,7 @@ export default function Header() {
           <nav className="flex flex-col gap-4 px-4 py-4 text-sm">
             <Link href="#features" onClick={() => setOpen(false)}>Features</Link>
             <Link href="#industries" onClick={() => setOpen(false)}>Industries</Link>
+            <Link href="/docs" className="hover:text-foreground">Docs</Link>
             <Link href="/pricing" onClick={() => setOpen(false)}>Pricing</Link>
             <Link href="/contact" onClick={() => setOpen(false)}>Contact us</Link>
 
