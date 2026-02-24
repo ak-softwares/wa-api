@@ -90,8 +90,18 @@ export async function fetchAuthenticatedUser(req?: NextRequest) {
       return { errorResponse: NextResponse.json(response, { status: 401 }) };
     }
 
+    const normalizedUserId = userId?.toString();
+    if (!normalizedUserId || !Types.ObjectId.isValid(normalizedUserId)) {
+      const response: ApiResponse = {
+        success: false,
+        message: "Invalid or expired API token",
+      };
+      return { errorResponse: NextResponse.json(response, { status: 401 }) };
+    }
+
     // 🔑 Fetch user
-    const user = await UserModel.findById(userId);
+    const user = await UserModel.findById(normalizedUserId);
+    
     if (!user) {
       const response: ApiResponse = {
         success: false,
@@ -110,6 +120,11 @@ export async function fetchAuthenticatedUser(req?: NextRequest) {
 
   if (!id) {
     const response: ApiResponse = { success: false, message: "Session not authenticated" };
+    return { errorResponse: NextResponse.json(response, { status: 401 }) };
+  }
+
+  if (!Types.ObjectId.isValid(id)) {
+    const response: ApiResponse = { success: false, message: "Invalid session user id" };
     return { errorResponse: NextResponse.json(response, { status: 401 }) };
   }
 

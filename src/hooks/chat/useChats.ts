@@ -5,7 +5,7 @@ import { ApiResponse } from "@/types/apiResponse";
 import { showToast } from "@/components/ui/sonner";
 import { Chat } from "@/types/Chat";
 import { useChatStore } from "@/store/chatStore";
-import { ChatFilterType } from "@/utiles/enums/chatFilters";
+import { ChatFilterType } from "@/types/Chat";
 import { ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
 
 interface UseChatsProps {
