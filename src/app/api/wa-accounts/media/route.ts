@@ -20,18 +20,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(response, { status: 400 });
     }
 
-    // ✅ Convert File → Buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    const uploadForm = new FormData();
+    const uploadForm  = new FormData();
     uploadForm.append("messaging_product", "whatsapp");
-
-    const blob = new Blob([buffer], {
-      type: file.type || "application/octet-stream",
-    });
-
-    uploadForm.append("file", blob, file.name);
+    uploadForm.append("file", file, file.name);
 
     const uploadUrl = `https://graph.facebook.com/v24.0/${waAccount.phone_number_id}/media`;
 
