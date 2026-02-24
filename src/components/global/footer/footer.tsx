@@ -39,6 +39,12 @@ export default function Footer() {
             >
               Refund Policy
             </Link>
+            <Link
+              href="/child-safety"
+              className="transition-colors hover:text-foreground"
+            >
+              Child Safety
+            </Link>
           </nav>
 
           {/* Right Section */}
