@@ -1,4 +1,5 @@
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
+import { WhatsAppClient } from "@/services/whatsappApi/WhatsAppClient";
 import { ApiResponse } from "@/types/apiResponse";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -7,51 +8,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { user, waAccount, errorResponse } = await getDefaultWaAccount();
   if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
   
-  const { permanent_token } = waAccount;
   const { id: mediaId } = await params;
 
   try {
-
-    // STEP 1 → GET media URL
-    const metaRes = await fetch(
-      `https://graph.facebook.com/v24.0/${mediaId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${permanent_token}`,
-        },
-      }
-    );
-
-    const meta = await metaRes.json();
-
-    if (!meta.url) {
-      const response: ApiResponse = {
-        success: false,
-        message: "Failed to retrieve media URL",
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
-
-    // STEP 2 → Fetch actual media using auth header
-    const mediaRes = await fetch(meta.url, {
-      headers: {
-        Authorization: `Bearer ${permanent_token}`,
-      },
+    const whatsapp = new WhatsAppClient({
+      phone_number_id: waAccount.phone_number_id,
+      permanent_token: waAccount.permanent_token,
     });
-
-    if (!mediaRes.ok) {
-      const response: ApiResponse = {
-        success: false,
-        message: "Failed to download media",
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
-
-    const arrayBuffer = await mediaRes.arrayBuffer();
-    const contentType = mediaRes.headers.get("Content-Type") || "application/octet-stream";
+    const { buffer, contentType } = await whatsapp.media.download(mediaId);
 
     // STEP 3 → Return the media file itself
-    return new NextResponse(arrayBuffer, {
+    return new NextResponse(buffer, {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=3600",

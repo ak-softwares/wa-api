@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { ApiResponse } from "@/types/apiResponse";
+import { WhatsAppClient } from "@/services/whatsappApi/WhatsAppClient";
 
 export const runtime = "nodejs";
 
@@ -20,36 +21,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(response, { status: 400 });
     }
 
-    const uploadForm  = new FormData();
-    uploadForm.append("messaging_product", "whatsapp");
-    uploadForm.append("file", file, file.name);
-
-    const uploadUrl = `https://graph.facebook.com/v24.0/${waAccount.phone_number_id}/media`;
-
-    const uploadResponse = await fetch(uploadUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${waAccount.permanent_token}`,
-      },
-      body: uploadForm,
+    const whatsapp = new WhatsAppClient({
+      phone_number_id: waAccount.phone_number_id,
+      permanent_token: waAccount.permanent_token,
     });
 
-    const data = await uploadResponse.json();
-
-    if (!uploadResponse.ok || !data?.id) {
-      const message = data?.error?.error_user_msg || data?.error?.message || "Upload failed";
-      const response: ApiResponse = {
-        success: false,
-        message: message,
-      };
-      return NextResponse.json(response, { status:  uploadResponse.status || 500 });
-    }
+    const mediaId = await whatsapp.media.upload(file);
 
     const response: ApiResponse = {
       success: true,
       message: "Media uploaded successfully",
       data: {
-        mediaId: data.id,
+        mediaId: mediaId,
       },
     };
     return NextResponse.json(response, { status: 200 });
