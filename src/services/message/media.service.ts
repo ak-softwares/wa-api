@@ -26,12 +26,19 @@ export async function uploadMediaApi(file: File) {
   const res = await fetch("/api/wa-accounts/media", {
     method: "POST",
     body: form,
+    credentials: "include", // important if auth cookies
   });
 
-  const data = await res.json();
+  let data: any = null;
 
-  if (!data.success) {
-    throw new Error(data.message);
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error("Invalid server response");
+  }
+  
+  if (!res.ok || !data?.success) {
+    throw new Error(data?.message || "Upload failed");
   }
 
   return data.data.mediaId as string;

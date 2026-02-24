@@ -152,8 +152,9 @@ export default function SendTemplatePage({
       });
 
       showToast.success("Media uploaded successfully");
-    } catch (error) {
-      showToast.error("Failed to upload media");
+    } catch (error: any) {
+      const message = error?.message || error?.response?.data?.message || "Failed to upload media";
+      showToast.error(message);
     } finally {
       setUploading(false);
       // Clear file input

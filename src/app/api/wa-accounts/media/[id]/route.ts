@@ -1,4 +1,5 @@
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
+import { ApiResponse } from "@/types/apiResponse";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -24,10 +25,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const meta = await metaRes.json();
 
     if (!meta.url) {
-      return NextResponse.json(
-        { success: false, message: "Failed to retrieve media URL" },
-        { status: 400 }
-      );
+      const response: ApiResponse = {
+        success: false,
+        message: "Failed to retrieve media URL",
+      };
+      return NextResponse.json(response, { status: 400 });
     }
 
     // STEP 2 → Fetch actual media using auth header
@@ -38,10 +40,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     });
 
     if (!mediaRes.ok) {
-      return NextResponse.json(
-        { success: false, message: "Failed to download media" },
-        { status: 500 }
-      );
+      const response: ApiResponse = {
+        success: false,
+        message: "Failed to download media",
+      };
+      return NextResponse.json(response, { status: 400 });
     }
 
     const arrayBuffer = await mediaRes.arrayBuffer();
@@ -55,17 +58,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       },
     });
 
-    // return NextResponse.json({
-    //   success: true,
-    //   message: "Media URL fetched successfully",
-    //   data: {
-    //     url: data.url,
-    //   }
-    // });
   } catch (error) {
-    return NextResponse.json(
-      { success: false, message: "Error fetching media" },
-      { status: 500 }
-    );
+    const response: ApiResponse = {
+      success: false,
+      message: "Error fetching media: " + (error instanceof Error ? error.message : String(error)),
+    };
+    return NextResponse.json(response, { status: 500 });
   }
 }
