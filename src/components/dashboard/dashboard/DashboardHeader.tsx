@@ -1,7 +1,11 @@
 "use client";
 
+import { ConfirmDialog } from "@/components/common/dialog/ConfirmDialog";
 import { ThemeToggle } from "@/components/global/header/themeToggle";
+import { Button } from "@/components/ui/button";
+import { useLogout } from "@/hooks/profile/useLogout";
 import { BarChart3 } from "lucide-react";
+import { useState } from "react";
 
 type PageHeaderProps = {
   title: string;
@@ -12,6 +16,8 @@ export function DashboardHeader({
   title,
   description,
 }: PageHeaderProps) {
+  const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
+  const { logout } = useLogout();
 
   return (
     <div className="w-full border-b px-7 py-4">
@@ -31,9 +37,28 @@ export function DashboardHeader({
           </div>
         </div>
         <div>
-          <ThemeToggle />
+          <div className="flex flex-row items-center justify-center gap-3">
+            <ThemeToggle />
+
+            <Button
+              variant="outline"
+              onClick={() => setOpenLogoutDialog(true)}
+            >
+              Logout
+            </Button>
+          </div>
         </div>
       </div>
+      {/* Logout Dialog Component */}
+      <ConfirmDialog
+        open={openLogoutDialog}
+        title={"Logout"}
+        description="Are you sure you want to logout from your account?"
+        actionText="Logout"
+        actionLoadingText="Logging out..."
+        onCancel={() => setOpenLogoutDialog(false)}
+        onConfirm={logout}
+      />
     </div>
   );
 }

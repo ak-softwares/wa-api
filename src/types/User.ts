@@ -1,3 +1,5 @@
+import { AIAssistant } from "./Ai";
+
 export type User = {
   _id: string;
   name: string;
@@ -6,6 +8,7 @@ export type User = {
   company?: string;
   password: string;
   defaultWaAccountId?: string;
+  aiAssistant?: AIAssistant;
   createdAt?: Date;
   updatedAt?: Date;
   resetPasswordToken?: string;

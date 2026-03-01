@@ -10,9 +10,10 @@ import { getReplyFromChatAgent } from "../ai/aiSDK/agents/chatAgent";
 import { messageHistory } from "../message/messageHistory";
 import { IMessage } from "@/models/Message";
 import { checkMessageCreditsAvailability } from "../wallet/checkMessageCreditsAvailability";
+import { IUser } from "@/models/User";
 
 interface HandleAIMessageArgs {
-  userId: Types.ObjectId; // User document
+  user: IUser; // User document
   waAccount: IWaAccount;
   chat: IChat; // Chat document
   change: any; // Single messages payload
@@ -20,7 +21,7 @@ interface HandleAIMessageArgs {
 }
 
 export async function handleAIMessage({
-  userId,
+  user,
   waAccount,
   chat,
   change,
@@ -33,7 +34,7 @@ export async function handleAIMessage({
 
   // ✅ 2) Check webhook tool
   const webhookTool = await ToolModel.findOne({
-    userId,
+    userId: user._id,
     waAccountId: waAccount._id,
     id: "webhook",
     active: true,
@@ -44,23 +45,23 @@ export async function handleAIMessage({
     await webhookHandler({
       webhookUrl: webhookTool.credentials.webhookUrl,
       payload: change, // single message payload
-      prompt: waAccount.aiChat?.prompt,
+      prompt: user.aiAssistant?.prompt,
       user_name: sender_name,
       user_phone: from,
     });
   }
 
-  // AI chat-agent directly
-  if (waAccount.aiChat?.isActive) {
+  // AI assistant directly
+  if (user.aiAssistant?.isActive) {
     // ✅ only check (no debit here)
-    const creditCheck = await checkMessageCreditsAvailability({ userId, credits: 1 });
+    const creditCheck = await checkMessageCreditsAvailability({ userId: user._id, credits: 1 });
     if (!creditCheck.allowed) return;
 
     const messages: IMessage[] = await messageHistory({ chatId: chat._id!, length: 20 });
-    const systemPrompt = waAccount.aiChat?.prompt ?? "";
+    const systemPrompt = user.aiAssistant?.prompt ?? "";
 
     const { aiGeneratedReply } = await getReplyFromChatAgent({
-      userId: userId,
+      userId: user._id,
       systemPrompt: systemPrompt,
       messages,
       phone_number_id,
@@ -73,11 +74,11 @@ export async function handleAIMessage({
         participants: [{ number: from }],
         messageType: MessageType.TEXT,
         message: aiGeneratedReply,
-        tag: "aichat",
+        tag: "aiAssistant",
       };
       const result = await handleSendMessage({
         messagePayload,
-        userId: userId,
+        userId: user._id,
         waAccount,
         isCreditAlreadyCheck: true,
       });
@@ -85,7 +86,7 @@ export async function handleAIMessage({
       if (result.sent > 0 && result.message) {
         // Trigger message for specific user (listener)
         await sendPusherNotification({
-          userId: userId.toString(),
+          userId: user._id.toString(),
           event: "new-message",
           chat,
           message: result.message,

@@ -16,7 +16,7 @@ export async function getIntegratedToolsSafe({ userId }: Params): Promise<ITool[
 
   const safeTools: ITool[] = toolIntegrations.map((tool) => ({
     ...tool.toObject({ getters: true, versionKey: false }), // ✅ converts clean JSON
-    credentials: maskCredentialValues(tool.id, tool.credentials || {}),
+    credentials: maskCredentialValues({toolId: tool.id, values: tool.credentials || {}}),
   }));
 
   return safeTools;

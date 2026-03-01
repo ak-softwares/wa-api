@@ -1,5 +1,6 @@
 import mongoose, { Schema, models, model, Types } from "mongoose";
 import bcrypt from "bcryptjs";
+import { AIAssistantSchema, IAIAssistant } from "./AIAssistant";
 
 export interface IUser {
   _id: Types.ObjectId;
@@ -9,6 +10,7 @@ export interface IUser {
   company?: string;
   password: string;
   defaultWaAccountId?: Types.ObjectId;
+  aiAssistant?: IAIAssistant;
   createdAt?: Date;
   updatedAt?: Date;
   resetPasswordToken?: string;
@@ -23,6 +25,7 @@ const UserSchema = new Schema<IUser>(
     password: { type: String, required: true },
     company: { type: String },
     defaultWaAccountId: { type: mongoose.Schema.Types.ObjectId, ref: "WaAccount" },
+    aiAssistant: { type: AIAssistantSchema },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
   },

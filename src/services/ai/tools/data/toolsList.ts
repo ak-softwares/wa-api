@@ -8,7 +8,7 @@ export const TOOLS_LIST: ToolCatalog[] = [
     name: "WooCommerce",
     desc: "Sync orders, customers, and products.",
     category: "Store",
-    logo: "/assets/icons/tools/woocommerce.svg",
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/woocommerce.svg`,
     status: ToolStatus.NOT_CONNECTED,
     active: false,
     credentials: [
@@ -40,7 +40,7 @@ export const TOOLS_LIST: ToolCatalog[] = [
     name: "Shopify",
     desc: "Automate order updates and customer messages.",
     category: "Store",
-    logo: "/assets/icons/tools/shopify.svg",
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/shopify.svg`,
     status: ToolStatus.NOT_CONNECTED,
     active: false,
     credentials: [
@@ -61,10 +61,42 @@ export const TOOLS_LIST: ToolCatalog[] = [
     ],
   },
   {
+    id: "instagram",
+    name: "Instagram",
+    desc: "Publish photo posts to your connected Instagram Business account.",
+    category: "Social",
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/instagram.png`,
+    status: ToolStatus.NOT_CONNECTED,
+    active: false,
+    credentials: [
+      {
+        key: "igUserId",
+        label: "Instagram User ID",
+        placeholder: "17841400000000000",
+        required: true,
+        type: ToolCredentialType.TEXT
+      },
+      {
+        key: "accessToken",
+        label: "Access Token",
+        placeholder: "IGQVJ...",
+        required: true,
+        type: ToolCredentialType.TOKEN
+      },
+      {
+        key: "apiVersion",
+        label: "Graph API Version",
+        placeholder: "v22.0",
+        required: false,
+        type: ToolCredentialType.TEXT
+      }
+    ],
+  },
+  {
     id: "google_sheets",
     name: "Google Sheets",
     desc: "Export leads, orders, and conversations to Sheets.",
-    logo: "/assets/icons/tools/google-sheets.svg",
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/google-sheets.svg`,
     category: "Productivity",
     status: ToolStatus.NOT_CONNECTED,
     active: false,
@@ -112,7 +144,7 @@ export const TOOLS_LIST: ToolCatalog[] = [
     id: "google_calendar",
     name: "Google Calendar",
     desc: "Auto-create events and reminders.",
-    logo: "/assets/icons/tools/google-calendar.svg",
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/google-calendar.svg`,
     category: "Productivity",
     status: ToolStatus.NOT_CONNECTED,
     active: false,
@@ -160,7 +192,7 @@ export const TOOLS_LIST: ToolCatalog[] = [
     id: "google_contacts",
     name: "Google Contacts",
     desc: "Auto-create and manage contacts in your Google account.",
-    logo: "/assets/icons/tools/google-contacts.png",
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/google-contacts.png`,
     category: "Productivity",
     status: ToolStatus.NOT_CONNECTED,
     active: false,
@@ -202,7 +234,7 @@ export const TOOLS_LIST: ToolCatalog[] = [
     name: "n8n",
     desc: "Connect unlimited apps with your n8n agent.",
     category: "Automation",
-    logo: "/assets/icons/tools/n8n.svg",
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/n8n.svg`,
     status: ToolStatus.NOT_CONNECTED,
     active: false,
     credentials: [
@@ -227,7 +259,7 @@ export const TOOLS_LIST: ToolCatalog[] = [
     name: "wa-api.me",
     desc: "Send template, location, media messages via WhatsApp API.",
     category: "Messaging",
-    logo: "/assets/icons/tools/wa-api-icon.png",
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/wa-api-icon.png`,
     status: ToolStatus.NOT_CONNECTED,
     active: false,
     credentials: [
@@ -252,7 +284,7 @@ export const TOOLS_LIST: ToolCatalog[] = [
     name: "Webhooks",
     desc: "Send and receive events via HTTP webhooks (POST).",
     category: "Automation",
-    logo: "/assets/icons/tools/webhook.svg",
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/webhook.svg`,
     status: ToolStatus.NOT_CONNECTED,
     active: false,
     credentials: [

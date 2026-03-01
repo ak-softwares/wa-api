@@ -2,26 +2,26 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { showToast } from "@/components/ui/sonner";
-import { AIChat } from "@/types/Ai";
+import { AIAssistant } from "@/types/Ai";
 
-export function useGetAiChat() {
+export function useAiAssistant() {
   const [isLoading, setIsLoading] = useState(false);
-  const [aiChat, setAiChat] = useState<AIChat>({
+  const [aiAssistant, setAiAssistant] = useState<AIAssistant>({
     prompt: "",
     isActive: false,
   });
 
-  const getAIChatConfig = useCallback(async () => {
+  const getAIAssistantConfig = useCallback(async () => {
     try {
       setIsLoading(true);
 
-      const response = await fetch("/api/wa-accounts/ai/ai-chat");
-      if (!response.ok) throw new Error("Failed to load AI Chat config");
+      const response = await fetch("/api/ai/ai-assistant");
+      if (!response.ok) throw new Error("Failed to load AI Assistant config");
 
       const result = await response.json();
       const data = result.data ?? { prompt: "", isActive: false };
 
-      setAiChat(data);
+      setAiAssistant(data);
       return data;
     } catch (error: any) {
       showToast.error(`Error: ${error?.message || error}`);
@@ -32,13 +32,13 @@ export function useGetAiChat() {
   }, []);
 
   useEffect(() => {
-    getAIChatConfig();
-  }, [getAIChatConfig]);
+    getAIAssistantConfig();
+  }, [getAIAssistantConfig]);
 
   return {
-    aiChat,
-    setAiChat,
+    aiAssistant,
+    setAiAssistant,
     isLoading,
-    getAIChatConfig,
+    getAIAssistantConfig,
   };
 }

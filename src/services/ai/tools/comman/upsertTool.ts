@@ -42,7 +42,7 @@ export async function upsertTool({
 
   const safeTool = {
     ...plain,
-    credentials: maskCredentialValues(savedTool.id, plain.credentials || {}),
+    credentials: maskCredentialValues({ toolId: savedTool.id, values: plain.credentials || {} }),
   };
 
   return safeTool;

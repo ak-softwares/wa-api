@@ -2,24 +2,20 @@ import { useMemo, useState } from "react";
 import IconButton from "@/components/common/IconButton";
 import { useAiStore } from "@/store/aiStore";
 import { ToolTile, ToolTileSkeleton } from "../comman/ToolTile";
-import { TOOLS_LIST } from "@/services/ai/tools/data/toolsList";
 import { Tool, ToolCatalog, ToolPayload, ToolStatus } from "@/types/Tool";
 import { ToolConnectDialog } from "./ToolConnectDialog";
 import { useTools } from "@/hooks/tools/useTools";
-import { useToolMutation } from "@/hooks/tools/useToolMutation";
+import { useEditTool } from "@/hooks/tools/useEditTool";
 import { ConfirmDialog } from "@/components/common/dialog/ConfirmDialog";
 
 export default function ToolsIntegrationPage() {
   const { setSelectedAiMenu } = useAiStore();
-
-  // ✅ fetch saved tools from backend
-  const { tools, setTools, loading } = useTools();
-  const { loading: updateToolLoading, isDeleteLoading, deleteTool, updateTool } = useToolMutation();
+  const { tools, setTools, loading, hasMore, loadingMore, loadMore } = useTools();
+  const { loading: updateToolLoading, isDeleteLoading, deleteTool, updateTool } = useEditTool();
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
 
-  // dialog state
   const [openDialog, setOpenDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [dialogMode, setDialogMode] = useState<"connect" | "edit">("connect");
@@ -27,32 +23,13 @@ export default function ToolsIntegrationPage() {
 
   const handleBack = () => setSelectedAiMenu(null);
 
-  // ✅ Merge TOOL_LIST (catalog) with DB tools (saved)
-  const mergedTools: ToolCatalog[] = useMemo(() => {
-    return TOOLS_LIST.map((catalogTool) => {
-      const saved = tools.find((t: Tool) => t.id === catalogTool.id);
-
-      return {
-        ...catalogTool,
-        _id: saved?._id,
-        status: saved?.status ?? catalogTool.status ?? ToolStatus.NOT_CONNECTED,
-        active: saved?.active ?? false,
-        // ✅ inject saved credential values into catalog credentials array
-        credentials: catalogTool.credentials.map((cred) => ({
-          ...cred,
-          value: saved?.credentials?.[cred.key] ?? "",
-        })),
-      };
-    });
+  const categories = useMemo(() => {
+    const set = new Set(tools.map((t) => t.category).filter(Boolean));
+    return ["All", ...Array.from(set)];
   }, [tools]);
 
-  const categories = useMemo(() => {
-    const set = new Set(mergedTools.map((t) => t.category).filter(Boolean));
-    return ["All", ...Array.from(set)];
-  }, [mergedTools]);
-
   const filteredTools = useMemo(() => {
-    return mergedTools.filter((tool) => {
+    return tools.filter((tool) => {
       const matchesSearch =
         (tool.name ?? "").toLowerCase().includes(search.toLowerCase()) ||
         (tool.desc ?? "").toLowerCase().includes(search.toLowerCase());
@@ -61,21 +38,16 @@ export default function ToolsIntegrationPage() {
 
       return matchesSearch && matchesCategory;
     });
-  }, [mergedTools, search, category]);
+  }, [tools, search, category]);
 
-  // ✅ Connect mode
   const handleConnect = (tool: ToolCatalog) => {
     setDialogMode("connect");
     setSelectedTool(tool);
     setOpenDialog(true);
   };
 
-  // ✅ Edit mode (Manage)
   const handleManage = (tool: ToolCatalog) => {
-    const saved = mergedTools.find((t: ToolCatalog) => t.id === tool.id);
-
-    if (!saved?._id) {
-      // if not found in DB, fallback to connect
+    if (!tool?._id) {
       handleConnect(tool);
       return;
     }
@@ -85,61 +57,79 @@ export default function ToolsIntegrationPage() {
     setOpenDialog(true);
   };
 
-  // ✅ Toggle active/inactive directly from tile
   const handleToggleActive = async (tool: ToolCatalog, active: boolean) => {
-    const saved = mergedTools.find((t: ToolCatalog) => t.id === tool.id);
-    if (!saved?._id) return;
+    if (!tool?._id) return;
 
     setSelectedTool(tool);
 
-    const updatedTool: ToolPayload = { id: saved.id, active };
-    const updated = await updateTool(saved._id, updatedTool);
+    const updatedTool: ToolPayload = { id: tool.id, active };
+    const updated = await updateTool(tool._id, updatedTool);
     if (!updated) return;
 
-    // ✅ update UI instantly
-    setTools((prev) => prev.map((t) => (t._id === updated._id ? updated : t)));
+    setTools((prev) =>
+      prev.map((t) =>
+        t.id === updated.id
+          ? {
+              ...t,
+              _id: updated._id,
+              active: updated.active,
+              status: updated.status,
+              createdAt: updated.createdAt,
+              updatedAt: updated.updatedAt,
+              credentials: t.credentials.map((cred) => ({
+                ...cred,
+                value: updated.credentials?.[cred.key] ?? cred.value ?? "",
+              })),
+            }
+          : t
+      )
+    );
     setSelectedTool(null);
   };
 
-  // ✅ Delete tool handler
   const deleteToolHandler = async () => {
-    if (!selectedTool) return;
-    const saved = mergedTools.find((t: ToolCatalog) => t.id === selectedTool.id);
+    if (!selectedTool?._id) return;
 
-    if (!saved?._id) return;
-
-    const deleted = await deleteTool(saved._id);
+    const deleted = await deleteTool(selectedTool._id);
     if (!deleted) return;
-    // ✅ update UI instantly
-    setTools((prev) => prev.filter((t) => t._id !== saved._id));
+
+    setTools((prev) =>
+      prev.map((tool) => {
+        if (tool.id !== selectedTool.id) return tool;
+
+        return {
+          ...tool,
+          _id: undefined,
+          active: false,
+          status: ToolStatus.NOT_CONNECTED,
+          createdAt: undefined,
+          updatedAt: undefined,
+          credentials: tool.credentials.map((cred) => ({
+            ...cred,
+            value: "",
+          })),
+        };
+      })
+    );
+
     setOpenDeleteDialog(false);
     setSelectedTool(null);
   };
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#161717]">
-      {/* Header */}
       <div className="p-5 flex items-center justify-between bg-white dark:bg-[#161717] border-b border-gray-200 dark:border-white/10">
         <div className="flex items-center gap-3">
-          <IconButton
-            onClick={handleBack}
-            label="Back"
-            IconSrc="/assets/icons/arrow-left.svg"
-          />
+          <IconButton onClick={handleBack} label="Back" IconSrc="/assets/icons/arrow-left.svg" />
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Tools Integrations
-            </h1>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Tools Integrations</h1>
           </div>
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-5 flex-1 overflow-y-auto">
-        {/* Filters */}
         <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between mb-5">
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            {/* Search */}
             <div className="relative w-full sm:w-[320px]">
               <input
                 value={search}
@@ -149,7 +139,6 @@ export default function ToolsIntegrationPage() {
               />
             </div>
 
-            {/* Category */}
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
@@ -162,17 +151,8 @@ export default function ToolsIntegrationPage() {
               ))}
             </select>
           </div>
-
-          {/* Action */}
-          {/* <button
-            className="px-4 py-2 rounded-xl bg-gray-900 text-white dark:bg-white dark:text-black font-medium hover:opacity-90 transition"
-            onClick={() => alert("Add new tool (demo)")}
-          >
-            + Add Tool
-          </button> */}
         </div>
 
-        {/* Loading State */}
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -181,7 +161,6 @@ export default function ToolsIntegrationPage() {
           </div>
         )}
 
-        {/* Tools Grid */}
         {!loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4">
             {filteredTools.map((tool) => (
@@ -189,7 +168,7 @@ export default function ToolsIntegrationPage() {
                 key={tool.id}
                 tool={tool}
                 onConnect={handleConnect}
-                onManage={handleManage} // ✅ now opens edit dialog
+                onManage={handleManage}
                 onToggleActive={handleToggleActive}
                 onToggleLoading={(t) => selectedTool?.id === t.id && updateToolLoading}
                 onDelete={(t) => {
@@ -202,20 +181,27 @@ export default function ToolsIntegrationPage() {
           </div>
         )}
 
-        {/* Empty State */}
         {!loading && filteredTools.length === 0 && (
           <div className="mt-10 text-center">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              No tools found
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Try searching a different keyword or category.
-            </p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">No tools found</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Try searching a different keyword or category.</p>
+          </div>
+        )}
+
+        {!loading && hasMore && search.trim() === "" && category === "All" && (
+          <div className="mt-6 flex justify-center">
+            <button
+              type="button"
+              disabled={loadingMore}
+              onClick={loadMore}
+              className="px-4 py-2 rounded-xl bg-gray-900 text-white dark:bg-white dark:text-black font-medium hover:opacity-90 transition disabled:opacity-50"
+            >
+              {loadingMore ? "Loading..." : "Load more"}
+            </button>
           </div>
         )}
       </div>
 
-      {/* Connect / Edit Dialog */}
       <ToolConnectDialog
         open={openDialog}
         tool={selectedTool}
@@ -224,20 +210,29 @@ export default function ToolsIntegrationPage() {
           setOpenDialog(false);
           setSelectedTool(null);
           setDialogMode("connect");
-
         }}
-        onSuccess={(tool: Tool) => {
-          setTools((prev) => { {
-            const exists = prev.find((t) => t._id === tool._id);
-            if (exists) {
-              // update existing
-              return prev.map((t) => (t._id === tool._id ? tool : t));
-            }
-            // add new
-            return [...prev, tool];
-          } });
+        onSuccess={(savedTool: Tool) => {
+          setTools((prev) =>
+            prev.map((tool) => {
+              if (tool.id !== savedTool.id) return tool;
+
+              return {
+                ...tool,
+                _id: savedTool._id,
+                active: savedTool.active,
+                status: savedTool.status,
+                createdAt: savedTool.createdAt,
+                updatedAt: savedTool.updatedAt,
+                credentials: tool.credentials.map((cred) => ({
+                  ...cred,
+                  value: savedTool.credentials?.[cred.key] ?? "",
+                })),
+              };
+            })
+          );
         }}
       />
+
       <ConfirmDialog
         open={openDeleteDialog}
         loading={isDeleteLoading}

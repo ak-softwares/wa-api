@@ -1,6 +1,4 @@
-import { encrypt, safeDecrypt, hmacHash } from "@/lib/crypto";
-import { AIChatSchema, IAIChat } from "./AIChat";
-import crypto from "crypto";
+import { encrypt, safeDecrypt } from "@/lib/crypto";
 import mongoose, { Schema, model, models } from "mongoose";
 import { Types } from "mongoose";
 
@@ -39,7 +37,6 @@ export interface IWaAccount {
   permanent_token: string;
   is_phone_number_registered?: boolean;
   is_app_subscribed?: boolean;
-  aiChat?: IAIChat;
   phone_number?: string;
   blockedNumbers?: string[];
   createdAt?: Date;
@@ -103,7 +100,6 @@ export const WaAccountSchema = new Schema<IWaAccount>(
       type: [String],
       default: [],
     },
-    aiChat: { type: AIChatSchema }
   },
   {
     // _id: true,

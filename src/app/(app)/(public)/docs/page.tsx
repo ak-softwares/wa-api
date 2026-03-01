@@ -37,7 +37,7 @@ export default function DocumentationPage() {
 {`{
   "mcpServers": {
     "WA API MCP SERVER": {
-      "url": "${baseUrl}/mcp",
+      "url": "${baseUrl}/ai/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_API_TOKEN"
       }
@@ -46,10 +46,10 @@ export default function DocumentationPage() {
 }`}
               </pre>
               <p className="mt-4 text-sm text-muted-foreground">
-                Endpoint: <code>POST {baseUrl}/mcp</code>
+                Endpoint: <code>POST {baseUrl}/ai/mcp</code>
               </p>
               <pre className="mt-3 overflow-x-auto rounded-lg p-4 text-xs bg-gray-100 dark:bg-black text-emerald-600 dark:text-emerald-600">
-{`curl -X POST "${baseUrl}/mcp" \\
+{`curl -X POST "${baseUrl}/ai/mcp" \\
   -H "Authorization: Bearer YOUR_API_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'`}

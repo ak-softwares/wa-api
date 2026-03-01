@@ -2,7 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function AIChatSkeleton() {
+export default function AIAssistantSkeleton() {
   return (
     <div className="flex flex-1">
       {/* Main */}

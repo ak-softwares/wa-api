@@ -33,7 +33,7 @@ export default function PusherListener() {
 
       setNewMessageData(msg, chat);
       
-      const isAIMessage = msg?.tag === MESSAGE_TAGS.AI_CHAT || msg?.tag === MESSAGE_TAGS.AI_AGENT;
+      const isAIMessage = msg?.tag === MESSAGE_TAGS.AI_ASSISTANT || msg?.tag === MESSAGE_TAGS.AI_AGENT;
 
       // 🛑 Skip notification for AI messages
       if (isAIMessage) return;

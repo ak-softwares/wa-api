@@ -1,4 +1,4 @@
-export type AIChat = {
+export type AIAssistant = {
   prompt?: string;
   isActive?: boolean;
   createdAt?: string;

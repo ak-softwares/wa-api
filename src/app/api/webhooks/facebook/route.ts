@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
           
           // handle Ai logics
           await handleAIMessage({
-            userId: user._id,
+            user,
             waAccount,
             chat,
             change,

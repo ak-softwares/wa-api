@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
                   $and: [
                     { $eq: ["$from", waAccount.phone_number_id] },
                     {
-                      $in: ["$tag", [MESSAGE_TAGS.AI_CHAT, MESSAGE_TAGS.AI_AGENT]],
+                      $in: ["$tag", [MESSAGE_TAGS.AI_ASSISTANT, MESSAGE_TAGS.AI_AGENT]],
                     },
                   ],
                 },

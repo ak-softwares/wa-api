@@ -3,7 +3,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { createMCPClient } from '@ai-sdk/mcp';
 import z from 'zod';
 
-const urlString = 'http://localhost:3000/api/mcp';
+const urlString = 'http://localhost:3000/api/ai/mcp';
 const url = new URL(urlString);
 const transport = new StreamableHTTPClientTransport(url, {
   // sessionId: 'session_123',
@@ -104,7 +104,7 @@ const tools1 = await mcpClient.tools({
 
   
 
-// await fetch('http://localhost:3000/api/mcp', {
+// await fetch('http://localhost:3000/api/ai/mcp', {
 //   method: 'POST',
 //   headers: {
 //     Accept: 'application/json, text/event-stream',
@@ -113,7 +113,7 @@ const tools1 = await mcpClient.tools({
 //   },
 //   body: '{}',
 // });
-// await fetch('http://localhost:3000/api/mcp', {
+// await fetch('http://localhost:3000/api/ai/mcp', {
 //   method: 'POST',
 //   headers: {
 //     'Content-Type': 'application/json',
@@ -128,7 +128,7 @@ const tools1 = await mcpClient.tools({
 //   })
 // }).then(r => r.text()).then(console.log);
 
-// await fetch('http://localhost:3000/api/mcp', {
+// await fetch('http://localhost:3000/api/ai/mcp', {
 //   method: 'POST',
 //   headers: {
 //     'Content-Type': 'application/json',
@@ -149,7 +149,7 @@ const tools1 = await mcpClient.tools({
 // }).then(r => r.text()).then(console.log);
 
 
-// await fetch('http://localhost:3000/api/mcp', {
+// await fetch('http://localhost:3000/api/ai/mcp', {
 //   method: 'POST',
 //   headers: {
 //     'Content-Type': 'application/json',

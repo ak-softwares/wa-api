@@ -3,7 +3,7 @@ import { showToast } from "@/components/ui/sonner";
 import { ApiResponse } from "@/types/apiResponse";
 import { Tool, ToolPayload } from "@/types/Tool";
 
-export function useToolMutation(
+export function useEditTool(
   onSuccess?: (tool: Tool) => void,
   onDeleteSuccess?: (toolId: string) => void
 ) {
@@ -15,7 +15,7 @@ export function useToolMutation(
     try {
       setLoading(true);
 
-      const res = await fetch("/api/tools", {
+      const res = await fetch("/api/ai/tools", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -46,7 +46,7 @@ export function useToolMutation(
     try {
       setLoading(true);
 
-      const res = await fetch(`/api/tools/${toolDbId}`, {
+      const res = await fetch(`/api/ai/tools/${toolDbId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -77,7 +77,7 @@ export function useToolMutation(
     try {
       setIsDeleteLoading(true);
 
-      const res = await fetch(`/api/tools/${toolDbId}`, {
+      const res = await fetch(`/api/ai/tools/${toolDbId}`, {
         method: "DELETE",
       });
 

@@ -1,5 +1,3 @@
-import { AIChat } from "./Ai";
-
 export type WaAccount = {
   _id?: string;
   userId: string;
@@ -9,7 +7,6 @@ export type WaAccount = {
   permanent_token: string;
   is_phone_number_registered?: boolean;
   is_app_subscribed?: boolean;
-  aiChat?: AIChat;
   phone_number?: string;
   blockedNumbers?: string[];
   createdAt?: string;

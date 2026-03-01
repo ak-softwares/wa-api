@@ -25,7 +25,7 @@ export default function MessageMetaInfo({ message }: MessageMetaInfoProps) {
         />
       )}
 
-      {message.tag === "aichat" && (
+      {message.tag === "aiAssistant" && (
         <img
           src="/assets/icons/ai-icon.svg"
           className="w-4 h-4 dark:invert opacity-60"

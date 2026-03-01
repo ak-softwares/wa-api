@@ -7,7 +7,7 @@ import { ApiResponse } from "@/types/apiResponse";
 
 export async function GET(req: NextRequest) {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse;
 
     // Query params

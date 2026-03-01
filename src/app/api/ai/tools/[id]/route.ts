@@ -71,7 +71,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const plain = existingTool.toObject({ getters: true });
     const safeTool = {
       ...plain,
-      credentials: maskCredentialValues(existingTool.id, plain.credentials || {}),
+      credentials: maskCredentialValues({ toolId: existingTool.id, values: plain.credentials || {} }),
     };
 
     const response: ApiResponse = {

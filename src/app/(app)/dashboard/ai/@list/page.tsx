@@ -50,10 +50,10 @@ export default function AiPage() {
               alt="AI Chat Icon"
             />
           }
-          label="AI Chat"
-          subtitle="Talk with your AI assistant"
-          onClick={() => setSelectedAiMenu("ai-chat")}
-          selected={selectedAiMenu === "ai-chat"}
+          label="AI Assistant"
+          subtitle="Activate AI assistant and manage prompts."
+          onClick={() => setSelectedAiMenu("ai-assistant")}
+          selected={selectedAiMenu === "ai-assistant"}
         />
         <MenuTile
           icon={

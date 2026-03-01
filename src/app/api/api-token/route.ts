@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
     // Update user's API token at root level (since your User model has apiToken field)
     const rawToken = `wa_live_${crypto.randomBytes(32).toString("hex")}`;

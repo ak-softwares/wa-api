@@ -1,17 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { UserModel } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 
 // GET profile
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     // ✅ Pick only required fields
     const filteredUser = {
-      id: user._id,
+      _id: user._id,
       name: user.name,
       email: user.email,
       phone: user.phone,
@@ -34,9 +34,9 @@ export async function GET() {
 }
 
 // UPDATE profile
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const { name, email, phone, company } = await req.json();

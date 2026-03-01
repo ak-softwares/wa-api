@@ -1,13 +1,13 @@
 import { Schema } from "mongoose";
 
-export interface IAIChat {
+export interface IAIAssistant {
   prompt?: string;
   isActive?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-export const AIChatSchema = new Schema<IAIChat>(
+export const AIAssistantSchema = new Schema<IAIAssistant>(
   {
     prompt: { type: String },
     isActive: { type: Boolean, default: false },

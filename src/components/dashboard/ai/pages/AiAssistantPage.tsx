@@ -8,40 +8,40 @@ import { Power, Settings, Save, MessageCircle, Zap } from 'lucide-react';
 import IconButton from '@/components/common/IconButton';
 import { useAiStore } from '@/store/aiStore';
 
-import { useGetAiChat } from '@/hooks/ai/useGetAiChat';
-import { useUpdateAiChat } from '@/hooks/ai/useUpdateAiChat';
-import AIChatSkeleton from '../skeletons/AIChatSkeleton';
+import { useAiAssistant } from '@/hooks/ai/useAiAssistant';
+import { useUpdateAiAssistant } from '@/hooks/ai/useUpdateAiAssistant';
+import AIAssistantSkeleton from '../skeletons/AIAssistantSkeleton';
 
-export default function AIChatPage() {
+export default function AIAssistantPage() {
   const { setSelectedAiMenu } = useAiStore();
-  const { aiChat, setAiChat, isLoading } = useGetAiChat();
-  const { isSaving, updateAIChatConfig } = useUpdateAiChat(() => ({
-    prompt: aiChat.prompt,
-    isActive: aiChat.isActive,
+  const { aiAssistant, setAiAssistant, isLoading } = useAiAssistant();
+  const { isSaving, updateAIAssistantConfig } = useUpdateAiAssistant(() => ({
+    prompt: aiAssistant.prompt,
+    isActive: aiAssistant.isActive,
   }));
 
   // ✅ Save prompt button
   const handleSaveConfig = async () => {
-    const updated = await updateAIChatConfig({
-      prompt: aiChat.prompt,
-      isActive: aiChat.isActive,
+    const updated = await updateAIAssistantConfig({
+      prompt: aiAssistant.prompt,
+      isActive: aiAssistant.isActive,
     });
 
     // update local state after save
-    setAiChat(updated);
+    setAiAssistant(updated);
   };
 
   // ✅ Toggle active button
-  const toggleAIChat = async () => {
-    const updated = await updateAIChatConfig({
-      isActive: !aiChat.isActive,
+  const toggleAIAssistant = async () => {
+    const updated = await updateAIAssistantConfig({
+      isActive: !aiAssistant.isActive,
     });
 
-    setAiChat(updated);
+    setAiAssistant(updated);
   };
 
   const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setAiChat((prev) => ({
+    setAiAssistant((prev) => ({
       ...prev,
       prompt: e.target.value,
     }));
@@ -63,13 +63,13 @@ export default function AIChatPage() {
           />
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-              AI Chat
+              AI Assistant
             </h1>
           </div>
         </div>
       </div>
       {isLoading ? (
-        <AIChatSkeleton />
+        <AIAssistantSkeleton />
       ) : (
         <div className="flex flex-1">
           {/* Main Content */}
@@ -89,14 +89,14 @@ export default function AIChatPage() {
                     <Textarea
                       id="ai-prompt"
                       placeholder="You are a helpful AI assistant for our business..."
-                      value={aiChat.prompt}
+                      value={aiAssistant.prompt}
                       onChange={handlePromptChange}
                       rows={14}
                       className="text-sm border-2 border-gray-300 dark:border-[#3a3b3b] rounded-lg focus:border-[#00a884] focus:ring-1 focus:ring-[#00a884] resize-none bg-white dark:bg-[#2E2F2F] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     />
 
                     <div className="absolute bottom-3 right-3 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-[#2E2F2F] px-2 py-1 rounded border border-gray-200 dark:border-[#3a3b3b]">
-                      {aiChat.prompt?.length} characters
+                      {aiAssistant.prompt?.length} characters
                     </div>
                   </div>
                 </div>
@@ -169,7 +169,7 @@ export default function AIChatPage() {
                 <div className="flex justify-end">
                   <div className="bg-[#d9fdd3] dark:bg-[#144D37] rounded-lg p-3 max-w-xs shadow-sm border border-gray-200 dark:border-[#3a3b3b]">
                     <p className="text-sm text-gray-800 dark:text-gray-200">
-                      {aiChat.prompt
+                      {aiAssistant.prompt
                         ? 'AI response based on your prompt...'
                         : 'Configure your prompt to see AI responses here'}
                     </p>
@@ -190,19 +190,19 @@ export default function AIChatPage() {
                   </span>
 
                   <Badge
-                    variant={aiChat.isActive ? 'default' : 'secondary'}
+                    variant={aiAssistant.isActive ? 'default' : 'secondary'}
                     className={`${
-                      aiChat.isActive ? 'bg-[#00a884]' : 'bg-gray-400'
+                      aiAssistant.isActive ? 'bg-[#00a884]' : 'bg-gray-400'
                     } text-white`}
                   >
-                    {aiChat.isActive ? 'Active' : 'Inactive'}
+                    {aiAssistant.isActive ? 'Active' : 'Inactive'}
                   </Badge>
                 </div>
 
                 <Button
-                  onClick={toggleAIChat}
+                  onClick={toggleAIAssistant}
                   className={`w-full ${
-                    aiChat.isActive
+                    aiAssistant.isActive
                       ? 'bg-red-500 hover:bg-red-600'
                       : 'bg-[#00a884] hover:bg-[#008f74]'
                   } text-white`}
@@ -211,7 +211,7 @@ export default function AIChatPage() {
                   <Power className="h-4 w-4 mr-2" />
                   {isSaving
                     ? 'Updating...'
-                    : aiChat.isActive
+                    : aiAssistant.isActive
                     ? 'Deactivate AI'
                     : 'Activate AI'}
                 </Button>

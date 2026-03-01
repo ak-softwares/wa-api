@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
-import { useToolMutation } from "@/hooks/tools/useToolMutation";
+import { useEditTool } from "@/hooks/tools/useEditTool";
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -52,7 +52,7 @@ const getInputType = (type: ToolCredentialType) => {
 };
 
 export function ToolConnectDialog({ open, tool, mode = "connect", onClose, onSuccess }: Props) {
-  const { createTool, updateTool, loading } = useToolMutation();
+  const { createTool, updateTool, loading } = useEditTool();
 
   const isOAuth = tool?.authType === AuthType.OAUTH;
   const fields = tool?.credentials ?? [];
