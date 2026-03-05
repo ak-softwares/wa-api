@@ -7,6 +7,8 @@ import { useSession } from "next-auth/react";
 import { useChatStore } from "@/store/chatStore";
 import { showToast } from "../ui/sonner";
 import { MESSAGE_TAGS } from "@/utiles/enums/messageTags";
+import { Message } from "@/types/Message";
+import { Chat } from "@/types/Chat";
 
 
 export default function PusherListener() {
@@ -24,12 +26,21 @@ export default function PusherListener() {
 
     const userChannel = pusher.subscribe(`user-${session.user.id}`);
 
+    const requestNotificationPermission = async () => {
+      if (typeof window === "undefined" || !("Notification" in window)) return;
+      if (Notification.permission === "default") {
+        await Notification.requestPermission();
+      }
+    };
+
+    void requestNotificationPermission();
+
     // ----------------------------------
     // 🔹 NEW MESSAGE EVENT
     // ----------------------------------
     userChannel.bind("new-message", (data: any) => {
-      const chat = data.chat;
-      const msg = data.message;
+      const chat = data.chat as Chat;
+      const msg = data.message as Message;
 
       setNewMessageData(msg, chat);
       
@@ -51,6 +62,23 @@ export default function PusherListener() {
         setActiveChat(chat);
         router.push("/dashboard/chats");
       };
+
+      
+      if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+        const browserNotification = new Notification(msg.from || "New message", {
+          body: shortMessage || "You received a new message",
+          icon: "/assets/icons/tools/wa-api-icon.png",
+          badge: "/assets/icons/tools/wa-api-icon.png",
+          tag: `chat-${chat?._id || msg?._id || Date.now()}`,
+        });
+
+        browserNotification.onclick = () => {
+          window.focus();
+          openChatFromToast();
+          browserNotification.close();
+        };
+      }
+
       showToast.success(msg.from, {
         description: shortMessage,
         duration: 5000,
