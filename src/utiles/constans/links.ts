@@ -1,0 +1,1 @@
+export const PLAY_STORE_LINK = "https://play.google.com/store/apps/details?id=com.waapi.ai";

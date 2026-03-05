@@ -8,6 +8,7 @@ import { useWallet } from "@/hooks/wallet/useWallet";
 import { useState } from "react";
 import { FREE_MONTHLY_MESSAGES } from "@/utiles/constans/wallet";
 import { Badge } from "@/components/ui/badge";
+import { PLAY_STORE_LINK } from "@/utiles/constans/links";
 
 export default function RightBar() {
   const { data, loading, setData } = useWallet();
@@ -32,7 +33,7 @@ export default function RightBar() {
         <CardContent className="flex flex-col items-center space-y-3">
           {/* QR Code Image */}
           <img 
-            src="/assets/qr_code/qr-code.png" 
+            src="/assets/qr_code/play-store-qr-code.png" 
             alt="QR Code - Download App" 
             className="w-32 h-32"
           />
@@ -48,7 +49,7 @@ export default function RightBar() {
             className="w-full"
             onClick={() =>
               window.open(
-                "https://play.google.com/store/apps/details?id=com.ara.chatflow",
+                PLAY_STORE_LINK,
                 "_blank"
               )
             }

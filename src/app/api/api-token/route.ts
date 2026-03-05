@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
         tokenHashed: hmacHash(rawToken),
         permissions: ["send", "read"],
         isRevoked: false,
+        createdAt: new Date(),
       },
       {
         upsert: true,
@@ -68,6 +69,7 @@ export async function POST(req: NextRequest) {
       waAccountId: user.defaultWaAccountId,
       name: "Default",
       token: rawToken, // raw shown once
+      updatedAt: genratedToken.updatedAt,
       createdAt: genratedToken.createdAt,
     };
     

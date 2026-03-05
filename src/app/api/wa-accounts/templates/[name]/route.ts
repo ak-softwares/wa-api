@@ -1,45 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
 import { ApiResponse } from "@/types/apiResponse";
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { TemplateModel } from "@/models/Template";
+import { TemplatesModule } from "@/services/whatsappApi/modules/TemplatesModule";
 
-// DELETE /api/wa-accounts/templates/[name]
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ name: string }> }) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const { waba_id, permanent_token } = waAccount;
 
     const { name } = await params;
-    if (!name)
-      return NextResponse.json({ success: false, message: "Template name is required" }, { status: 400 });
-
-
-    // ✅ Delete from Facebook
-    const fbUrl = `https://graph.facebook.com/v23.0/${waba_id}/message_templates?name=${name}`;
-    try {
-      await axios.delete(fbUrl, {
-        headers: { Authorization: `Bearer ${permanent_token}` },
-      });
-    } catch (fbError: any) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: `Facebook API error: ${
-            fbError?.response?.data
-              ? JSON.stringify(fbError.response.data)
-              : fbError.message
-          }`,
-        },
-        { status: 400 }
-      );
+    if (!name) {
+      const response: ApiResponse = {
+        success: false,
+        message: "Template name is required",
+      };
+      return NextResponse.json(response, { status: 400 });
     }
 
-        /* ------------------------------------------------------------
-     * 2️⃣ DELETE TEMPLATE FROM DATABASE
-     * ------------------------------------------------------------ */
+    const templatesModule = new TemplatesModule({
+      waba_id,
+      permanent_token,
+    });
+
+    const fbResponse = await templatesModule.deleteTemplate(name);
+
+    /* ------------------------------------------------------------
+    * 2️⃣ DELETE TEMPLATE FROM DATABASE
+    * ------------------------------------------------------------ */
     const dbDelete = await TemplateModel.findOneAndDelete({
       userId: user._id,
       waAccountId: waAccount._id,
@@ -47,32 +37,102 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ n
     });
 
     if (!dbDelete) {
-      return NextResponse.json(
-        {
-          success: true, // Facebook deleted already → not a failure
-          message: "Template deleted from Facebook, but not found in DB",
-        },
-        { status: 200 }
-      );
+      const response: ApiResponse = {
+        success: false,
+        message: "Template not found in database",
+      };
+      return NextResponse.json(response, { status: 404 });
     }
 
     const response: ApiResponse = {
       success: true,
-      message: "Template deleted successfully from Facebook",
+      message: "Template deleted successfully from Facebook and database",
     };
-
     return NextResponse.json(response, { status: 200 });
   } catch (error: any) {
-    return NextResponse.json(
-      {
+    const response: ApiResponse = {
+      success: false,
+      message: error.message,
+    };
+    return NextResponse.json(response, { status: 500 });
+  }
+}
+
+
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ name: string }> }) {
+  try {
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
+    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
+
+    const { waba_id, permanent_token } = waAccount;
+
+    // Parse request
+    const { id, name, category, language, components } = await req.json();
+    if (!id) {
+      const response: ApiResponse = {
         success: false,
-        message: `Error: ${
-          error?.response?.data
-            ? JSON.stringify(error.response.data)
-            : error.message
-        }`,
+        message: "Template ID is required",
+      };
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    if (!name || !category || !language || !components) {
+      const response: ApiResponse = {
+        success: false,
+        message: "Missing required fields ( name, category, language, components )",
+      };
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    const templatesModule = new TemplatesModule({
+      waba_id,
+      permanent_token,
+    });
+
+    const fbResponse = await templatesModule.updateTemplate({
+      id,
+      name,
+      category,
+      language,
+      components,
+    });
+
+    // Update DB template
+    const updatedTemplate = await TemplateModel.findOneAndUpdate(
+      {
+        id: id,
+        userId: user._id,
+        // waAccountId: waAccount._id,
       },
-      { status: 500 }
+      {
+        name,
+        category,
+        language,
+        components,
+        updatedAt: new Date(),
+      },
+      { new: true }
     );
+
+    if (!updatedTemplate) {
+      const response: ApiResponse = {
+        success: false,
+        message: "Template not found in database for update",
+      };
+      return NextResponse.json(response, { status: 404 });
+    }
+
+    const response: ApiResponse = {
+      success: true,
+      message: "Template updated successfully",
+      data: updatedTemplate,
+    };
+    return NextResponse.json(response, { status: 200 });
+  } catch (error: any) {
+    const response: ApiResponse = {
+      success: false,
+      message: error.message,
+    };
+    return NextResponse.json(response, { status: 500 });
   }
 }

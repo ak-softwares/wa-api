@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
 import { DASHBOARD_PATH, LOGIN_PATH } from "@/utiles/auth/auth"
+import { PLAY_STORE_LINK } from "@/utiles/constans/links"
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
@@ -68,7 +69,7 @@ export default function LandingPage() {
               <Link href={href} className="rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-400">
                 Try It Free
               </Link>
-              <Link href="https://play.google.com/store/apps/details?id=com.ara.chatflow" target="_blank" className="rounded-2xl border border-border bg-background px-5 py-3 text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
+              <Link href={PLAY_STORE_LINK} target="_blank" className="rounded-2xl border border-border bg-background px-5 py-3 text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
                 Download on Google Play
               </Link>
             </div>
@@ -208,7 +209,7 @@ export default function LandingPage() {
               <Link href={href} className="rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-400">
                 Get Started Free
               </Link>
-              <Link href="https://play.google.com/store/apps/details?id=com.ara.chatflow" target="_blank" className="rounded-2xl border border-border bg-background px-5 py-3 text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
+              <Link href={PLAY_STORE_LINK} target="_blank" className="rounded-2xl border border-border bg-background px-5 py-3 text-sm text-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
                 Download Android App
               </Link>
             </div>

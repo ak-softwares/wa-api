@@ -1,3 +1,4 @@
+import { PLAY_STORE_LINK } from "@/utiles/constans/links"
 import Link from "next/link"
 
 export default function Footer() {
@@ -56,7 +57,7 @@ export default function Footer() {
               FAQ
             </Link>
             <Link
-              href="https://play.google.com/store/apps/details?id=com.ara.chatflow"
+              href={PLAY_STORE_LINK}
               target="_blank"
               className="transition-colors hover:text-foreground"
             >

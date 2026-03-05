@@ -6,6 +6,7 @@ import Link from "next/link"
 import { ThemeToggle } from "./themeToggle"
 import { Menu, X } from "lucide-react"
 import { DASHBOARD_PATH, LOGIN_PATH } from "@/utiles/auth/auth"
+import { PLAY_STORE_LINK } from "@/utiles/constans/links"
 
 export default function Header() {
   const { data: session } = useSession()
@@ -39,7 +40,7 @@ export default function Header() {
         <div className="flex items-center gap-2">
           {/* Desktop buttons */}
             <Link
-              href="https://play.google.com/store/apps/details?id=com.ara.chatflow"
+              href={PLAY_STORE_LINK}
               target="_blank"
               className="rounded-xl border border-border px-4 py-2 text-center md:inline-block hidden"
             >
@@ -78,7 +79,7 @@ export default function Header() {
             <Link href="/contact" onClick={() => setOpen(false)}>Contact us</Link>
 
             <Link
-              href="https://play.google.com/store/apps/details?id=com.ara.chatflow"
+              href={PLAY_STORE_LINK}
               target="_blank"
               className="rounded-xl border border-border px-4 py-2 text-center"
             >
