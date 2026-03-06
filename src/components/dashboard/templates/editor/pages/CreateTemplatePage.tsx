@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import IconButton from "@/components/common/IconButton";
 import { useTemplateStore } from "@/store/templateStore";
 import { TemplateCategory, TemplateComponentType, TemplateHeaderType } from "@/utiles/enums/template";
-import MessagePreviewPage from "../../messages/pages/MessagePreviewPage";
+import MessagePreviewPage from "@/components/dashboard/messages/pages/MessagePreviewPage";
 import { MessageType, MessageStatus } from "@/types/MessageType";
 import { Message } from "@/types/Message";
 import { YOUTUBE_VIDEOS } from "@/utiles/constans/youtubeHelp";
@@ -15,19 +15,22 @@ import { YouTubeHelpButton } from "@/components/common/iframe/youTubeEmbedIframe
 import { useTemplateEditor } from "@/hooks/template/useTemplateEditor";
 import { useTemplateMediaUpload } from "@/hooks/template/useTemplateMediaUpload";
 import { useTemplateMutation } from "@/hooks/template/useTemplateMutation";
-import { TemplateInfoSection } from "../editor/sections/TemplateInfoSection";
-import { TemplateHeaderSection } from "../editor/sections/TemplateHeaderSection";
-import { TemplateBodySection } from "../editor/sections/TemplateBodySection";
-import { TemplateFooterSection } from "../editor/sections/TemplateFooterSection";
-import { TemplateButtonsSection } from "../editor/sections/TemplateButtonsSection";
+import { TemplateInfoSection } from "../sections/TemplateInfoSection";
+import { TemplateHeaderSection } from "../sections/TemplateHeaderSection";
+import { TemplateBodySection } from "../sections/TemplateBodySection";
+import { TemplateFooterSection } from "../sections/TemplateFooterSection";
+import { TemplateButtonsSection } from "../sections/TemplateButtonsSection";
 
 export default function CreateTemplatePage() {
-  const [isSaving, setIsSaving] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const router = useRouter();
   const { duplicateTemplateData, setDuplicateTemplateData, setEditTemplateData, editTemplateData, setSelectedTemplateMenu } = useTemplateStore();
   const { isUploading, uploadTemplateMedia } = useTemplateMediaUpload();
-  const { mutateTemplate } = useTemplateMutation();
+  const { isSaving, createTemplate, editTemplate } = useTemplateMutation(() => {
+    editor.resetForm();
+    setSelectedTemplateMenu(null);
+    window.location.reload();
+  });
 
   const editor = useTemplateEditor();
 
@@ -115,49 +118,30 @@ export default function CreateTemplatePage() {
   };
 
   const saveTemplate = async () => {
-    try {
-      setIsSaving(true);
-
-      if (!editor.templateName.trim()) {
-        showToast.error("Template name is required");
-        return;
-      }
-
-      if (editor.templateCategory !== TemplateCategory.AUTHENTICATION && !editor.bodyText.trim()) {
-        showToast.error("Body text is required");
-        return;
-      }
-
-      if ([TemplateHeaderType.IMAGE, TemplateHeaderType.VIDEO, TemplateHeaderType.DOCUMENT].includes(editor.headerFormat) && !editor.headerMedia.headerHandle) {
-        showToast.error(`Please upload a ${editor.headerFormat.toLowerCase()} for the header`);
-        return;
-      }
-
-      const data = await mutateTemplate({
-        isEdit,
-        payload: {
-          id: editor.templateId,
-          name: editor.templateName,
-          category: editor.templateCategory,
-          language: editor.templateLanguage,
-          components: editor.buildComponents(),
-        },
-      });
-
-      if (!data.success) {
-        showToast.error(data.message || "Failed to save template");
-        return;
-      }
-
-      showToast.success(data.message);
-      editor.resetForm();
-      setSelectedTemplateMenu(null);
-      router.refresh();
-    } catch (error: any) {
-      showToast.error("Something went wrong " + error.message);
-    } finally {
-      setIsSaving(false);
+    if (!editor.templateName.trim()) {
+      showToast.error("Template name is required");
+      return;
     }
+
+    if (editor.templateCategory !== TemplateCategory.AUTHENTICATION && !editor.bodyText.trim()) {
+      showToast.error("Body text is required");
+      return;
+    }
+
+    if ([TemplateHeaderType.IMAGE, TemplateHeaderType.VIDEO, TemplateHeaderType.DOCUMENT].includes(editor.headerFormat) && !editor.headerMedia.headerHandle) {
+      showToast.error(`Please upload a ${editor.headerFormat.toLowerCase()} for the header`);
+      return;
+    }
+
+    const payload = {
+      id: editor.templateId,
+      name: editor.templateName,
+      category: editor.templateCategory,
+      language: editor.templateLanguage,
+      components: editor.buildComponents(),
+    };
+
+    isEdit ? await editTemplate(payload) : await createTemplate(payload);
   };
 
   return (

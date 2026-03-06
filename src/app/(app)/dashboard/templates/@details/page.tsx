@@ -1,6 +1,6 @@
 "use client";
 
-import CreateTemplatePage from "@/components/dashboard/templates/pages/CreateTemplatePage";
+import CreateTemplatePage from "@/components/dashboard/templates/editor/pages/CreateTemplatePage"
 import TemplateDetailsDefaultPage from "@/components/dashboard/templates/pages/TemplateDefaultPage";
 import { useTemplateStore } from "@/store/templateStore";
 

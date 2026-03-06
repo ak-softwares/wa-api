@@ -230,6 +230,13 @@ export function useTemplateEditor() {
       });
     }
 
+    if (headerFormat === TemplateHeaderType.LOCATION) {
+      components.push({
+        type: TemplateComponentType.HEADER,
+        format: TemplateHeaderType.LOCATION,
+      });
+    }
+    
     if (bodyText.trim()) {
       const bodyComponent: TemplateBodyComponentCreate = {
         type: TemplateComponentType.BODY,

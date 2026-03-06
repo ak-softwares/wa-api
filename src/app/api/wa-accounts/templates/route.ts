@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
 
     const response: ApiResponse = {
       success: true,
-      message: "Template created and verified with Facebook",
+      message: "Template created successfully",
       data: newTemplate,
     };
     return NextResponse.json(response, { status: 200 });

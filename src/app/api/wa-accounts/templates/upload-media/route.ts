@@ -3,6 +3,14 @@ import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount
 import { ApiResponse } from "@/types/apiResponse";
 import { UploadModule } from "@/services/whatsappApi/modules/UploadModule";
 
+function sanitizeFileName(name: string) {
+  return name
+    .replace(/[\\/<@%]/g, "_")
+    .replace(/\s+/g, "_")
+    .replace(/[^a-zA-Z0-9._-]/g, "")
+    .toLowerCase();
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { user, errorResponse } = await fetchAuthenticatedUser(req);
@@ -19,6 +27,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(response, { status: 400 });
     }
 
+    // 🔹 sanitize filename
+    const safeName = sanitizeFileName(file.name);
+
+    // 🔹 create new File (because name is readonly)
+    const sanitizedFile = new File([file], safeName, {
+      type: file.type,
+    });
+
     const APP_ID = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!;
     const TOKEN = process.env.WA_API_ACCESS_TOKEN!;
 
@@ -27,7 +43,7 @@ export async function POST(req: NextRequest) {
       permanent_token: TOKEN,
     });
 
-    const result = await uploadModule.upload(file);
+    const result = await uploadModule.upload(sanitizedFile);
 
     const response: ApiResponse = {
       success: true,

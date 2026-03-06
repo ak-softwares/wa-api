@@ -10,42 +10,73 @@ import SelectedTemplatesMenu from "@/components/dashboard/templates/SelectedTemp
 import { TemplateTile } from "@/components/dashboard/templates/TemplateTile";
 import { Template } from "@/types/Template";
 import { useTemplateStore } from "@/store/templateStore";
-import { useDeleteTemplate } from "@/hooks/template/useDeleteTemplate";
+import { useDeleteTemplates } from "@/hooks/template/useDeleteTemplate";
+import { ConfirmDialog } from "@/components/common/dialog/ConfirmDialog";
+import { DeleteMode } from "@/utiles/enums/deleteMode";
 
 export default function TemplateListPage() {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
-  const { templates, loading, refreshTemplates, searchTemplates, hasMore, loadingMore } = useTemplates({ sidebarRef });
+
+  const {
+    templates,
+    loading,
+    refreshTemplates,
+    searchTemplates,
+    hasMore,
+    loadingMore,
+  } = useTemplates({ sidebarRef });
 
   const [selectedTemplates, setSelectedTemplates] = useState<Template[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const { setDuplicateTemplateData, setSelectedTemplateMenu, setEditTemplateData } = useTemplateStore();
-  // PASS THE REFRESH FUNCTION TO DELETE HOOK
-  const { openDeleteDialog, openBulkDeleteDialog, DeleteDialogs } =
-    useDeleteTemplate(() => {
-      refreshTemplates();   // 🔥 Immediately refresh list after delete
-      setSelectedTemplates([]);  // clear selected
-      setIsSelectionMode(false); // exit selection mode
+
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [deleteMode, setDeleteMode] = useState<DeleteMode>(DeleteMode.Single);
+  const [targetTemplateName, setTargetTemplateName] = useState<string | null>(null);
+
+  const { setDuplicateTemplateData, setSelectedTemplateMenu, setEditTemplateData } =
+    useTemplateStore();
+
+  const { deleteTemplate, deleteTemplatesBulk, isDeleting } =
+    useDeleteTemplates(() => {
+      refreshTemplates();
+      setSelectedTemplates([]);
+      setIsSelectionMode(false);
+      setOpenDeleteDialog(false);
     });
 
-  // Clear all selections
+  // -------------------------
+  // Selection helpers
+  // -------------------------
+
   const clearSelection = () => {
     setSelectedTemplates([]);
     setIsSelectionMode(false);
   };
 
-  // Select all Templates
   const selectAllTemplates = () => {
     setSelectedTemplates(templates);
   };
 
+  // -------------------------
+  // Delete handlers
+  // -------------------------
+
   const handleDeleteTemplate = (templateName: string) => {
-    openDeleteDialog(templateName);
+    setDeleteMode(DeleteMode.Single);
+    setTargetTemplateName(templateName);
+    setOpenDeleteDialog(true);
   };
 
   const handleBulkDeleteTemplates = () => {
-    const names = selectedTemplates.map(t => t.name);
-    openBulkDeleteDialog(names);
+    if (!selectedTemplates.length) return;
+
+    setDeleteMode(DeleteMode.Bulk);
+    setOpenDeleteDialog(true);
   };
+
+  // -------------------------
+  // Other actions
+  // -------------------------
 
   const handleDuplicateTemplate = (template: Template) => {
     setDuplicateTemplateData(template);
@@ -59,43 +90,46 @@ export default function TemplateListPage() {
 
   return (
     <div className="flex flex-col h-full">
-       {/* Header */}
-       <div className="p-5 flex items-center justify-between">
-         <h1 className="text-xl font-semibold">Templates <span className="text-gray-500 text-sm">({templates.length})</span></h1>
-         <div className="flex items-center gap-2">
-            <IconButton
-              onClick={() => setSelectedTemplateMenu("create-template")}
-              label={"Add Template"}
-              IconSrc={"/assets/icons/plus-circle.svg"}
-            />
-            <TemplatesMenu onSelectTemplates={() => setIsSelectionMode(true)} />
-         </div>
-       </div>
+      {/* Header */}
+      <div className="p-5 flex items-center justify-between">
+        <h1 className="text-xl font-semibold">
+          Templates <span className="text-gray-500 text-sm">({templates.length})</span>
+        </h1>
+
+        <div className="flex items-center gap-2">
+          <IconButton
+            onClick={() => setSelectedTemplateMenu("create-template")}
+            label={"Add Template"}
+            IconSrc={"/assets/icons/plus-circle.svg"}
+          />
+
+          <TemplatesMenu onSelectTemplates={() => setIsSelectionMode(true)} />
+        </div>
+      </div>
 
       {/* Selection Mode */}
       {isSelectionMode && (
-        <div>
-          <div className="px-4 py-2 mb-2 flex items-center justify-between bg-gray-100 dark:bg-[#1E1F1F] border-b border-t border-gray-300 dark:border-[#333434]">
-            <div className="flex items-center gap-3">
-              <IconButton
-                onClick={clearSelection}
-                label={"Close Selection"}
-                IconSrc={"/assets/icons/close.svg"}
-              />
-              <h2 className="text-lg">{selectedTemplates.length} selected</h2>
-            </div>
-            <SelectedTemplatesMenu
-              onSelectAll={selectAllTemplates}
-              onDeleteSelected={handleBulkDeleteTemplates}
+        <div className="px-4 py-2 mb-2 flex items-center justify-between bg-gray-100 dark:bg-[#1E1F1F] border-b border-t border-gray-300 dark:border-[#333434]">
+          <div className="flex items-center gap-3">
+            <IconButton
+              onClick={clearSelection}
+              label={"Close Selection"}
+              IconSrc={"/assets/icons/close.svg"}
             />
+            <h2 className="text-lg">{selectedTemplates.length} selected</h2>
           </div>
+
+          <SelectedTemplatesMenu
+            onSelectAll={selectAllTemplates}
+            onDeleteSelected={handleBulkDeleteTemplates}
+          />
         </div>
       )}
 
-      {/* Search Bar */}
+      {/* Search */}
       <SearchBar
-          placeholder="Search templates..."
-          onSearch={searchTemplates}
+        placeholder="Search templates..."
+        onSearch={searchTemplates}
       />
 
       {/* Template List */}
@@ -112,7 +146,7 @@ export default function TemplateListPage() {
             </div>
           ))
         ) : templates.length === 0 ? (
-            <div className="p-8 text-center">No template found.</div>
+          <div className="p-8 text-center">No template found.</div>
         ) : (
           <div className="mx-3">
             {templates.map((template) => (
@@ -120,20 +154,24 @@ export default function TemplateListPage() {
                 key={template.id}
                 template={template}
                 isSelectionMode={isSelectionMode}
-                isSelected={selectedTemplates.some(t => t.name === template.name)}
+                isSelected={selectedTemplates.some(
+                  (t) => t.id === template.id
+                )}
                 onClick={() => {
                   if (isSelectionMode) {
-                    // Toggle selection 
-                    if (selectedTemplates.some(t => t.name === template.name)) {
-                      setSelectedTemplates(selectedTemplates.filter(t => t.name !== template.name));
+                    if (selectedTemplates.some((t) => t.id === template.id)) {
+                      setSelectedTemplates(
+                        selectedTemplates.filter((t) => t.id !== template.id)
+                      );
                     } else {
-                      setSelectedTemplates([...selectedTemplates, template]);
-                    }   
-                  } else {
-                    // Handle non-selection mode click if needed
+                      setSelectedTemplates([
+                        ...selectedTemplates,
+                        template,
+                      ]);
+                    }
                   }
                 }}
-                onDelete={handleDeleteTemplate}
+                onDelete={() => handleDeleteTemplate(template.name)}
                 onDuplicate={handleDuplicateTemplate}
                 onEdit={handleEditTemplate}
               />
@@ -154,7 +192,29 @@ export default function TemplateListPage() {
             </div>
           ))}
       </div>
-      {DeleteDialogs}
+
+      {/* Confirm Delete */}
+      <ConfirmDialog
+        open={openDeleteDialog}
+        loading={isDeleting}
+        title={
+          deleteMode === DeleteMode.Single
+            ? "Delete template?"
+            : "Delete selected templates?"
+        }
+        description="This action cannot be undone."
+        onCancel={() => setOpenDeleteDialog(false)}
+        onConfirm={async () => {
+          if (deleteMode === DeleteMode.Single && targetTemplateName) {
+            await deleteTemplate(targetTemplateName);
+          }
+
+          if (deleteMode === DeleteMode.Bulk) {
+            const names = selectedTemplates.map((t) => t.name);
+            await deleteTemplatesBulk(names);
+          }
+        }}
+      />
     </div>
   );
 }

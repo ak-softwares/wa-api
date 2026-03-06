@@ -11,7 +11,7 @@ interface OnDeletedPayload {
   deletedIds: string[];
 }
 
-export function useDeleteChats( onDeleted?: (payload: OnDeletedPayload) => void) {
+export function useDeleteChats(onDeleted?: (payload: OnDeletedPayload) => void) {
   const [isDeleting, setIsDeleting] = useState(false);
   const { activeChat, setActiveChat } = useChatStore();
 

@@ -36,14 +36,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ n
       name: name
     });
 
-    if (!dbDelete) {
-      const response: ApiResponse = {
-        success: false,
-        message: "Template not found in database",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-
     const response: ApiResponse = {
       success: true,
       message: "Template deleted successfully from Facebook and database",
@@ -111,16 +103,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ name
         components,
         updatedAt: new Date(),
       },
-      { new: true }
+      {
+        new: true,
+        upsert: true,
+      }
     );
-
-    if (!updatedTemplate) {
-      const response: ApiResponse = {
-        success: false,
-        message: "Template not found in database for update",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
 
     const response: ApiResponse = {
       success: true,
