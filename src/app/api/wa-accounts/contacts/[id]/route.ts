@@ -6,7 +6,7 @@ import { ImportedContact } from "@/types/Contact";
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-   const { user, errorResponse } = await fetchAuthenticatedUser();
+   const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     // ⬅️ Await params because it’s a Promise
@@ -48,7 +48,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 // ✅ Delete a contact
 export async function DELETE( req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
 

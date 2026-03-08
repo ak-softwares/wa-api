@@ -5,10 +5,9 @@ import { ContactModel, IContact } from "@/models/Contact";
 import { ImportedContact } from "@/types/Contact";
 import { ITEMS_PER_PAGE, MAX_ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
 
-// GET contacts (paginated, with optional search functionality)
 export async function GET(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     // Pagination + filters + search
@@ -116,10 +115,9 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST contact
 export async function POST(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const body = await req.json();
@@ -160,7 +158,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     // ✅ Authenticated user
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse;
 
     // 🔐 Optional safety confirmation (recommended)

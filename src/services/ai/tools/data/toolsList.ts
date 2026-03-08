@@ -8,7 +8,7 @@ export const TOOLS_LIST: ToolCatalog[] = [
     name: "WooCommerce",
     desc: "Sync orders, customers, and products.",
     category: "Store",
-    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/woocommerce.svg`,
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/woocommerce.png`,
     status: ToolStatus.NOT_CONNECTED,
     active: false,
     credentials: [
@@ -40,7 +40,7 @@ export const TOOLS_LIST: ToolCatalog[] = [
     name: "Shopify",
     desc: "Automate order updates and customer messages.",
     category: "Store",
-    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/shopify.svg`,
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/shopify.png`,
     status: ToolStatus.NOT_CONNECTED,
     active: false,
     credentials: [
@@ -96,7 +96,7 @@ export const TOOLS_LIST: ToolCatalog[] = [
     id: "google_sheets",
     name: "Google Sheets",
     desc: "Export leads, orders, and conversations to Sheets.",
-    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/google-sheets.svg`,
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/google-sheets.png`,
     category: "Productivity",
     status: ToolStatus.NOT_CONNECTED,
     active: false,
@@ -144,7 +144,7 @@ export const TOOLS_LIST: ToolCatalog[] = [
     id: "google_calendar",
     name: "Google Calendar",
     desc: "Auto-create events and reminders.",
-    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/google-calendar.svg`,
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/google-calendar.png`,
     category: "Productivity",
     status: ToolStatus.NOT_CONNECTED,
     active: false,
@@ -234,7 +234,7 @@ export const TOOLS_LIST: ToolCatalog[] = [
     name: "n8n",
     desc: "Connect unlimited apps with your n8n agent.",
     category: "Automation",
-    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/n8n.svg`,
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/n8n.png`,
     status: ToolStatus.NOT_CONNECTED,
     active: false,
     credentials: [
@@ -284,7 +284,7 @@ export const TOOLS_LIST: ToolCatalog[] = [
     name: "Webhooks",
     desc: "Send and receive events via HTTP webhooks (POST).",
     category: "Automation",
-    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/webhook.svg`,
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/assets/icons/tools/webhook.png`,
     status: ToolStatus.NOT_CONNECTED,
     active: false,
     credentials: [

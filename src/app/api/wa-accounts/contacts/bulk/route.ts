@@ -6,7 +6,7 @@ import { ImportedContact } from "@/types/Contact";
 
 export async function POST(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse;
 
     const body = await req.json();
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     // ✅ Authenticated user
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse;
 
     // ✅ Parse body

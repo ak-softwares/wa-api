@@ -1,11 +1,11 @@
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { ApiResponse } from "@/types/apiResponse";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { ContactModel, IContact } from "@/models/Contact";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse;
 
     const body = await req.json();

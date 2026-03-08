@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     const whatsapp = new WhatsAppClient({
+      waba_id: waAccount.waba_id,
       phone_number_id: waAccount.phone_number_id,
       permanent_token: waAccount.permanent_token,
     });
