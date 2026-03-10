@@ -103,7 +103,7 @@ const MessageSchema = new Schema<IMessage>(
     from: { type: String, required: true },
     message: { type: String },
     template: { type: Schema.Types.Mixed },
-    waMessageId: { type: String },
+    waMessageId: { type: String, unique: true, index: true },
     status: {
       type: String,
       enum: Object.values(MessageStatus),

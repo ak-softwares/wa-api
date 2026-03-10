@@ -121,21 +121,32 @@ export async function POST(req: NextRequest) {
 
           await ChatModel.updateOne({ _id: chat._id }, { $set: updateFields });
 
-          // handle push notification
-          await sendPusherNotification({
-            userId: user._id.toString(),
-            event: "new-message",
-            chat,
-            message: newMessage,
+          // fire and forget
+          Promise.resolve().then(async () => {
+            try {
+              await sendPusherNotification({
+                userId: user._id.toString(),
+                event: "new-message",
+                chat,
+                message: newMessage,
+              });
+            } catch (err) {
+              // console.error("Pusher error:", err);
+            }
           });
-          
-          // handle Ai logics
-          await handleAIMessage({
-            user,
-            waAccount,
-            chat,
-            change,
-            rowMessageJson: msg
+
+          Promise.resolve().then(async () => {
+            try {
+              await handleAIMessage({
+                user,
+                waAccount,
+                chat,
+                change,
+                rowMessageJson: msg
+              });
+            } catch (err) {
+              // console.error("AI error:", err);
+            }
           });
         }
       }

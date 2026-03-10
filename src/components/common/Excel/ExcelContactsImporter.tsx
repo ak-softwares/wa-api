@@ -16,6 +16,7 @@ import IconButton from "../IconButton";
 import IconButtonSend from "../IconButtonSend";
 import GenericMenu from "../DropDownMenu";
 import { ImportedContact } from "@/types/Contact";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   onBack?: () => void; // still available if you want, but not used inside UI now
@@ -95,11 +96,6 @@ export default function ExcelContactsImporter({
 
     onImportContacts(selected);
   };
-
-  const topItems = [
-    { icon: "/assets/icons/select.svg", label: "Select All Valid", action: selectAllValid },
-    { icon: "/assets/icons/close.svg", label: "Clear All", action: clearSelection },
-  ];
 
   const filterByTag = (tag: string) => {
     setSearchTerm(tag);
@@ -197,7 +193,14 @@ export default function ExcelContactsImporter({
                 />
                 <h2 className="text-lg">{selectedContacts.length} selected</h2>
               </div>
-              <GenericMenu topItems={topItems} />
+              <div className="flex flex-wrap gap-2">
+                <Button variant={"outline"} onClick={selectAllValid}>
+                  Select All Valid
+                </Button>
+                <Button variant={"outline"} onClick={clearSelection}>
+                  Clear All
+                </Button>
+              </div>
             </div>
 
             {/* SEARCH (fixed) */}
