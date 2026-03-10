@@ -6,7 +6,7 @@ import { ChatParticipant, ChatType } from "@/types/Chat";
 
 export async function POST(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     // 📦 Parse request
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse;
 
     // 📦 Parse request

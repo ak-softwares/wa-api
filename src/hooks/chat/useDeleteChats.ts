@@ -57,7 +57,7 @@ export function useDeleteChats(onDeleted?: (payload: OnDeletedPayload) => void) 
     setIsDeleting(true);
     try {
       const res = await fetch("/api/wa-accounts/chats/bulk-delete", {
-        method: "POST",
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: chatIds }),
       });

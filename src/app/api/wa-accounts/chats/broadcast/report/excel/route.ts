@@ -9,7 +9,7 @@ import { formatDateIST } from "@/utiles/formatTime/formatTime";
 
 export async function GET(req: NextRequest) {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse;
 
     const { searchParams } = new URL(req.url);

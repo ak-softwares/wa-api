@@ -123,7 +123,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse;
 
     // 📦 Parse request
@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     // ✅ Authenticated user
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse;
 
     // 🔐 Optional safety confirmation (recommended)

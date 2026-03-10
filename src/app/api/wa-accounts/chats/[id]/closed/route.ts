@@ -1,19 +1,25 @@
 import { markChatClosed } from "@/lib/activeChats";
 import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
+import { ApiResponse } from "@/types/apiResponse";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   
-  const { user, errorResponse } = await fetchAuthenticatedUser();
+  const { user, errorResponse } = await fetchAuthenticatedUser(req);
   if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
   
   const { id: chatId } = await params;
   const userId = user?.id;
   if (!chatId) {
-    return NextResponse.json({ success: false, message: "chatId is required" }, { status: 400 });
+    const response: ApiResponse = { success: false, message: "ChatId is required" };
+    return NextResponse.json(response, { status: 400 });
   }
 
   markChatClosed(userId, chatId);
 
-  return Response.json({ success: true });
+  const response: ApiResponse = {
+    success: true,
+    message: "Chat closed successfully",
+  };
+  return NextResponse.json(response, { status: 200 });
 }

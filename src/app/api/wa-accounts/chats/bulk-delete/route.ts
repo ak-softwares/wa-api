@@ -5,10 +5,10 @@ import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount
 import { ChatModel } from "@/models/Chat";
 import { MessageModel } from "@/models/Message";
 
-export async function POST(req: NextRequest) {
+export async function DELETE(req: NextRequest) {
   try {
     // ✅ Authenticate user
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse;
 
     // ✅ Parse request body
