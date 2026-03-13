@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     
-  const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+  const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
   if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
   
   const { id: mediaId } = await params;
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     const response: ApiResponse = {
       success: false,
       message: "Error fetching media: " + (error instanceof Error ? error.message : String(error)),

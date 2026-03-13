@@ -5,6 +5,7 @@ import { formatTimeOnly  } from "@/utiles/formatTime/formatTime";
 import { Message } from "@/types/Message";
 import { MessageType } from "@/types/MessageType";
 import { ChatType } from "@/types/Chat";
+import { MESSAGE_TAGS } from "@/utiles/enums/messageTags";
 
 interface MessageMetaInfoProps {
   message: Message;
@@ -25,7 +26,7 @@ export default function MessageMetaInfo({ message }: MessageMetaInfoProps) {
         />
       )}
 
-      {message.tag === "aiAssistant" && (
+      {message.tag === MESSAGE_TAGS.AI_ASSISTANT && (
         <img
           src="/assets/icons/ai-icon.svg"
           className="w-4 h-4 dark:invert opacity-60"
@@ -33,7 +34,7 @@ export default function MessageMetaInfo({ message }: MessageMetaInfoProps) {
         />
       )}
 
-      {message.tag === "aiagent" && (
+      {message.tag === MESSAGE_TAGS.AI_AGENT && (
         <img
           src="/assets/icons/ai-agent-icon.svg"
           className="w-4 h-4 dark:invert opacity-60"
