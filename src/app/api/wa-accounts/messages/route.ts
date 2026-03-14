@@ -5,10 +5,9 @@ import { fetchAuthenticatedUser, getDefaultWaAccount } from "@/services/apiHelpe
 import { MessagePayload } from "@/types/MessageType";
 import { handleSendMessage } from "@/services/message/handleSendMessage";
 import { MESSAGE_TAGS } from "@/utiles/enums/messageTags";
-import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
-import { checkMessageCreditsAvailability } from "@/services/wallet/checkMessageCreditsAvailability";
 import { Types } from "mongoose";
 import { ITEMS_PER_PAGE, MAX_ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
+import { handlePushNotification } from "@/services/notification/handlePushNotification";
 
 // https://wa-api.me/api/wa-accounts/messages
 export async function GET(req: NextRequest) {
@@ -101,9 +100,8 @@ export async function POST(req: NextRequest) {
 
     // handle push notification if message send by ai
     if (result.message.tag === MESSAGE_TAGS.AI_AGENT ){
-      await sendPusherNotification({
-        userId: user._id.toString(),
-        event: "new-message",
+      handlePushNotification({
+        userId: user._id,
         chat: result.chat ?? undefined,
         message: result.message,
       });
