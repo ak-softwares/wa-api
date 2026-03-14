@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import { MessageModel } from "@/models/Message";
 import { MessageStatus, STATUS_PRIORITY } from "@/types/MessageType";
-import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
 import { debitMessageCredits } from "../wallet/debitMessageCredits";
+import { handlePushNotification } from "../notification/handlePushNotification";
 
 interface HandleMessageStatusParams {
   statusPayload: any;
@@ -106,9 +106,9 @@ export async function handleMessageStatus({ statusPayload }: HandleMessageStatus
 
   // handle push notification
   if (shouldUpdateStatus) {
-    await sendPusherNotification({
-      userId: message.userId.toString(),
-      event: "message-status-update",
+    handlePushNotification({
+      userId: message.userId,
+      webEvent: "message-status-update",
       message: message,
     });
   }

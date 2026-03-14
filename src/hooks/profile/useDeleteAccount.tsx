@@ -23,7 +23,7 @@ export function useDeleteAccountDialog() {
     try {
       setLoading(true);
 
-      const res = await fetch("/api/user/profile", {
+      const res = await fetch("/api/users/me", {
         method: "DELETE",
       });
 

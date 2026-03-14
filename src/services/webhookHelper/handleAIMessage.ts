@@ -1,16 +1,15 @@
 import { IChat } from "@/models/Chat";
 import { IWaAccount } from "@/models/WaAccount";
 import { webhookHandler } from "@/services/ai/webhookTool/webhookService";
-import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
 import { handleSendMessage } from "../message/handleSendMessage";
 import { MessageType } from "@/types/MessageType";
-import { Types } from "mongoose";
 import { ToolModel } from "@/models/Tool";
 import { getReplyFromChatAgent } from "../ai/aiSDK/agents/chatAgent";
 import { messageHistory } from "../message/messageHistory";
 import { IMessage } from "@/models/Message";
 import { checkMessageCreditsAvailability } from "../wallet/checkMessageCreditsAvailability";
 import { IUser } from "@/models/User";
+import { handlePushNotification } from "../notification/handlePushNotification";
 
 interface HandleAIMessageArgs {
   user: IUser; // User document
@@ -85,9 +84,8 @@ export async function handleAIMessage({
 
       if (result.sent > 0 && result.message) {
         // Trigger message for specific user (listener)
-        await sendPusherNotification({
-          userId: user._id.toString(),
-          event: "new-message",
+        handlePushNotification({
+          userId: user._id,
           chat,
           message: result.message,
         });

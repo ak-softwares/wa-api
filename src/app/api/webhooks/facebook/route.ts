@@ -4,12 +4,12 @@ import { UserModel, IUser } from "@/models/User";
 import { ChatModel, IChat } from "@/models/Chat";
 import { WaAccountModel, IWaAccount } from "@/models/WaAccount";
 import { isChatOpen } from "@/lib/activeChats";
-import { sendPusherNotification } from "@/utiles/comman/sendPusherNotification";
 import { getOrCreateChat } from "@/services/apiHelper/getOrCreateChat";
 import { handleIncomingMessage } from "@/services/webhookHelper/handleIncomingMessage";
 import { handleAIMessage } from "@/services/webhookHelper/handleAIMessage";
 import { handleMessageStatus } from "@/services/webhookHelper/handleMessageStatus";
 import { ChatParticipant } from "@/types/Chat";
+import { handlePushNotification } from "@/services/notification/handlePushNotification";
 
 // https://wa-api.me/api/webhooks/facebook
 const FACEBOOK_WEBHOOK_TOKEN = process.env.FACEBOOK_WEBHOOK_TOKEN; // secret token
@@ -121,18 +121,11 @@ export async function POST(req: NextRequest) {
 
           await ChatModel.updateOne({ _id: chat._id }, { $set: updateFields });
 
-          // fire and forget
-          Promise.resolve().then(async () => {
-            try {
-              await sendPusherNotification({
-                userId: user._id.toString(),
-                event: "new-message",
-                chat,
-                message: newMessage,
-              });
-            } catch (err) {
-              // console.error("Pusher error:", err);
-            }
+          // fire and forget for web + mobile channels
+          handlePushNotification({
+            userId: user._id,
+            chat,
+            message: newMessage,
           });
 
           Promise.resolve().then(async () => {

@@ -32,7 +32,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch("/api/user/profile", { method: "GET" })
+        const res = await fetch("/api/users/me", { method: "GET" })
         const data = await res.json()
         if (res.ok && data.success) {
           setValue("name", data.data.name || "")
@@ -49,7 +49,7 @@ export default function ProfilePage() {
   // ✅ Submit updated profile
   const onSubmit = async (values: z.infer<typeof profileSchema>) => {
     try {
-      const res = await fetch("/api/user/profile", {
+      const res = await fetch("/api/users/me", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),

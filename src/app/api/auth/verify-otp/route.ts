@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { connectDB } from "@/lib/mongoose";
 import { UserModel } from "@/models/User";
-import { OtpModel } from "@/types/Otp";
+import { OtpModel } from "@/models/Otp";
 import { generateToken } from "@/lib/auth/jwt";
 
 export async function POST(req: Request) {

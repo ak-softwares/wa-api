@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { sendWhatsAppOtp } from "@/services/auth/sendWhatsAppOtp";
 import { connectDB } from "@/lib/mongoose";
-import { OtpModel } from "@/types/Otp";
+import { OtpModel } from "@/models/Otp";
 
 export async function POST(req: Request) {
   try {
