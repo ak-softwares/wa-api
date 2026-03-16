@@ -1,20 +1,15 @@
 import { pusher } from "@/lib/pusher";
-import { IChat } from "@/models/Chat";
-import { IMessage } from "@/models/Message";
-import { Types } from "mongoose";
+import { INotificationPayload } from "@/types/Notification";
+import { NotificationEventType } from "@/utiles/enums/notification";
 
 interface SendWebNotificationParams {
-  userId: Types.ObjectId;
-  event: string;
-  chat?: IChat;
-  message?: IMessage;
+  notificationPayload: INotificationPayload;
 }
 
-export async function sendWebNotification({ userId, event, chat, message }: SendWebNotificationParams) {
-  if (!userId || !event) return;
+export async function sendWebNotification({ notificationPayload }: SendWebNotificationParams) {
 
-  await pusher.trigger(`user-${userId.toString()}`, event, {
-    chat,
-    message,
-  });
+  const channelName = `user-${notificationPayload.message?.userId.toString()}`;
+  const eventName = NotificationEventType.NEW_MESSAGE;
+
+  await pusher.trigger(channelName, eventName, { notificationPayload });
 }

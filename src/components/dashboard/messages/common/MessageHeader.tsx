@@ -4,10 +4,10 @@ import { User2, Users2 } from "lucide-react";
 import IconButton from "@/components/common/IconButton";
 import MessagesMenu from "../menus/MessagesMenu";
 import { useChatStore } from "@/store/chatStore";
-import { CountryCode, parsePhoneNumberFromString } from "libphonenumber-js";
 import { useRouter } from "next/navigation";
 import { useFavourite } from "@/hooks/chat/useFavourite";
 import { Chat, ChatType } from "@/types/Chat";
+import { formatInternationalPhoneNumber } from "@/utiles/formater/formatPhone";
 
 interface MessagesHeaderProps {
   onAvatarClick?: () => void;
@@ -34,11 +34,6 @@ export default function MessagesHeader({
   const chatId = activeChat?._id?.toString() ?? "";
   const isFavourite = activeChat?.isFavourite;
 
-  const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
-    const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-    return phoneNumber ? phoneNumber.formatInternational() : number;
-  }
-
   const handleUpdateChat = async (chatId: string, updates: Partial<Chat> = {}) => {
     // If the update includes isFavourite, call the API
     if ("isFavourite" in updates) {
@@ -61,7 +56,7 @@ export default function MessagesHeader({
   const partner = activeChat!.participants?.[0];
   const displayName = isBroadcast
     ? activeChat!.chatName || ChatType.BROADCAST
-    : partner?.name || formatPhone(String(partner?.number)) || "Unknown";
+    : partner?.name || formatInternationalPhoneNumber(String(partner?.number)).international || "Unknown";
 
   const displayImage = isBroadcast
     ? activeChat.chatImage

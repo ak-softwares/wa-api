@@ -3,6 +3,9 @@ import { MessageModel } from "@/models/Message";
 import { MessageStatus, STATUS_PRIORITY } from "@/types/MessageType";
 import { debitMessageCredits } from "../wallet/debitMessageCredits";
 import { handlePushNotification } from "../notification/handlePushNotification";
+import { handleMessageStatusUpdate } from "../notification/handleMessageStatusUpdate";
+import { INotificationPayload } from "@/types/Notification";
+import { NotificationEventType } from "@/utiles/enums/notification";
 
 interface HandleMessageStatusParams {
   statusPayload: any;
@@ -106,11 +109,11 @@ export async function handleMessageStatus({ statusPayload }: HandleMessageStatus
 
   // handle push notification
   if (shouldUpdateStatus) {
-    handlePushNotification({
-      userId: message.userId,
-      webEvent: "message-status-update",
-      message: message,
-    });
+    const notificationPayload: INotificationPayload = {
+      message,
+      eventType: NotificationEventType.STATUS_UPDATE
+    }
+    handleMessageStatusUpdate({ notificationPayload })
   }
 }
 

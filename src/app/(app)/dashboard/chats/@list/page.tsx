@@ -1,10 +1,9 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatMessageDateOrTime  } from "@/utiles/formatTime/formatTime";
+import { formatMessageDateOrTime  } from "@/utiles/formater/formatTime";
 import ChatMenu from "@/components/dashboard/chats/menus/ChatMenu";
 import ContactAvatar from "@/components/dashboard/contacts/common/ContactAvatar";
-import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import ChatsMenu from "@/components/dashboard/chats/menus/ChatsMenu";
 import SearchBar from "@/components/common/SearchBar";
 import { useState, useRef } from "react";
@@ -20,6 +19,7 @@ import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import { DeleteMode } from "@/utiles/enums/deleteMode";
 import { ConfirmDialog } from "@/components/common/dialog/ConfirmDialog";
 import { useChatMenuStore } from "@/store/chatMenu";
+import { formatInternationalPhoneNumber } from "@/utiles/formater/formatPhone";
 
 export default function ChatList() {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
@@ -74,12 +74,6 @@ export default function ChatList() {
     setDeleteMode(DeleteMode.All);
     setOpenDeleteDialog(true);
   };
-
-  
-  const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
-    const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-    return phoneNumber ? phoneNumber.formatInternational() : number;
-  }
 
   const handleOpenChat = async (chat: any) => {
     setActiveChat(chat)
@@ -216,7 +210,7 @@ export default function ChatList() {
             const isActive = chat._id === activeChat?._id
             const displayName = isBroadcast
               ? chat.chatName || ChatType.BROADCAST
-              : partner?.name || formatPhone(String(partner?.number)) || "Unknown";
+              : partner?.name || formatInternationalPhoneNumber(String(partner?.number)).international || "Unknown";
 
             const displayImage = isBroadcast
               ? chat?.chatImage

@@ -97,15 +97,6 @@ export async function POST(req: NextRequest) {
       userId: user._id,
       waAccount
     });
-
-    // handle push notification if message send by ai
-    if (result.message.tag === MESSAGE_TAGS.AI_AGENT ){
-      handlePushNotification({
-        userId: user._id,
-        chat: result.chat ?? undefined,
-        message: result.message,
-      });
-    }
    
     const response: ApiResponse = {
       success: true,

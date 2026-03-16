@@ -10,7 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Message } from "@/types/Message"
-import { formatFullDateTime } from "@/utiles/formatTime/formatTime"
+import { formatFullDateTime } from "@/utiles/formater/formatTime"
 
 type Props = {
   open: boolean

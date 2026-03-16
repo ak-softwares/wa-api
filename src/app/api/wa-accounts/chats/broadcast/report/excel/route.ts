@@ -5,7 +5,7 @@ import ExcelJS from "exceljs";
 import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 import { MessageModel } from "@/models/Message";
 import { ApiResponse } from "@/types/apiResponse";
-import { formatDateIST } from "@/utiles/formatTime/formatTime";
+import { formatDateIST } from "@/utiles/formater/formatTime";
 
 export async function GET(req: NextRequest) {
   try {

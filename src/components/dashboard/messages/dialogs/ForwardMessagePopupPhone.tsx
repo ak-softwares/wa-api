@@ -5,7 +5,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ContactAvatar from "../../contacts/common/ContactAvatar";
 import SearchBar from "@/components/common/SearchBar";
 import IconButton from "@/components/common/IconButton";
-import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { Message } from "@/types/Message";
 import { useChatStore } from "@/store/chatStore";
 import { useContacts } from "@/hooks/contact/useContacts";
@@ -13,6 +12,7 @@ import { Contact } from "@/types/Contact";
 import { MessagePayload } from "@/types/MessageType";
 import { MessageType } from "@/types/MessageType";
 import { sendMessage } from "@/services/message/sendMessage";
+import { formatAndJoinPhones, formatInternationalPhoneNumber } from "@/utiles/formater/formatPhone";
 
 interface ForwardMessagePopupToPhoneProps {
   isOpen: boolean;
@@ -36,22 +36,6 @@ export default function ForwardMessagePopupToPhone({ isOpen, onClose, message }:
       setSelectedContacts([]);
     }
   }, [isOpen]);
-
-  function formatAndJoinPhones(phones: string[], defaultCountry: CountryCode = "IN") {
-    return phones.map((number) => {
-        try {
-        const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-        return phoneNumber ? phoneNumber.formatInternational() : number;
-        } catch {
-        return number; // fallback if parsing fails
-        }
-    }).join(", ");
-  }
-
-  const formatPhone = (number: string, defaultCountry: CountryCode = "IN") => {
-    const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-    return phoneNumber ? phoneNumber.formatInternational() : number;
-  };
 
   const toggleContactSelection = (contact: Contact) => {
     // If selection mode is off → enable first
@@ -140,7 +124,7 @@ export default function ForwardMessagePopupToPhone({ isOpen, onClose, message }:
             ) : (
             contacts.map((contact) => {
               const isSelected = selectedContacts.some(c => c._id === contact._id);
-              const displayName = contact.name || formatPhone(String(contact.phones[0])) || "Unknown";
+              const displayName = contact.name || formatInternationalPhoneNumber(contact.phones[0]).international || "Unknown";
               const displayImage = contact.imageUrl;
                 return (
                     <div

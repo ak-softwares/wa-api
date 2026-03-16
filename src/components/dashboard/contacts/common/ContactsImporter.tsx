@@ -9,9 +9,9 @@ import { Contact } from "@/types/Contact";
 import IconButton from "@/components/common/IconButton";
 import GenericMenu from "@/components/common/DropDownMenu";
 import { useContacts } from "@/hooks/contact/useContacts";
-import parsePhoneNumberFromString, { CountryCode } from "libphonenumber-js";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChatParticipant } from "@/types/Chat";
+import { formatAndJoinPhones, formatInternationalPhoneNumber } from "@/utiles/formater/formatPhone";
 
 type Props = {
   onBack?: () => void;
@@ -36,24 +36,6 @@ export default function ContactImporter({ onBack, onImportContacts }: Props) {
   const selectAllContacts = () => { setSelectedContacts(contacts) };
 
   const clearSelection = () => { setSelectedContacts([]) };
-
-  const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
-    const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-    return phoneNumber ? phoneNumber.formatInternational() : number;
-  }
-
-  function formatAndJoinPhones(phones: string[], defaultCountry: CountryCode = "IN") {
-    return phones
-      .map((number) => {
-        try {
-          const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-          return phoneNumber ? phoneNumber.formatInternational() : number;
-        } catch {
-          return number; // fallback if parsing fails
-        }
-      })
-      .join(", ");
-  }
 
   const handleImportSelected = () => {
     if (selectedContacts.length === 0) {
@@ -131,7 +113,7 @@ export default function ContactImporter({ onBack, onImportContacts }: Props) {
                   {/* Avatar */}
                   <ContactAvatar
                     imageUrl={contact.imageUrl}
-                    title={contact.name || formatPhone(String(contact.phones[0])) || "Unknown"}
+                    title={contact.name || formatInternationalPhoneNumber(contact.phones[0]).international || "Unknown"}
                     subtitle={formatAndJoinPhones(contact.phones)}
                     tags={contact.tags}
                     onTagClick={(tag) => filterByTag(tag)}

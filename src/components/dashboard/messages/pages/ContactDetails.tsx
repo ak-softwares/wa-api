@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Star, Ban, Trash2, Edit2 } from "lucide-react";
-import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { useChatStore } from "@/store/chatStore";
 import ContactAvatar from "../../contacts/common/ContactAvatar";
 import IconButton from "@/components/common/IconButton";
@@ -11,6 +10,7 @@ import ViewAllMembersPopup from "../../chats/dialogs/ViewAllMembersPopup";
 import MembersMenu from "../menus/MembersMenu";
 import { Chat, ChatType } from "@/types/Chat";
 import AddEditContactDialog from "../../contacts/dialogs/AddUpdateContactDialog";
+import { formatInternationalPhoneNumber } from "@/utiles/formater/formatPhone";
 
 interface ContactDetailsProps {
   isOpen: boolean;
@@ -28,16 +28,11 @@ export default function ContactDetails({ isOpen, onClose, isBlocked, onEditBroad
 
   if (!isOpen || !activeChat) return null;
 
-  const formatPhone = (number: string, defaultCountry: CountryCode = "IN") => {
-    const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-    return phoneNumber ? phoneNumber.formatInternational() : number;
-  };
-
   const isBroadcast = activeChat.type === ChatType.BROADCAST;
   const partner = activeChat.participants?.[0];
   const displayName = isBroadcast
     ? activeChat.chatName || ChatType.BROADCAST
-    : partner?.name || formatPhone(String(partner?.number)) || "Unknown";
+    : partner?.name || formatInternationalPhoneNumber(String(partner?.number)).international || "Unknown";
 
   const displayImage = isBroadcast
     ? activeChat.chatImage
@@ -95,7 +90,7 @@ export default function ContactDetails({ isOpen, onClose, isBlocked, onEditBroad
           <h3 className="text-xl font-semibold mt-4">{displayName}</h3>
           {phoneNumber && (
             <p className="text-gray-500 text-sm mt-1">
-              {formatPhone(phoneNumber)}
+              {formatInternationalPhoneNumber(phoneNumber).international}
             </p>
           )}
         </div>
@@ -144,7 +139,7 @@ export default function ContactDetails({ isOpen, onClose, isBlocked, onEditBroad
 
             <div className="space-y-3">
               {activeChat.participants?.slice(0, 3).map((member, index) => {
-                const memberName = member.name || formatPhone(String(member?.number)) || "Unknown";
+                const memberName = member.name || formatInternationalPhoneNumber(String(member?.number)).international || "Unknown";
                 const memberImage = member.imageUrl;
                 const memberSubtitle = member.number;
                 return (
@@ -179,7 +174,6 @@ export default function ContactDetails({ isOpen, onClose, isBlocked, onEditBroad
                 isOpen={showViewAllMembers}
                 onClose={() => setShowViewAllMembers(false)}
                 members={activeChat.participants}
-                formatPhone={formatPhone}
               />
             </div>
           </div>

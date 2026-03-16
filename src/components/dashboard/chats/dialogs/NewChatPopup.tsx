@@ -6,10 +6,10 @@ import { useContacts } from "@/hooks/contact/useContacts";
 import ContactAvatar from "../../contacts/common/ContactAvatar";
 import SearchBar from "@/components/common/SearchBar";
 import IconButton from "@/components/common/IconButton";
-import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { Contact } from "@/types/Contact";
 import { useFindOrCreateChat } from "@/hooks/chat/useFindOrCreateChat";
 import { ChatParticipant } from "@/types/Chat";
+import { formatAndJoinPhones, formatInternationalPhoneNumber } from "@/utiles/formater/formatPhone";
 
 interface NewChatPopupProps {
   isOpen: boolean;
@@ -27,25 +27,6 @@ export default function NewChatPopup({ isOpen, onClose }: NewChatPopupProps) {
         refreshContacts();
     }
   }, [isOpen]);
-
-
-  const formatPhone = (number: string, defaultCountry: CountryCode = "IN") => {
-    const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-    return phoneNumber ? phoneNumber.formatInternational() : number;
-  };
-
-  const formatAndJoinPhones = (phones: string[], defaultCountry: CountryCode = "IN") => {
-    return phones
-      .map((number) => {
-        try {
-          const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-          return phoneNumber ? phoneNumber.formatInternational() : number;
-        } catch {
-          return number;
-        }
-      })
-      .join(", ");
-  };
 
   const handleContactClick = async (contact: Contact) => {
     if (!contact?.phones?.[0]) return;
@@ -108,7 +89,7 @@ export default function NewChatPopup({ isOpen, onClose }: NewChatPopupProps) {
                         {/* Avatar */}
                         <ContactAvatar
                             imageUrl={contact.imageUrl}
-                            title={contact.name || formatPhone(String(contact.phones[0])) || "Unknown"}
+                            title={contact.name || formatInternationalPhoneNumber(contact.phones[0]).international || "Unknown"}
                             subtitle={formatAndJoinPhones(contact.phones)}
                             size="xl"
                             isSelectionMode={false}

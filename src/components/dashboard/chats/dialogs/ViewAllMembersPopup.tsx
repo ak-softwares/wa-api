@@ -5,6 +5,7 @@ import IconButton from "@/components/common/IconButton";
 import ContactAvatar from "../../contacts/common/ContactAvatar";
 import SearchBar from "@/components/common/SearchBar";
 import MembersMenu from "../../messages/menus/MembersMenu";
+import { formatInternationalPhoneNumber } from "@/utiles/formater/formatPhone";
 
 interface ViewAllMembersPopupProps {
   isOpen: boolean;
@@ -14,14 +15,12 @@ interface ViewAllMembersPopupProps {
     number: string;
     imageUrl?: string;
   }[];
-  formatPhone: (num: string) => string;
 }
 
 export default function ViewAllMembersPopup({
   isOpen,
   onClose,
   members,
-  formatPhone
 }: ViewAllMembersPopupProps) {
 
   // ❗ Hooks MUST be at top (always executed)
@@ -34,10 +33,9 @@ export default function ViewAllMembersPopup({
 
     return members.filter(m =>
       (m.name?.toLowerCase().includes(q)) ||
-      m.number.includes(q) ||
-      formatPhone(m.number).toLowerCase().includes(q)
+      m.number.includes(q)
     );
-  }, [members, searchQuery, formatPhone]);
+  }, [members, searchQuery]);
 
 
   // ❗ Return after hooks
@@ -69,7 +67,7 @@ export default function ViewAllMembersPopup({
         {/* Members */}
         <div className="flex-1 overflow-y-auto p-3">
           {filteredMembers.map((member, i) => {
-            const memberName = member.name || formatPhone(member.number) || "Unknown";
+            const memberName = member.name || formatInternationalPhoneNumber(member.number).international || "Unknown";
             return (
               <div key={i} className="mb-3">
                 <ContactAvatar

@@ -5,11 +5,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ContactAvatar from "../../contacts/common/ContactAvatar";
 import SearchBar from "@/components/common/SearchBar";
 import IconButton from "@/components/common/IconButton";
-import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { useContacts } from "@/hooks/contact/useContacts";
 import { Contact } from "@/types/Contact";
 import { showToast } from "@/components/ui/sonner";
 import { ChatParticipant } from "@/types/Chat";
+import { formatAndJoinPhones, formatInternationalPhoneNumber } from "@/utiles/formater/formatPhone";
 
 interface BlockContactsPopupProps {
   isOpen: boolean;
@@ -34,22 +34,6 @@ export default function BlockContactsPopup({ isOpen, onClose, onBlock, blockedNu
       setSelectedContacts([]);
     }
   }, [isOpen]);
-
-  const formatAndJoinPhones = (phones: string[], defaultCountry: CountryCode = "IN") => {
-    return phones.map((num) => {
-      try {
-        const p = parsePhoneNumberFromString(num, defaultCountry);
-        return p ? p.formatInternational() : num;
-      } catch {
-        return num;
-      }
-    }).join(", ");
-  };
-
-  const formatPhone = (num: string, defaultCountry: CountryCode = "IN") => {
-    const p = parsePhoneNumberFromString(num, defaultCountry);
-    return p ? p.formatInternational() : num;
-  };
 
   const toggleContactSelection = (contact: Contact) => {
     if (!isSelectionMode) setIsSelectionMode(true);
@@ -123,7 +107,7 @@ export default function BlockContactsPopup({ isOpen, onClose, onBlock, blockedNu
             contacts.map((contact) => {
               const isAlreadyBlocked = blockedNumbers.some((p) => p.number === contact.phones[0]);
               const isSelected = selectedContacts.some(c => c._id === contact._id);
-              const displayName = contact.name || formatPhone(String(contact.phones[0])) || "Unknown";
+              const displayName = contact.name || formatInternationalPhoneNumber(contact.phones[0]).international || "Unknown";
               const displayImage = contact.imageUrl;
 
               return (

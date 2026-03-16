@@ -5,7 +5,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ContactAvatar from "../../contacts/common/ContactAvatar";
 import SearchBar from "@/components/common/SearchBar";
 import IconButton from "@/components/common/IconButton";
-import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { Message } from "@/types/Message";
 import { useChatStore } from "@/store/chatStore";
 import { useContacts } from "@/hooks/contact/useContacts";
@@ -16,6 +15,7 @@ import { Contact } from "@/types/Contact";
 import { MessagePayload } from "@/types/MessageType";
 import { MessageType } from "@/types/MessageType";
 import { sendMessage } from "@/services/message/sendMessage";
+import { formatAndJoinPhones, formatInternationalPhoneNumber } from "@/utiles/formater/formatPhone";
 
 interface ForwardMessagePopupProps {
   isOpen: boolean;
@@ -68,24 +68,6 @@ export default function ForwardMessagePopup({ isOpen, onClose, message }: Forwar
       setSelectedContacts([]);
     }
   }, [isOpen, activeTab]);
-
-  // ----------------------------
-  // Util
-  // ----------------------------
-  const formatPhone = (number: string, defaultCountry: CountryCode = "IN") => {
-    try {
-      const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-      return phoneNumber ? phoneNumber.formatInternational() : number;
-    } catch {
-      return number;
-    }
-  };
-
-  const formatAndJoinPhones = (phones: string[]) => {
-    return phones
-      .map(p => formatPhone(p))
-      .join(", ");
-  };
 
   // ----------------------------
   // Toggle select chat/contact
@@ -206,7 +188,7 @@ export default function ForwardMessagePopup({ isOpen, onClose, message }: Forwar
                   const partner = chat.participants[0];
                   const isSelected = selectedChats.some(c => c._id === chat._id);
 
-                  const name = partner?.name || formatPhone(partner?.number || "");
+                  const name = partner?.name || formatInternationalPhoneNumber(String(partner?.number)).international;
 
                   return (
                     <ListItem
@@ -238,7 +220,7 @@ export default function ForwardMessagePopup({ isOpen, onClose, message }: Forwar
                     <ListItem
                       key={contact._id!.toString()}
                       image={contact.imageUrl}
-                      title={contact.name || formatPhone(contact.phones[0])}
+                      title={contact.name || formatInternationalPhoneNumber(contact.phones[0]).international}
                       subtitle={formatAndJoinPhones(contact.phones)}
                       selected={isSelected}
                       onClick={() => toggleContactSelection(contact)}

@@ -1,7 +1,7 @@
 // components/chat/MessageMetaInfo.tsx
 import React from "react";
 import { MessageStatus } from "@/types/MessageType";
-import { formatTimeOnly  } from "@/utiles/formatTime/formatTime";
+import { formatTimeOnly  } from "@/utiles/formater/formatTime";
 import { Message } from "@/types/Message";
 import { MessageType } from "@/types/MessageType";
 import { ChatType } from "@/types/Chat";

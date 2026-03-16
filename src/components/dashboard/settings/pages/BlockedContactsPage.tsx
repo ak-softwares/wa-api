@@ -3,22 +3,17 @@
 import IconButton from "@/components/common/IconButton";
 import { useBlockedContacts } from "@/hooks/chat/useBlockedContacts";
 import { useSettingsStore } from "@/store/settingsStore";
-import parsePhoneNumberFromString, { CountryCode } from "libphonenumber-js";
 import ContactAvatar from "../../contacts/common/ContactAvatar";
 import { Skeleton } from "@/components/ui/skeleton"; // <-- Make sure this exists
 import BlockContactsPopup from "../popups/BlockContactsPopup";
 import { useState } from "react";
-import { showToast } from "@/components/ui/sonner";
+import { formatInternationalPhoneNumber } from "@/utiles/formater/formatPhone";
 
 export default function BlockedContactsPage() {
     const { blockedList, confirmBlock, confirmUnblock, confirmBlockDialog, loading, blockNumber } = useBlockedContacts();
     // const { blockContactList } = useBlockedContacts();
     const { setSelectedSettingsMenu } = useSettingsStore();
     const [isBlockOpen, setIsBlockOpen] = useState(false);
-    const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
-        const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-        return phoneNumber ? phoneNumber.formatInternational() : number;
-    }
 
     return (
         <div className="flex flex-col h-full">
@@ -69,8 +64,8 @@ export default function BlockedContactsPage() {
                             className=""
                         >
                             <ContactAvatar
-                                title={participant.name || formatPhone(participant.number) || "Unknown"}
-                                subtitle={formatPhone(participant.number)}
+                                title={participant.name || formatInternationalPhoneNumber(participant?.number).international || "Unknown"}
+                                subtitle={formatInternationalPhoneNumber(participant?.number).international}
                                 imageUrl={participant.imageUrl}
                                 size="xl"
                                 rightMenu={

@@ -27,7 +27,7 @@ import MessageInfoDialog from "@/components/dashboard/messages/dialogs/MessageIn
 import BroadcastPage from "../../broadcast/BroadcastPage";
 import BroadcastMessageReportPage from "../../broadcast/BroadcastMessageReport";
 import { Textarea } from "@/components/ui/textarea";
-import { getDateLabel } from "@/utiles/formatTime/formatTime";
+import { getDateLabel } from "@/utiles/formater/formatTime";
 
 export default function MessagePage() {
   const { theme } = useTheme(); // or use your theme context

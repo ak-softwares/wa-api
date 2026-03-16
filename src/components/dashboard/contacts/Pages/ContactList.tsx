@@ -4,7 +4,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useContacts } from "@/hooks/contact/useContacts";
 import ContactAvatar from "../common/ContactAvatar";
 import { useState, useRef } from "react";
-import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
 import { showToast } from "@/components/ui/sonner";
 import ContactMenu from "../menus/ContactMenu";
 import ContactsMenu from "../menus/ContactsMenu";
@@ -19,6 +18,7 @@ import { useDeleteContacts } from "@/hooks/contact/useDeleteContacts";
 import { ConfirmDialog } from "@/components/common/dialog/ConfirmDialog";
 import { DeleteMode } from "@/utiles/enums/deleteMode";
 import AddEditContactDialog from "../dialogs/AddUpdateContactDialog";
+import { formatAndJoinPhones, formatInternationalPhoneNumber } from "@/utiles/formater/formatPhone";
 
 export default function ContactList() {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
@@ -116,24 +116,6 @@ export default function ContactList() {
     setIsSelectionMode(false);
   };
 
-  const formatPhone = ( number: string, defaultCountry: CountryCode = "IN") => {
-    const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-    return phoneNumber ? phoneNumber.formatInternational() : number;
-  }
-
-  function formatAndJoinPhones(phones: string[], defaultCountry: CountryCode = "IN") {
-    return phones
-      .map((number) => {
-        try {
-          const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-          return phoneNumber ? phoneNumber.formatInternational() : number;
-        } catch {
-          return number; // fallback if parsing fails
-        }
-      })
-      .join(", ");
-  }
-
   const filterByTag = (tag: string) => {
     setSearchValue(tag);
   };
@@ -216,7 +198,7 @@ export default function ContactList() {
                   {/* Avatar */}
                   <ContactAvatar
                     imageUrl={contact.imageUrl}
-                    title={contact.name || formatPhone(String(contact.phones[0])) || "Unknown"}
+                    title={contact.name || formatInternationalPhoneNumber(String(contact.phones[0])).international || "Unknown"}
                     subtitle={formatAndJoinPhones(contact.phones)}
                     tags={contact.tags}
                     onTagClick={(tag) => filterByTag(tag)}

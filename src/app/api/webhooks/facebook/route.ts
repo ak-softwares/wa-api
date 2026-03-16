@@ -10,6 +10,9 @@ import { handleAIMessage } from "@/services/webhookHelper/handleAIMessage";
 import { handleMessageStatus } from "@/services/webhookHelper/handleMessageStatus";
 import { ChatParticipant } from "@/types/Chat";
 import { handlePushNotification } from "@/services/notification/handlePushNotification";
+import { INotificationPayload } from "@/types/Notification";
+import { NotificationEventType } from "@/utiles/enums/notification";
+import { getMessagePreview } from "@/lib/messages/getMessagePreview";
 
 // https://wa-api.me/api/webhooks/facebook
 const FACEBOOK_WEBHOOK_TOKEN = process.env.FACEBOOK_WEBHOOK_TOKEN; // secret token
@@ -110,7 +113,7 @@ export async function POST(req: NextRequest) {
 
           // handle lastMessage and unreadCount
           const updateFields: Partial<IChat> = {
-            lastMessage: messageText,
+            lastMessage: getMessagePreview(newMessage),
             lastMessageAt: new Date(),
           };
 
@@ -122,11 +125,12 @@ export async function POST(req: NextRequest) {
           await ChatModel.updateOne({ _id: chat._id }, { $set: updateFields });
 
           // fire and forget for web + mobile channels
-          handlePushNotification({
-            userId: user._id,
+          const notificationPayload: INotificationPayload = {
             chat,
             message: newMessage,
-          });
+            eventType: NotificationEventType.NEW_MESSAGE
+          }
+          handlePushNotification({ notificationPayload });
 
           Promise.resolve().then(async () => {
             try {

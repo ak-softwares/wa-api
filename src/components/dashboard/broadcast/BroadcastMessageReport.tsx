@@ -1,10 +1,8 @@
 "use client";
 
-import { useMemo, useRef } from "react";
-import * as XLSX from "xlsx";
+import { useRef } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import IconButton from "@/components/common/IconButton";
@@ -17,9 +15,9 @@ import Image from "next/image";
 import { useBroadcastMessageReport } from "@/hooks/broadcast/useBroadcastMessageReport";
 import { MessageStatus } from "@/types/MessageType";
 import SearchBar from "@/components/common/SearchBar";
-import parsePhoneNumberFromString, { CountryCode } from "libphonenumber-js";
-import { formatFullDateTime } from "@/utiles/formatTime/formatTime";
+import { formatFullDateTime } from "@/utiles/formater/formatTime";
 import { useBroadcastReportExcel } from "@/hooks/broadcast/useBroadcastReportExcel";
+import { formatInternationalPhoneNumber } from "@/utiles/formater/formatPhone";
 
 type Props = {
   onBack?: () => void;
@@ -99,11 +97,6 @@ export default function BroadcastMessageReportPage({
       onBack();
       return;
     }
-  };
-
-  const formatPhone = (number: string, defaultCountry: CountryCode = "IN") => {
-    const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-    return phoneNumber ? phoneNumber.formatInternational() : number;
   };
   
   return (
@@ -258,7 +251,7 @@ export default function BroadcastMessageReportPage({
                       </td>
 
                       <td className="p-3 border-b dark:border-[#333434]">
-                        {formatPhone(row.to) || "-"}
+                        {formatInternationalPhoneNumber(row.to).international || "-"}
                       </td>
 
                       <td className="p-3 border-b dark:border-[#333434]">

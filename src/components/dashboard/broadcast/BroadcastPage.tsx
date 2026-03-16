@@ -5,7 +5,6 @@ import IconButton from "@/components/common/IconButton";
 import { Input } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import { useContactStore } from "@/store/contactStore";
-import parsePhoneNumberFromString, { CountryCode } from "libphonenumber-js";
 import ContactAvatar from "../contacts/common/ContactAvatar";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import { useBroadcast } from "@/hooks/broadcast/useBroadcast";
 import { showToast } from "@/components/ui/sonner";
 import ContactImporter from "../contacts/common/ContactsImporter";
 import { useChatMenuStore } from "@/store/chatMenu";
+import { formatInternationalPhoneNumber } from "@/utiles/formater/formatPhone";
 
 type Props = {
   onBack?: () => void;
@@ -46,11 +46,6 @@ export default function BroadcastPage({ onBack, broadcastId, initialBroadcastNam
 
     setChatMenu(null);
     setSelectedContactMenu(null);
-  };
-
-  const formatPhone = (number: string, defaultCountry: CountryCode = "IN") => {
-    const phoneNumber = parsePhoneNumberFromString(number, defaultCountry);
-    return phoneNumber ? phoneNumber.formatInternational() : number;
   };
 
   const handleRemoveContact = (contactNumber: string) => {
@@ -214,7 +209,7 @@ export default function BroadcastPage({ onBack, broadcastId, initialBroadcastNam
               ) : (
                 <div className="space-y-2 pr-2">
                   {contacts.map((contact) => {
-                    const displayName = contact.name || formatPhone(String(contact.number)) || "Unknown";
+                    const displayName = contact.name || formatInternationalPhoneNumber(contact.number).international || "Unknown";
                     return (
                       <div key={contact.number || displayName}>
                         <ContactAvatar
