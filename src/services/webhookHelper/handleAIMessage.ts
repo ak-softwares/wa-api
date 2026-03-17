@@ -88,8 +88,9 @@ export async function handleAIMessage({
       if (result.sent > 0 && result.message) {
         // Trigger message for specific user (listener)
         const notificationPayload: INotificationPayload = {
+          chat,
           message: result.message,
-          eventType: NotificationEventType.STATUS_UPDATE
+          eventType: NotificationEventType.NEW_MESSAGE
         }
         handleMessageStatusUpdate({ notificationPayload })
       }

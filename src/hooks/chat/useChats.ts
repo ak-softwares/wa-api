@@ -30,38 +30,28 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
     if (!newChat) return;
 
     setChats((prev) => {
-      const existingChatIndex = prev.findIndex((c) => c._id === newChat._id);
-      const updatedChats = [...prev];
+      const existingChatIndex = prev.findIndex(
+        (c) => c._id === newChat._id
+      );
+
+      let updatedChats = [...prev];
 
       if (existingChatIndex !== -1) {
-        // Update chat only when message exists
-        if (newMessage) {
-          const updatedChat = {
-            ...updatedChats[existingChatIndex],
-            lastMessage: newMessage.message,
-            updatedAt: newMessage.createdAt,
-            unreadCount:
-              activeChat && activeChat._id === newChat._id
-                ? 0
-                : (updatedChats[existingChatIndex].unreadCount || 0) + 1,
-          };
-
-          updatedChats.splice(existingChatIndex, 1);
-          updatedChats.unshift(updatedChat);
-        }
-      } else {
-        updatedChats.unshift(newChat);
+        // ✅ Replace full chat with latest data
+        updatedChats.splice(existingChatIndex, 1);
       }
+
+      // ✅ Always put latest chat on top
+      updatedChats.unshift(newChat);
 
       return updatedChats;
     });
 
-    // If active chat is same, you can append message directly
+    // Optional: append message if active chat
     if (activeChat && newChat._id === activeChat._id) {
       // appendMessage(newMessage);
     }
 
-    // Reset after processing
     setNewMessageData(null, null);
   }, [newMessage, newChat, activeChat, setNewMessageData]);
 

@@ -122,11 +122,15 @@ export async function POST(req: NextRequest) {
             updateFields.unreadCount = (chat.unreadCount || 0) + 1;
           }
 
-          await ChatModel.updateOne({ _id: chat._id }, { $set: updateFields });
+          const updatedChat = await ChatModel.findByIdAndUpdate(
+            chat._id,
+            { $set: updateFields },
+            { new: true } // returns updated document
+          );
 
           // fire and forget for web + mobile channels
           const notificationPayload: INotificationPayload = {
-            chat,
+            chat: updatedChat ?? chat,
             message: newMessage,
             eventType: NotificationEventType.NEW_MESSAGE
           }
