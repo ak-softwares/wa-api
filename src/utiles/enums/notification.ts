@@ -1,3 +1,7 @@
+export enum PusherEvent {
+  USER_EVENT = "user-event",
+}
+
 export enum NotificationEventType {
   NEW_MESSAGE = "new-message",
   STATUS_UPDATE = "status-update",

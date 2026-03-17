@@ -10,7 +10,7 @@ import { MESSAGE_TAGS } from "@/utiles/enums/messageTags";
 import { Message } from "@/types/Message";
 import { Chat, ChatType } from "@/types/Chat";
 import { getMessagePreview } from "@/lib/messages/getMessagePreview";
-import { NotificationEventType } from "@/utiles/enums/notification";
+import { NotificationEventType, PusherEvent } from "@/utiles/enums/notification";
 import { NotificationPayload } from "@/types/Notification";
 import { formatInternationalPhoneNumber } from "@/utiles/formater/formatPhone";
 
@@ -42,7 +42,7 @@ export default function PusherListener() {
     // ----------------------------------
     // 🔹 NEW MESSAGE EVENT
     // ----------------------------------
-    userChannel.bind(NotificationEventType.NEW_MESSAGE, (data: any) => {
+    userChannel.bind(PusherEvent.USER_EVENT, (data: any) => {
       const notificationPayload = data.notificationPayload as NotificationPayload;
       const chat = notificationPayload.chat as Chat;
       const msg = notificationPayload.message as Message;
