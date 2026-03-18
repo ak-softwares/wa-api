@@ -11,6 +11,7 @@ import { MessagePayload } from "@/types/MessageType";
 import { sendMessage } from "@/services/message/sendMessage";
 import { Template } from "@/types/Template";
 import { ITEMS_PER_PAGE } from "@/utiles/constans/apiConstans";
+import { useChatOpenClose } from "../chat/useChatOpenClose";
 
 interface UseMessagesProps {
   containerRef?: React.RefObject<HTMLDivElement | null>;
@@ -27,6 +28,25 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
   const { newMessage, newChat, setNewMessageData, updatedMessageStatus, setUpdateMessageStatus } = useChatStore();
   const { appendMessage, setAppendMessage } = useMessageStore();
   const currentChatIdRef = useRef<string>(chatId);
+  const { openChat, closeChat } = useChatOpenClose({
+    onChange: ({ chatId, opened }) => {
+      if (opened) {
+        // ✅ instantly update unread count in UI
+
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (!chatId) return;
+    // ✅ OPEN chat
+    openChat(chatId);
+
+    return () => {
+      // ✅ CLOSE chat
+      closeChat(chatId);
+    };
+  }, [chatId]);
 
   // 🔥 Update ref when chatId changes
   useEffect(() => {

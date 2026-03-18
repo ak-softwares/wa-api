@@ -3,6 +3,7 @@ import { ChatModel } from "@/models/Chat";
 import { MessageModel } from "@/models/Message";
 import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
+import { markChatClosed, markChatOpen } from "@/lib/activeChats";
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -43,4 +44,73 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     };
     return NextResponse.json(response, { status: 500 });
   }
+}
+
+export async function PATCH( req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { user, errorResponse } = await fetchAuthenticatedUser(req);
+  if (errorResponse) return errorResponse;
+
+  const { id: chatId } = await params;
+  const userId = user?.id;
+
+  if (!chatId) {
+    const response: ApiResponse = {
+      success: false,
+      message: "ChatId is required",
+    };
+    return NextResponse.json(response, { status: 400 });
+  }
+
+  let body: { opened?: boolean };
+
+  try {
+    body = await req.json();
+  } catch {
+    const response: ApiResponse = {
+      success: false,
+      message: "Invalid JSON body",
+    };
+    return NextResponse.json(response, { status: 400 });
+  }
+
+  const { opened } = body;
+
+  if (typeof opened !== "boolean") {
+    const response: ApiResponse = {
+      success: false,
+      message: "`opened` (boolean) is required",
+    };
+    return NextResponse.json(response, { status: 400 });
+  }
+
+  // ✅ OPEN CHAT
+  if (opened) {
+    await ChatModel.updateOne(
+      {
+        _id: chatId,
+        userId: user._id,
+        unreadCount: { $gt: 0 },
+      },
+      {
+        $set: { unreadCount: 0 },
+      }
+    );
+
+    markChatOpen(userId, chatId);
+
+    const response: ApiResponse = {
+      success: true,
+      message: "Chat opened and unread count is 0 successfully",
+    };
+    return NextResponse.json(response, { status: 200 });
+  }
+
+  // ✅ CLOSE CHAT
+  markChatClosed(userId, chatId);
+
+  const response: ApiResponse = {
+    success: true,
+    message: "Chat closed successfully",
+  };
+  return NextResponse.json(response, { status: 200 });
 }

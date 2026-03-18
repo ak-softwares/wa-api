@@ -10,6 +10,6 @@ export async function sendWebNotification({ notificationPayload }: SendWebNotifi
 
   const channelName = `user-${notificationPayload.message?.userId.toString()}`;
   const eventName = PusherEvent.USER_EVENT;
-
+  
   await pusher.trigger(channelName, eventName, { notificationPayload });
 }

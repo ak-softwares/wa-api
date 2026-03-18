@@ -132,24 +132,13 @@ export function useChats({ sidebarRef, phone }: UseChatsProps = {}) {
 
   const markChatAsRead = (chat: Chat) => {
     const chatId = chat._id;
-
     // instant UI update
     setChats(prev =>
       prev.map(c =>
         c._id === chatId ? { ...c, unreadCount: 0 } : c
       )
     );
-
-    if ((chat.unreadCount ?? 0) > 0) {
-      fetch(`/api/wa-accounts/chats/${chatId}/mark-read`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ unreadCount: 0 }),
-      }).catch(console.error);
-    }
   };
-
-
 
   const refreshChats = () => {
     setQuery("");

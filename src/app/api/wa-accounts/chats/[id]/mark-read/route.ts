@@ -14,16 +14,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json(response, { status: 400 });
     }
 
-    const chat = await ChatModel.findOne({ _id: chatId, userId: user._id });
-    if (!chat) {
-      const response: ApiResponse = { success: false, message: "Chat not found" };
-      return NextResponse.json(response, { status: 404 });
-    }
+    const chat = await ChatModel.findOneAndUpdate(
+      {
+        _id: chatId,
+        userId: user._id,
+        unreadCount: { $gt: 0 }, // only update if needed
+      },
+      {
+        $set: { unreadCount: 0 },
+      },
+      {
+        new: true,
+      }
+    );
 
-    // Only update if unreadCount > 0
-    if ((chat.unreadCount ?? 0) > 0) {
-      chat.unreadCount = 0;
-      await chat.save();
+    if (!chat) {
+      return NextResponse.json(
+        { success: false, message: "Chat not found or already read" },
+        { status: 404 }
+      );
     }
 
     const response: ApiResponse = {

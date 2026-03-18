@@ -1,4 +1,3 @@
-// ✅ POST /api/wa-accounts/chats/bulk-delete
 import { NextRequest, NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";

@@ -69,19 +69,12 @@ export default function MessagePage() {
     if (!chatId) return;
 
     // Save before switching:
-    // drafts.current[chatId] = message;
     setMessage(drafts.current[chatId] || "");
 
     if (inputRef.current) {
       inputRef.current.style.height = "48px";
     }
-    
-    fetch(`/api/wa-accounts/chats/${chatId}/opened`, { method: "POST" });
 
-    // ✅ When leaving the chat
-    return () => {
-      fetch(`/api/wa-accounts/chats/${chatId}/closed`, { method: "POST" });
-    };
   }, [chatId]);
 
   useEffect(() => {
