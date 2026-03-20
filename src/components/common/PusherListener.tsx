@@ -42,64 +42,65 @@ export default function PusherListener() {
     // ----------------------------------
     // 🔹 NEW MESSAGE EVENT
     // ----------------------------------
-    userChannel.bind(PusherEvent.USER_EVENT, (data: any) => {
-      const notificationPayload = data.notificationPayload as NotificationPayload;
-      const chat = notificationPayload.chat as Chat;
-      const msg = notificationPayload.message as Message;
-      const eventType = notificationPayload.eventType as NotificationEventType;
+    userChannel.bind("pusher:subscription_succeeded", () => {
+      userChannel.bind(PusherEvent.USER_EVENT, (data: any) => {
+        const notificationPayload = data.notificationPayload as NotificationPayload;
+        const chat = notificationPayload.chat as Chat;
+        const msg = notificationPayload.message as Message;
+        const eventType = notificationPayload.eventType as NotificationEventType;
 
-      if(eventType === NotificationEventType.STATUS_UPDATE) {
-        setUpdateMessageStatus(msg);
-      } else if (eventType === NotificationEventType.NEW_MESSAGE) {
-
-        setNewMessageData(msg, chat);
-      
-        // 🛑 Skip notification for AI messages
-        const isAIMessage = msg?.tag === MESSAGE_TAGS.AI_ASSISTANT || msg?.tag === MESSAGE_TAGS.AI_AGENT;
-        if (isAIMessage) return;
+        if(eventType === NotificationEventType.STATUS_UPDATE) {
+          setUpdateMessageStatus(msg);
+        } else if (eventType === NotificationEventType.NEW_MESSAGE) {
+          setNewMessageData(msg, chat);
         
-        // 🚫 Skip toast if on chat page or currently viewing the same chat
-        const isOnChatPage = pathname === "/dashboard/chats" || pathname.startsWith("/dashboard/chats/");
-        if (isOnChatPage) return;
+          // 🛑 Skip notification for AI messages
+          const isAIMessage = msg?.tag === MESSAGE_TAGS.AI_ASSISTANT || msg?.tag === MESSAGE_TAGS.AI_AGENT;
+          if (isAIMessage) return;
+          
+          // 🚫 Skip toast if on chat page or currently viewing the same chat
+          const isOnChatPage = pathname === "/dashboard/chats" || pathname.startsWith("/dashboard/chats/");
+          if (isOnChatPage) return;
 
-        // Reusable for toast button
-        const openChatFromToast = () => {
-          setActiveChat(chat);
-          router.push("/dashboard/chats");
-        };
-
-        const isBroadcast = chat.type === ChatType.BROADCAST;
-        const partner = chat.participants[0];
-        const messageTitle = isBroadcast
-          ? chat.chatName || ChatType.BROADCAST
-          : partner?.name || formatInternationalPhoneNumber(String(partner?.number)).international || "Unknown";
-        
-        const messageBody = getMessagePreview(msg);
-        
-        if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-          const browserNotification = new Notification(messageTitle, {
-            body: messageBody,
-            icon: "/assets/icons/tools/wa-api-icon.png",
-            badge: "/assets/icons/tools/wa-api-icon.png",
-            tag: `chat-${chat?._id || msg?._id || Date.now()}`,
-          });
-
-          browserNotification.onclick = () => {
-            window.focus();
-            openChatFromToast();
-            browserNotification.close();
+          // Reusable for toast button
+          const openChatFromToast = () => {
+            setActiveChat(chat);
+            router.push("/dashboard/chats");
           };
-        }
 
-        showToast.success(messageTitle, {
-          description: messageBody,
-          duration: 5000,
-          action: {
-            label: "View",
-            onClick: () => openChatFromToast(),
-          },
-        });
-      }
+          const isBroadcast = chat.type === ChatType.BROADCAST;
+          const partner = chat.participants[0];
+          const messageTitle = isBroadcast
+            ? chat.chatName || ChatType.BROADCAST
+            : partner?.name || formatInternationalPhoneNumber(String(partner?.number)).international || "Unknown";
+          
+          const messageBody = getMessagePreview(msg);
+          
+          if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+            const browserNotification = new Notification(messageTitle, {
+              body: messageBody,
+              icon: "/assets/icons/tools/wa-api-icon.png",
+              badge: "/assets/icons/tools/wa-api-icon.png",
+              tag: `chat-${chat?._id || msg?._id || Date.now()}`,
+            });
+
+            browserNotification.onclick = () => {
+              window.focus();
+              openChatFromToast();
+              browserNotification.close();
+            };
+          }
+
+          showToast.success(messageTitle, {
+            description: messageBody,
+            duration: 5000,
+            action: {
+              label: "View",
+              onClick: () => openChatFromToast(),
+            },
+          });
+        }
+      });
     });
 
     return () => {

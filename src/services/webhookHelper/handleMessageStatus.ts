@@ -2,10 +2,9 @@ import mongoose from "mongoose";
 import { MessageModel } from "@/models/Message";
 import { MessageStatus, STATUS_PRIORITY } from "@/types/MessageType";
 import { debitMessageCredits } from "../wallet/debitMessageCredits";
-import { handlePushNotification } from "../notification/handlePushNotification";
-import { handleMessageStatusUpdate } from "../notification/handleMessageStatusUpdate";
 import { INotificationPayload } from "@/types/Notification";
 import { NotificationEventType } from "@/utiles/enums/notification";
+import { emitPusherEvent } from "../notification/emitPusherEvent";
 
 interface HandleMessageStatusParams {
   statusPayload: any;
@@ -109,11 +108,11 @@ export async function handleMessageStatus({ statusPayload }: HandleMessageStatus
 
   // handle push notification
   if (shouldUpdateStatus) {
-    const notificationPayload: INotificationPayload = {
+    const eventPayload: INotificationPayload = {
       message,
       eventType: NotificationEventType.STATUS_UPDATE
     }
-    handleMessageStatusUpdate({ notificationPayload })
+    emitPusherEvent({ eventPayload })
   }
 }
 

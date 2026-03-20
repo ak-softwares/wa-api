@@ -190,11 +190,12 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
   }, [containerRef, loading, loadingMore, hasMore]);
 
   const onSend = async ({ messagePayload }: { messagePayload: MessagePayload; }) => {
-    const tempId = crypto.randomUUID(); // ✅
+    const tempId = Date.now().toString();
     const now = new Date().toISOString();
 
     const tempMessage: Message = {
         _id: tempId,
+        clientTempId: tempId,
         userId: "local-user" as any,
         chatId: chatId as any,
         to: "",
@@ -213,6 +214,8 @@ export function useMessages({ containerRef, chatId }: UseMessagesProps) {
     setMessages((prev) => [tempMessage, ...prev]);
 
     try {
+      // ✅ attach clientTempId
+      messagePayload.clientTempId = tempId;
       const message: Message = await sendMessage({ messagePayload });
       setMessages((prev) => prev.map((msg) => msg._id === tempId ? message : msg)); // 🔥 Replace temp with real message
     } catch (error) {

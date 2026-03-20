@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/mongoose";
 import { UserModel, IUser } from "@/models/User";
 import { ChatModel, IChat } from "@/models/Chat";
 import { WaAccountModel, IWaAccount } from "@/models/WaAccount";
-import { isChatOpen } from "@/lib/activeChats";
+import { safeIsChatOpen } from "@/lib/redis/activeChats";
 import { getOrCreateChat } from "@/services/apiHelper/getOrCreateChat";
 import { handleIncomingMessage } from "@/services/webhookHelper/handleIncomingMessage";
 import { handleAIMessage } from "@/services/webhookHelper/handleAIMessage";
@@ -13,6 +13,7 @@ import { handlePushNotification } from "@/services/notification/handlePushNotifi
 import { INotificationPayload } from "@/types/Notification";
 import { NotificationEventType } from "@/utiles/enums/notification";
 import { getMessagePreview } from "@/lib/messages/getMessagePreview";
+import { emitPusherEvent } from "@/services/notification/emitPusherEvent";
 
 // https://wa-api.me/api/webhooks/facebook
 const FACEBOOK_WEBHOOK_TOKEN = process.env.FACEBOOK_WEBHOOK_TOKEN; // secret token
@@ -118,7 +119,8 @@ export async function POST(req: NextRequest) {
           };
 
           // Only update unreadCount if chat isn't open
-          if (!isChatOpen(user._id.toString(), chat._id!.toString())) {
+          const isOpen = await safeIsChatOpen(chat._id!.toString());
+          if (!isOpen) {
             updateFields.unreadCount = (chat.unreadCount || 0) + 1;
           }
 
@@ -128,13 +130,16 @@ export async function POST(req: NextRequest) {
             { new: true } // returns updated document
           );
 
-          // fire and forget for web + mobile channels
-          const notificationPayload: INotificationPayload = {
+          // To send message creation event
+          const eventPayload: INotificationPayload = {
             chat: updatedChat ?? chat,
             message: newMessage,
             eventType: NotificationEventType.NEW_MESSAGE
           }
-          handlePushNotification({ notificationPayload });
+          emitPusherEvent({ eventPayload })
+          if(!isOpen) { // Send only notification when chat is not open
+            handlePushNotification({ notificationPayload: eventPayload });
+          }
 
           Promise.resolve().then(async () => {
             try {

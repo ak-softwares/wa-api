@@ -10,9 +10,9 @@ import { IMessage } from "@/models/Message";
 import { checkMessageCreditsAvailability } from "../wallet/checkMessageCreditsAvailability";
 import { IUser } from "@/models/User";
 import { handlePushNotification } from "../notification/handlePushNotification";
-import { handleMessageStatusUpdate } from "../notification/handleMessageStatusUpdate";
 import { NotificationEventType } from "@/utiles/enums/notification";
 import { INotificationPayload } from "@/types/Notification";
+import { emitPusherEvent } from "../notification/emitPusherEvent";
 
 interface HandleAIMessageArgs {
   user: IUser; // User document
@@ -87,12 +87,12 @@ export async function handleAIMessage({
 
       if (result.sent > 0 && result.message) {
         // Trigger message for specific user (listener)
-        const notificationPayload: INotificationPayload = {
+        const eventPayload: INotificationPayload = {
           chat,
           message: result.message,
           eventType: NotificationEventType.NEW_MESSAGE
         }
-        handleMessageStatusUpdate({ notificationPayload })
+        emitPusherEvent({ eventPayload })
       }
     }
   }

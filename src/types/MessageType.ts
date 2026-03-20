@@ -48,6 +48,7 @@ export enum IncomingMessageType {
 export type MessagePayload = {
   participants: ChatParticipant[];
   messageType: MessageType;
+  clientTempId?: string;
   message?: string;
   template?: Template | TemplatePayload;
   media?: Media;

@@ -16,6 +16,9 @@ import { replaceActualTemplateValue } from "@/lib/mapping/replaceActualTemplateV
 import { TemplatePayload } from "@/types/Template";
 import { FB_GRAPH_VERSION } from "@/utiles/constans/apiConstans";
 import { checkMessageCreditsAvailability } from "../wallet/checkMessageCreditsAvailability";
+import { INotificationPayload } from "@/types/Notification";
+import { NotificationEventType } from "@/utiles/enums/notification";
+import { emitPusherEvent } from "../notification/emitPusherEvent";
 
 interface HandleSendMessageParams {
   messagePayload: MessagePayload;
@@ -200,13 +203,23 @@ export async function handleSendMessage({
     }
     status === MessageStatus.Sent ? savedMessages.push(dbMessage) : failedMessages.push(dbMessage);
   }
-
+  
   const primaryMessage =
       isBroadcast
         ? broadcastMasterMessage
         : savedMessages.length > 0
           ? savedMessages[savedMessages.length - 1] // latest sent
           : failedMessages[failedMessages.length - 1]; // latest failed
+
+  // To send message creation event
+  const eventPayload: INotificationPayload = {
+    message: {
+      ...primaryMessage.toObject(),
+      clientTempId: messagePayload.clientTempId,
+    },
+    eventType: NotificationEventType.NEW_MESSAGE
+  }
+  emitPusherEvent({ eventPayload })
 
   const result = {
       sent: savedMessages.length,

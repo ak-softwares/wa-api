@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { sendWhatsAppOtp } from "@/services/auth/sendWhatsAppOtp";
-import { connectDB } from "@/lib/mongoose";
-import { OtpModel } from "@/models/Otp";
+import { getOtpRecord, saveOtpRecord } from "@/lib/redis/otp";
 
 export async function POST(req: Request) {
   try {
@@ -15,15 +14,14 @@ export async function POST(req: Request) {
       };
       return NextResponse.json(response, { status: 400 });
     }
-    await connectDB();
 
     const now = new Date();
 
     // Check existing OTP
-    const existing = await OtpModel.findOne({ phone });
-    
+    const existing = await getOtpRecord(phone);
+
     // ✅ Rate limit resend (60 sec)
-    if (existing && now.getTime() - existing.lastSentAt.getTime() < 60000) {
+    if (existing && now.getTime() - new Date(existing.lastSentAt).getTime() < 60000) {
       const response: ApiResponse = {
         success: false,
         message: "Please wait before requesting another OTP",
@@ -36,16 +34,12 @@ export async function POST(req: Request) {
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min
 
     // Upsert OTP
-    await OtpModel.findOneAndUpdate(
-      { phone },
-      {
-        code: otp,
-        expiresAt,
-        attempts: 0,
-        lastSentAt: now,
-      },
-      { upsert: true, new: true }
-    );
+    await saveOtpRecord(phone, {
+      code: otp,
+      attempts: 0,
+      expiresAt: expiresAt.toISOString(),
+      lastSentAt: now.toISOString(),
+    });
 
     // ✅ Send via WhatsApp
     const waResponse = await sendWhatsAppOtp({phone, otp});

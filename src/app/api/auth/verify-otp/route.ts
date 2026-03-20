@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
-import { connectDB } from "@/lib/mongoose";
 import { UserModel } from "@/models/User";
-import { OtpModel } from "@/models/Otp";
+import { clearOtpRecord, getOtpRecord, saveOtpRecord } from "@/lib/redis/otp";
 import { generateToken } from "@/lib/auth/jwt";
 
 export async function POST(req: Request) {
@@ -17,8 +16,7 @@ export async function POST(req: Request) {
       return NextResponse.json(response, { status: 400 });
     }
 
-    await connectDB();
-    const otpDoc = await OtpModel.findOne({ phone });
+    const otpDoc = await getOtpRecord(phone);
 
     if (!otpDoc) {
       const response: ApiResponse = {
@@ -28,8 +26,8 @@ export async function POST(req: Request) {
       return NextResponse.json(response, { status: 404 });
     }
 
-    if (otpDoc.expiresAt < new Date()) {
-      await otpDoc.deleteOne();
+    if (new Date(otpDoc.expiresAt) < new Date()) {
+      await clearOtpRecord(phone);
       const response: ApiResponse = {
         success: false,
         message: "OTP expired",
@@ -39,7 +37,7 @@ export async function POST(req: Request) {
 
     // Max attempts check
     if (otpDoc.attempts >= 3) {
-      await otpDoc.deleteOne();
+      await clearOtpRecord(phone);
       const response: ApiResponse = {
         success: false,
         message: "Too many attempts",
@@ -49,7 +47,7 @@ export async function POST(req: Request) {
 
     if (otpDoc.code !== otp) {
       otpDoc.attempts += 1;
-      await otpDoc.save();
+      await saveOtpRecord(phone, otpDoc);
 
       const response: ApiResponse = {
         success: false,
@@ -59,7 +57,7 @@ export async function POST(req: Request) {
     }
 
     // OTP correct → delete
-    await otpDoc.deleteOne();
+    await clearOtpRecord(phone);
 
     // Find or create user
     let user = await UserModel.findOne({ phone });

@@ -20,6 +20,7 @@ export type LocationType = {
 
 export type Message = {
   _id?: string;
+  clientTempId?: string;
   userId: string;
   chatId: string;
   waAccountId?: string;

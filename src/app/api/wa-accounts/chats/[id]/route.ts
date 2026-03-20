@@ -3,7 +3,7 @@ import { ChatModel } from "@/models/Chat";
 import { MessageModel } from "@/models/Message";
 import { ApiResponse } from "@/types/apiResponse";
 import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
-import { markChatClosed, markChatOpen } from "@/lib/activeChats";
+import { markChatClosed, markChatOpen } from "@/lib/redis/activeChats";
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -51,7 +51,6 @@ export async function PATCH( req: NextRequest, { params }: { params: Promise<{ i
   if (errorResponse) return errorResponse;
 
   const { id: chatId } = await params;
-  const userId = user?.id;
 
   if (!chatId) {
     const response: ApiResponse = {
@@ -96,8 +95,7 @@ export async function PATCH( req: NextRequest, { params }: { params: Promise<{ i
       }
     );
 
-    markChatOpen(userId, chatId);
-
+    await markChatOpen(chatId);
     const response: ApiResponse = {
       success: true,
       message: "Chat opened and unread count is 0 successfully",
@@ -106,7 +104,7 @@ export async function PATCH( req: NextRequest, { params }: { params: Promise<{ i
   }
 
   // ✅ CLOSE CHAT
-  markChatClosed(userId, chatId);
+  await markChatClosed(chatId);
 
   const response: ApiResponse = {
     success: true,

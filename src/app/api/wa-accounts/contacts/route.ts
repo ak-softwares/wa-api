@@ -106,7 +106,6 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(response, { status: 200 });
   } catch (err: any) {
-    console.log("Error in GET /contacts:", err);
     const response: ApiResponse = {
       success: false,
       message: err.message || "Unexpected error",

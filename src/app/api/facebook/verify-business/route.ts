@@ -107,7 +107,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(response, { status: 200 });
 
   } catch (err: any) {
-    console.error("Business verification error:", err);
     
     const response: ApiResponse = {
       success: false,
@@ -197,7 +196,6 @@ async function getBusinessManagerId(accessToken: string): Promise<string | null>
 
     return null;
   } catch (error) {
-    console.error("Error getting business manager ID:", error);
     return null;
   }
 }
@@ -237,7 +235,6 @@ async function createVerificationRequest(
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("Facebook verification error:", errorData);
       throw new Error(errorData.error?.message || "Failed to create verification request");
     }
 
@@ -245,7 +242,6 @@ async function createVerificationRequest(
     return data.id || null;
 
   } catch (error) {
-    console.error("Error creating verification request:", error);
     return null;
   }
 }

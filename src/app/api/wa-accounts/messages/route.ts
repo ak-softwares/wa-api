@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
       userId: user._id,
       waAccount
     });
-   
+    
     const response: ApiResponse = {
       success: true,
       message: "Messages send successfully",

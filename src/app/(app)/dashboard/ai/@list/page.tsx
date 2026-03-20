@@ -18,7 +18,6 @@ export default function AiPage() {
     const toolName = searchParams.get("connected");
 
     if (toolName) {
-      console.log("tool name : " + toolName)
       showToast.success(`${toolName} connected successfully!`);
 
       // ✅ remove query params without reload
