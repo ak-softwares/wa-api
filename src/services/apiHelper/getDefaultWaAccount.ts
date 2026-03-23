@@ -9,6 +9,7 @@ import { WaAccountModel } from "@/models/WaAccount";
 import { ApiTokenModel } from "@/models/ApiToken";
 import { Types } from "mongoose";
 import jwt from "jsonwebtoken";
+import { findUserIdByTempAccessToken } from "@/services/auth/tempAccessToken";
 
 function verifyJwtToken(token: string) {
   try {
@@ -117,6 +118,18 @@ export async function fetchAuthenticatedUser(req?: NextRequest) {
   // Try session-based authentication
   const session = await getServerSession(authOptions);
   const id = session?.user?.id;
+
+  if (!id) {
+    const setupToken = req?.headers.get("x-setup-token");
+    if (setupToken) {
+      const userId = await findUserIdByTempAccessToken(setupToken);
+      if (userId) {
+        // 🔑 Fetch user
+        const user = await UserModel.findById(userId);
+        return user;
+      }
+    }
+  }
 
   if (!id) {
     const response: ApiResponse = { success: false, message: "Session not authenticated" };

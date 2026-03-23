@@ -44,10 +44,11 @@ export default function PusherListener() {
     // ----------------------------------
     userChannel.bind("pusher:subscription_succeeded", () => {
       userChannel.bind(PusherEvent.USER_EVENT, (data: any) => {
-        const notificationPayload = data.notificationPayload as NotificationPayload;
-        const chat = notificationPayload.chat as Chat;
-        const msg = notificationPayload.message as Message;
-        const eventType = notificationPayload.eventType as NotificationEventType;
+        const payload = data?.eventPayload;
+        // const notificationPayload = data.notificationPayload as NotificationPayload;
+        const chat = payload.chat as Chat;
+        const msg = payload.message as Message;
+        const eventType = payload.eventType as NotificationEventType;
 
         if(eventType === NotificationEventType.STATUS_UPDATE) {
           setUpdateMessageStatus(msg);

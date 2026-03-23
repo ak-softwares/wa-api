@@ -5,6 +5,7 @@ import Providers from "@/components/providers/providers";
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { GoogleAnalytics } from '@next/third-parties/google'
+import ChatSupportFloatingButton from "@/components/common/support/ChatSupportFloatingButton";
 
 
 const geistSans = Geist({
@@ -36,6 +37,7 @@ export default function RootLayout({
         <Providers>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
+            <ChatSupportFloatingButton />
           </ThemeProvider>
         </Providers>
         <Toaster />

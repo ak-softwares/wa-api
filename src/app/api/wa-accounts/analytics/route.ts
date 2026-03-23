@@ -5,10 +5,11 @@ import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { AnalyticsData } from "@/types/Analytics";
 import { MessageStatus } from "@/types/MessageType";
 import { MESSAGE_TAGS } from "@/utiles/enums/messageTags";
+import { ApiResponse } from "@/types/apiResponse";
 
 export async function POST(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse;
 
     const now = new Date();
@@ -129,15 +130,15 @@ export async function POST(req: NextRequest) {
       aICost: aiStats?.totalCost ?? 0,
     };
 
-    return NextResponse.json({
+    const response: ApiResponse = {
       success: true,
+      message: "Analytics fetched successfully",
       data,
-    });
+    };
 
-  } catch (err: any) {
-    return NextResponse.json(
-      { success: false, error: err.message },
-      { status: 500 }
-    );
+    return NextResponse.json(response, { status: 200 });
+  } catch (error: any) {
+    const response: ApiResponse = { success: false, message: error.message || "Internal Server Error" };
+    return NextResponse.json(response, { status: 500 });
   }
 }

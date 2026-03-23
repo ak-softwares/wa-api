@@ -6,7 +6,7 @@ import { WaSetupStatus } from "@/types/WabaAccount";
 
 export async function GET(req: NextRequest) {
   try {
-    const { user, waAccount, errorResponse } = await getDefaultWaAccount();
+    const { user, waAccount, errorResponse } = await getDefaultWaAccount(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const data: WaSetupStatus = {
