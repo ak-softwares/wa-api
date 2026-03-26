@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { fetchAuthenticatedUser } from '@/services/apiHelper/getDefaultWaAccount';
 import { ApiResponse } from '@/types/apiResponse';
@@ -6,9 +6,9 @@ import { WalletTransactionModel } from '@/models/WalletTransaction';
 import { PaymentStatus } from '@/types/WalletTransaction';
 import { WalletModel } from '@/models/Wallet';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const body = await req.json();

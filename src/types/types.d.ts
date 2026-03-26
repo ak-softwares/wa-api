@@ -2,7 +2,7 @@ import { Connection } from "mongoose"
 import type {
   RazorpayOptions,
   RazorpayInstance,
-} from '@/types/razorpay';
+} from '@/types/Razorpay-web';
 
 declare global {
     var mongoose: {

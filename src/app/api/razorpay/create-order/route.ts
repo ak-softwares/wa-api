@@ -1,6 +1,6 @@
 import { fetchAuthenticatedUser } from '@/services/apiHelper/getDefaultWaAccount';
-import { CreatedOrderResponse, RazorpayCreateOrderRequest } from '@/types/Razorpay';
-import { NextResponse } from 'next/server';
+import { CreatedOrderResponse, RazorpayCreateOrderRequest } from '@/types/Razorpay-web';
+import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { ApiResponse } from '@/types/apiResponse';
 import { WalletTransactionModel } from '@/models/WalletTransaction';
@@ -14,9 +14,9 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
     const { amount, currency } = await req.json();

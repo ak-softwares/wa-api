@@ -1,5 +1,3 @@
-// https://wa-api.me/api/wallet/transactions
-
 import { NextRequest, NextResponse } from "next/server";
 import { WalletTransactionModel } from "@/models/WalletTransaction";
 import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";

@@ -7,6 +7,8 @@ export type Wallet = {
 export type WalletAnalytics = {
   creditBalance: number;
   currentMonthUsed: number;
+  freeMonthlyMessages?: number;
+  pricePerCreditUSD?: number;
   year: number;
   month: number;
-}
+};

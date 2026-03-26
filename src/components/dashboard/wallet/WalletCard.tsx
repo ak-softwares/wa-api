@@ -1,7 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Zap, Wallet, PlusCircle } from "lucide-react";
-import { FREE_MONTHLY_MESSAGES, PRICE_PER_CREDIT_USD } from "@/utiles/constans/wallet";
 import { useWallet } from "@/hooks/wallet/useWallet";
 import AddCreditPopup from "./AddCreditPopup";
 import { useState } from "react";
@@ -11,7 +10,8 @@ export default function CreditStatsDemo() {
   const { data, loading, setData } = useWallet();
   const [showAddCredit, setShowAddCredit] = useState(false);
 
-  const totalFreeMonthlyCredits = FREE_MONTHLY_MESSAGES;
+  // ✅ safer fallbacks
+  const totalFreeMonthlyCredits = data?.freeMonthlyMessages ?? 0;
   const usedThisMonth = data?.currentMonthUsed ?? 0;
 
   const remaining = totalFreeMonthlyCredits - usedThisMonth;
@@ -50,7 +50,9 @@ export default function CreditStatsDemo() {
               </Badge>
             </CardTitle>
             <CardDescription className="-mt-2">
-              {FREE_MONTHLY_MESSAGES} free messages per month
+              {loading
+                ? "..."
+                : `${remaining} remaining of ${totalFreeMonthlyCredits} messages`}
             </CardDescription>
           </CardHeader>
 
@@ -114,7 +116,11 @@ export default function CreditStatsDemo() {
               <div className="text-right">
                 <span className="block text-xs text-gray-500 dark:text-gray-400">Avg. Cost</span>
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-200">
-                  ${PRICE_PER_CREDIT_USD} / credit
+                  $
+                  {loading
+                    ? "..."
+                    : data?.pricePerCreditUSD ?? 0}{" "}
+                  / credit
                 </p>
               </div>
             </div>

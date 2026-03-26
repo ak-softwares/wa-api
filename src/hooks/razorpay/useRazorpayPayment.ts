@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { CreatedOrderResponse, RazorpayHandlerResponse, RazorpayOptions } from '@/types/Razorpay';
+import type { CreatedOrderResponse, RazorpayHandlerResponse, RazorpayOptions } from '@/types/Razorpay-web';
 import { loadRazorpayScript } from '@/utiles/scripts/loadRazorpayScript';
 import { ApiResponse } from '@/types/apiResponse';
 
