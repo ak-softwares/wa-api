@@ -153,6 +153,34 @@ export async function handleIncomingMessage({
       break;
 
     // -----------------------------
+    // BUTTON (quick reply button)
+    // -----------------------------
+    case IncomingMessageType.BUTTON:
+      messageData = {
+        ...messageData,
+        type: MessageType.TEXT,
+        message: rowMessageJson.button?.text || rowMessageJson.button?.payload || "Button response"
+      };
+      break;
+
+    // -----------------------------
+    // INTERACTIVE (list/button reply)
+    // -----------------------------
+    case IncomingMessageType.INTERACTIVE:
+      const interactive = rowMessageJson.interactive;
+      messageData = {
+        ...messageData,
+        type: MessageType.TEXT,
+        message:
+          interactive?.button_reply?.title ||
+          interactive?.button_reply?.id ||
+          interactive?.list_reply?.title ||
+          interactive?.list_reply?.id ||
+          "Interactive response"
+      };
+      break;
+
+    // -----------------------------
     // DEFAULT / UNSUPPORTED
     // -----------------------------
     default:

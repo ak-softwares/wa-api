@@ -7,6 +7,9 @@ import { ThemeToggle } from "./themeToggle"
 import { Menu, X } from "lucide-react"
 import { DASHBOARD_PATH, LOGIN_PATH } from "@/utiles/auth/auth"
 import { PLAY_STORE_LINK } from "@/utiles/constans/links"
+import Image from "next/image"
+import { LOGO } from "@/utiles/constans/media"
+import { COLORS } from "@/utiles/constans/colors"
 
 export default function Header() {
   const { data: session } = useSession()
@@ -19,9 +22,13 @@ export default function Header() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-500/15 ring-1 ring-emerald-400/30">
-            <span className="text-xl">💬</span>
-          </div>
+          <Image
+            src={"/web-app-manifest-192x192.png"}
+            alt="Logo"
+            width={36}
+            height={36}
+            className="rounded-lg"
+          />
           <span className="font-semibold tracking-tight text-foreground">
             wa-api.me
           </span>
@@ -48,7 +55,8 @@ export default function Header() {
             </Link>
           <Link
             href={href}
-            className="min-w-20 text-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-400 md:inline-block"
+            className="min-w-20 text-center rounded-xl px-4 py-2 text-sm font-medium text-white hover:bg-emerald-400 md:inline-block"
+            style={{ backgroundColor: COLORS.primary }}
           >
             Login
           </Link>

@@ -169,6 +169,8 @@ export default function TemplateListPage() {
                         template,
                       ]);
                     }
+                  }else{
+                    handleEditTemplate(template);
                   }
                 }}
                 onDelete={() => handleDeleteTemplate(template.name)}

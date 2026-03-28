@@ -1,0 +1,1 @@
+export const LOGO = "/web-app-manifest-192x192.png";
