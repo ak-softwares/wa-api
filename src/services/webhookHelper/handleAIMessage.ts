@@ -84,16 +84,6 @@ export async function handleAIMessage({
         waAccount,
         isCreditAlreadyCheck: true,
       });
-
-      if (result.sent > 0 && result.message) {
-        // Trigger message for specific user (listener)
-        const eventPayload: INotificationPayload = {
-          chat,
-          message: result.message,
-          eventType: NotificationEventType.NEW_MESSAGE
-        }
-        emitPusherEvent({ eventPayload })
-      }
     }
   }
 }

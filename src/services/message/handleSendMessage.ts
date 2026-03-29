@@ -67,6 +67,7 @@ export async function handleSendMessage({
   const savedMessages = [];
   const failedMessages = [];
   let singleChat: IChat | null = null;
+  let updatedChat: IChat | null = null;
   // Local cache for chats to reduce DB calls
   const chatCache = new Map<string, IChat>();
 
@@ -168,11 +169,6 @@ export async function handleSendMessage({
       });
     }
 
-    // ✅ Only store chat if exactly ONE participant
-    if (!isBroadcast && participants.length === 1) {
-      singleChat = chat;
-    }
-
     // ✅ Save individual message
     const dbMessage = await MessageModel.create({
       userId,
@@ -193,13 +189,22 @@ export async function handleSendMessage({
       context,
     });
 
+    // ✅ Update chat if exists (applies to ALL non-broadcast chats)
     if (!isBroadcast && chat?._id) {
-      // handle lastMessage
       const updateFields: Partial<IChat> = {
         lastMessage: getMessagePreview(dbMessage),
         lastMessageAt: new Date(),
       };
-      await ChatModel.updateOne({ _id: chat._id }, { $set: updateFields });
+
+      updatedChat = await ChatModel.findByIdAndUpdate(
+        chat._id,
+        { $set: updateFields },
+        { new: true }
+      );
+    }
+    // ✅ Only assign singleChat for 1-to-1 chats
+    if (!isBroadcast && participants.length === 1) {
+      singleChat = updatedChat ?? chat;
     }
     status === MessageStatus.Sent ? savedMessages.push(dbMessage) : failedMessages.push(dbMessage);
   }
@@ -213,6 +218,7 @@ export async function handleSendMessage({
 
   // To send message creation event
   const eventPayload: INotificationPayload = {
+    chat: singleChat?._id ? singleChat : undefined,
     message: {
       ...primaryMessage.toObject(),
       clientTempId: messagePayload.clientTempId,
