@@ -13,8 +13,6 @@ export interface IUser {
   aiAssistant?: IAIAssistant;
   createdAt?: Date;
   updatedAt?: Date;
-  resetPasswordToken?: string;
-  resetPasswordExpires?: Date;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -26,8 +24,6 @@ const UserSchema = new Schema<IUser>(
     company: { type: String },
     defaultWaAccountId: { type: mongoose.Schema.Types.ObjectId, ref: "WaAccount" },
     aiAssistant: { type: AIAssistantSchema },
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
   },
   { 
     timestamps: true,

@@ -12,7 +12,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { resetPasswordSchema } from "@/schemas/resetPassword";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -23,6 +22,7 @@ import Link from "next/link";
 
 import FooterTerms from "@/components/global/footer/footerTerms";
 import { useSearchParams } from "next/navigation";
+import { showToast } from "@/components/ui/sonner";
 
 export default function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -46,7 +46,7 @@ export default function ResetPasswordForm() {
   // ✅ Submit handler for reset password
   const onSubmit = async (data: z.infer<typeof resetPasswordSchema>) => {
     if (!email || !token) {
-      toast.error("Invalid reset link", {
+      showToast.error("Invalid reset link", {
         description: "Please request a new password reset.",
       });
       return;
@@ -66,11 +66,11 @@ export default function ResetPasswordForm() {
       const result: ApiResponse = await res.json();
 
       if (!res.ok) {
-        toast.error("Failed to reset password", { description: result.message });
+        showToast.error("Failed to reset password", { description: result.message });
         return;
       }
 
-      toast.success("Password reset successful", {
+      showToast.success("Password reset successful", {
         description: "You can now login with your new password.",
       });
 
@@ -79,7 +79,7 @@ export default function ResetPasswordForm() {
       const axiosError = error as AxiosError<ApiResponse>;
       const errorMessage =
         axiosError.response?.data?.message || "Something went wrong";
-      toast.error("Failed to reset password", { description: errorMessage });
+      showToast.error("Failed to reset password", { description: errorMessage });
     }
   };
 

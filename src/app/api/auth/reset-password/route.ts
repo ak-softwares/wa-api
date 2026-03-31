@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { connectDB } from "@/lib/mongoose";
 import { UserModel } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
+import {
+  clearResetPasswordRecord,
+  getResetPasswordRecord,
+  hashResetToken,
+} from "@/lib/redis/resetPassword";
+
+const PASSWORD_POLICY_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,100}$/;
 
 export async function POST(req: Request) {
   try {
     const { email, token, newPassword } = await req.json();
+    const sanitizedEmail = (email || "").trim().toLowerCase();
 
-    if (!email || !token || !newPassword) {
+    if (!sanitizedEmail || !token || !newPassword) {
       const response: ApiResponse = {
         success: false,
         message: "All fields are required",
@@ -16,15 +24,18 @@ export async function POST(req: Request) {
       return NextResponse.json(response, { status: 400 });
     }
 
-    await connectDB();
+    if (!PASSWORD_POLICY_REGEX.test(newPassword)) {
+      const response: ApiResponse = {
+        success: false,
+        message:
+          "Password must be 8-100 chars and include uppercase, lowercase, number, and special character",
+      };
+      return NextResponse.json(response, { status: 400 });
+    }
 
-    const user = await UserModel.findOne({
-      email,
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }, // token not expired
-    });
+    const resetRecord = await getResetPasswordRecord(sanitizedEmail);
 
-    if (!user) {
+    if (!resetRecord || new Date(resetRecord.expiresAt).getTime() < Date.now()) {
       const response: ApiResponse = {
         success: false,
         message: "Invalid or expired token",
@@ -32,14 +43,36 @@ export async function POST(req: Request) {
       return NextResponse.json(response, { status: 400 });
     }
 
-    // Hash new password
+    const incomingTokenHash = hashResetToken(token);
+    const recordBuffer = Buffer.from(resetRecord.tokenHash);
+    const incomingBuffer = Buffer.from(incomingTokenHash);
+
+    if (
+      recordBuffer.length !== incomingBuffer.length ||
+      !crypto.timingSafeEqual(recordBuffer, incomingBuffer)
+    ) {
+      const response: ApiResponse = {
+        success: false,
+        message: "Invalid or expired token",
+      };
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    await connectDB();
+
+    const user = await UserModel.findOne({ email: sanitizedEmail });
+
+    if (!user) {
+      const response: ApiResponse = {
+        success: false,
+        message: "User not found",
+      };
+      return NextResponse.json(response, { status: 404 });
+    }
+
     user.password = newPassword;
-
-    // Clear reset token
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-
     await user.save();
+    await clearResetPasswordRecord(sanitizedEmail);
 
     const response: ApiResponse = {
       success: true,

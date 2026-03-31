@@ -11,6 +11,4 @@ export type User = {
   aiAssistant?: AIAssistant;
   createdAt?: Date;
   updatedAt?: Date;
-  resetPasswordToken?: string;
-  resetPasswordExpires?: Date;
 }

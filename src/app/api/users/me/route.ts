@@ -100,9 +100,9 @@ export async function PUT(req: NextRequest) {
 }
 
 // DELETE profile
-export async function DELETE() {
+export async function DELETE(req: NextRequest) {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse; // 🚫 Handles auth, DB, and token errors
 
     await UserModel.findByIdAndDelete(user._id);

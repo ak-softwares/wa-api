@@ -25,6 +25,8 @@ import FooterTerms from "@/components/global/footer/footerTerms";
 
 export default function ForgotPasswordPage() {
 
+  const [delivery, setDelivery] = useState<"email" | "whatsapp">("email");
+
   // Countdown state for resend OTP
   const [counter, setCounter] = useState(0);
 
@@ -50,13 +52,21 @@ export default function ForgotPasswordPage() {
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = form;
 
+  const submitFor = (mode: "email" | "whatsapp") => {
+    setDelivery(mode);
+    return handleSubmit((data) => onSubmit({ ...data }, mode))();
+  };
+
   // ✅ Submit handler for forgot password
-  const onSubmit = async (data: z.infer<typeof forgotPasswordSchema>) => {
+  const onSubmit = async (
+    data: z.infer<typeof forgotPasswordSchema>,
+    mode: "email" | "whatsapp" = delivery
+  ) => {
     try {
         const res = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: data.email }),
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: data.email, delivery: mode }),
         });
 
         const result: ApiResponse = await res.json();
@@ -67,7 +77,10 @@ export default function ForgotPasswordPage() {
         }
 
         showToast.success("Reset link sent", {
-        description: "Please check your email for the reset link.",
+          description:
+            mode === "whatsapp"
+              ? "Please check your WhatsApp for the reset link."
+              : "Please check your email for the reset link.",
         });
         startCountdown();
     } catch (error) {
@@ -90,7 +103,7 @@ export default function ForgotPasswordPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
+              <form className="grid gap-6">
 
                 <div className="grid gap-3">
                   <Label htmlFor="email">Email</Label>
@@ -107,17 +120,32 @@ export default function ForgotPasswordPage() {
                   )}
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isSubmitting || counter > 0}
-                >
-                  {isSubmitting
-                    ? "Sending Reset Link..."
-                    : counter > 0
-                    ? `Resend mail in ${counter}s`
-                    : "Send Reset Link"}
-                </Button>
+                <div className="grid gap-2">
+                  <Button
+                    type="button"
+                    className="w-full"
+                    disabled={isSubmitting || counter > 0}
+                    onClick={() => submitFor("email")}
+                  >
+                    {isSubmitting && delivery === "email"
+                      ? "Sending Reset Link..."
+                      : counter > 0
+                      ? `Resend link in ${counter}s`
+                      : "Send Reset Link"}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    disabled={isSubmitting || counter > 0}
+                    onClick={() => submitFor("whatsapp")}
+                  >
+                    {isSubmitting && delivery === "whatsapp"
+                      ? "Sending to WhatsApp..."
+                      : "Send Reset Link to WhatsApp"}
+                  </Button>
+                </div>
 
                 <div className="text-center text-sm">
                   Already have an account?{" "}

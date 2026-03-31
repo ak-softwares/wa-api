@@ -6,12 +6,22 @@ import { ApiResponse } from "@/types/apiResponse";
 import { sendMail } from "@/lib/mail";
 import { BaseEmailTemplate } from "@/components/emails/BaseEmailTemplate";
 import { ResetPasswordElement } from "@/components/emails/ResetPasswordTemlate";
+import {
+  getResetPasswordRecord,
+  hashResetToken,
+  saveResetPasswordRecord,
+} from "@/lib/redis/resetPassword";
+import { sendWhatsAppResetLink } from "@/services/auth/sendWhatsAppResetLink";
+
+type DeliveryMethod = "email" | "whatsapp";
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
+    const { email, delivery = "email" } = await req.json();
 
-    if (!email) {
+    const sanitizedEmail = (email || "").trim().toLowerCase();
+
+    if (!sanitizedEmail) {
       const response: ApiResponse = {
         success: false,
         message: "Email is required",
@@ -19,50 +29,89 @@ export async function POST(req: Request) {
       return NextResponse.json(response, { status: 400 });
     }
 
+    if (!["email", "whatsapp"].includes(delivery)) {
+      const response: ApiResponse = {
+        success: false,
+        message: "Invalid delivery option",
+      };
+      return NextResponse.json(response, { status: 400 });
+    }
+
+    const existingRecord = await getResetPasswordRecord(sanitizedEmail);
+    if (
+      existingRecord &&
+      Date.now() - new Date(existingRecord.lastSentAt).getTime() < 60_000
+    ) {
+      const response: ApiResponse = {
+        success: false,
+        message: "Please wait before requesting another reset link",
+      };
+      return NextResponse.json(response, { status: 429 });
+    }
+
     await connectDB();
-    const user = await UserModel.findOne({ email });
+    const user = await UserModel.findOne({ email: sanitizedEmail });
 
     if (!user) {
       const response: ApiResponse = {
-        success: false,
-        message: "User not found",
+        success: true,
+        message: "If this email exists, a reset link has been sent",
       };
-      return NextResponse.json(response, { status: 404 });
+      return NextResponse.json(response, { status: 200 });
     }
 
-    // Generate reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
-    await user.save();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-
-    // Reset link (in production, send via email)
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}&email=${email}`;
-
-    // 📧 Build email body
-    const emailBody1 = BaseEmailTemplate({ firstName: email, children: ResetPasswordElement({ resetLink })})
-    
-    // 🚀 Send email
-    const emailRes = await sendMail({
-      to: email,
-      subject: "Password Reset Request",
-      react: emailBody1,
+    await saveResetPasswordRecord(sanitizedEmail, {
+      tokenHash: hashResetToken(resetToken),
+      expiresAt: expiresAt.toISOString(),
+      lastSentAt: new Date().toISOString(),
     });
 
-    if (!emailRes.success) {
+    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}&email=${sanitizedEmail}`;
+
+    const selectedDelivery = delivery as DeliveryMethod;
+
+    if (selectedDelivery === "email") {
+      const emailBody1 = BaseEmailTemplate({
+        firstName: sanitizedEmail,
+        children: ResetPasswordElement({ resetLink }),
+      });
+
+      const emailRes = await sendMail({
+        to: sanitizedEmail,
+        subject: "Password Reset Request",
+        react: emailBody1,
+      });
+
+      if (!emailRes.success) {
         const response: ApiResponse = {
           success: false,
           message: emailRes.message,
-          // data: { resetLink }, // only for testing
         };
         return NextResponse.json(response, { status: 500 });
+      }
+    }
+
+    if (selectedDelivery === "whatsapp") {
+      const waRes = await sendWhatsAppResetLink({
+        phone: String(user.phone),
+        resetTokenFullParam: `?token=${resetToken}&email=${sanitizedEmail}`,
+      });
+
+      if (!waRes.success) {
+        const response: ApiResponse = {
+          success: false,
+          message: waRes.message,
+        };
+        return NextResponse.json(response, { status: 500 });
+      }
     }
 
     const response: ApiResponse = {
       success: true,
-      message: "Password reset link generated",
-      // data: { resetLink }, // only for testing
+      message: `Password reset link sent via ${selectedDelivery}`,
     };
     return NextResponse.json(response, { status: 200 });
   } catch (err: any) {
