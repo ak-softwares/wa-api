@@ -1,12 +1,13 @@
 {
   "name": "wa-api",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "worker:crm-signup": "tsx --watch --env-file=.env src/workers/crmSignupWorker.ts"
   },
   "dependencies": {
     "@ai-sdk/mcp": "^1.0.15",
@@ -35,10 +36,12 @@
     "ai": "^6.0.59",
     "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",
+    "bullmq": "^5.73.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "dayjs": "^1.11.19",
+    "dotenv": "^17.4.2",
     "emoji-picker-react": "^4.16.1",
     "exceljs": "^4.4.0",
     "googleapis": "^160.0.0",
@@ -85,6 +88,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.12",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "tw-animate-css": "^1.3.7",
     "typescript": "^5"
   }

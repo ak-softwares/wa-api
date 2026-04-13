@@ -29,13 +29,22 @@ export async function sendMobileNotification({
     priority: "high",
   }));
 
-  await fetch(EXPO_PUSH_URL, {
+  const res = await fetch(EXPO_PUSH_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(messages),
   });
+
+  // ✅ check status
+  // if (!res.ok) {
+  //   const errText = await res.text();
+  //   console.error("Push failed:", res.status, errText);
+  // } else {
+  //   const data = await res.json();
+  //   console.log("Push success:", data);
+  // }
 
   await PushDeviceModel.updateMany(
     { _id: { $in: devices.map((d) => d._id) } },

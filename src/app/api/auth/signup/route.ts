@@ -4,6 +4,7 @@ import { UserModel } from "@/models/User";
 import { ApiResponse } from "@/types/apiResponse";
 import { signUpSchema } from "@/schemas/signUpSchema";
 import { generateToken } from "@/lib/auth/jwt";
+import { enqueueSignupToCrmJob } from "@/lib/queues/crmSignupQueue";
 
 export async function POST(req: Request) {
   try {
@@ -50,6 +51,14 @@ export async function POST(req: Request) {
       password,
     });
     await user.save();
+
+    await enqueueSignupToCrmJob({
+      userId: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
+    });
 
     const token = generateToken({
       id: user._id.toString(),

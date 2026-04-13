@@ -8,7 +8,6 @@ interface HandlePushNotificationParams {
 export function handlePushNotification({
  notificationPayload,
 }: HandlePushNotificationParams) {
-
   void Promise.allSettled([
     sendMobileNotification({ notificationPayload }),
   ]);
