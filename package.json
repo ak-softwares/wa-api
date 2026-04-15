@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "worker:crm-signup": "tsx --watch --env-file=.env src/workers/crmSignupWorker.ts"
+    "dev:worker:crm-signup": "tsx --watch --env-file=.env src/workers/crmSignupWorker.ts",
+    "worker:crm-signup": "tsx src/workers/crmSignupWorker.ts"
   },
   "dependencies": {
     "@ai-sdk/mcp": "^1.0.15",
