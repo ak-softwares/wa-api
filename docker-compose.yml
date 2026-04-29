@@ -1,0 +1,81 @@
+services:
+
+  # ── Next.js App ──────────────────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    container_name: wa-api-web
+    ports:
+      - "3000:3000"          # Coolify will proxy to this port
+    environment:
+      NODE_ENV: production
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      worker:
+        condition: service_healthy
+    volumes:
+      - nextjs_cache:/app/.next/cache
+    networks:
+      - app_net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ── Worker ───────────────────────────────────────────────────────────────────
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    restart: unless-stopped
+    container_name: wa-api-worker
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    networks:
+      - app_net
+      # In worker service
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('fs').statSync('/app/dist/workers/crmSignupWorker.js')\" || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    # No ports — internal only
+
+  # ── Redis ────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 256mb
+      --maxmemory-policy noeviction
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_net
+    # No ports exposed to host — only accessible within app_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis_data:
+  nextjs_cache:
+
+networks:
+  app_net:
+    driver: bridge

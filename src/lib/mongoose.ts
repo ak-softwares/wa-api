@@ -1,15 +1,6 @@
 import mongoose from "mongoose";
-import { buffer } from "stream/consumers";
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
-
-if (!MONGODB_URI) {
-  throw new Error("⚠️ Please define the MONGODB_URI environment variable inside .env");
-}
-
-/**
- * Cached connection across hot reloads in development
- */
+// Cached connection across hot reloads in development
 let cached = global.mongoose;
 
 if (!cached) {
@@ -18,6 +9,12 @@ if (!cached) {
 
 export async function connectDB() {
   if (cached.conn) return cached.conn;
+  
+  const MONGODB_URI = process.env.MONGODB_URI as string;
+
+  if (!MONGODB_URI) {
+    throw new Error("⚠️ Please define the MONGODB_URI environment variable inside .env");
+  }
 
   if (!cached.promise) {
     const opts = {

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { ApiResponse } from "@/types/apiResponse";
 import { sendWhatsAppOtp } from "@/services/auth/sendWhatsAppOtp";
 import { getOtpRecord, saveOtpRecord } from "@/lib/redis/otp";
+import { UserModel } from "@/models/User";
+import { connectDB } from "@/lib/mongoose";
 
 export async function POST(req: Request) {
   try {
@@ -13,6 +15,18 @@ export async function POST(req: Request) {
         message: "Phone is required",
       };
       return NextResponse.json(response, { status: 400 });
+    }
+
+    await connectDB();
+
+    const user = await UserModel.findOne({ phone });
+
+    if (!user) {
+      const response: ApiResponse = {
+        success: false,
+        message: "User not found. Please register first.",
+      };
+      return NextResponse.json(response, { status: 404 });
     }
 
     const now = new Date();
@@ -31,7 +45,7 @@ export async function POST(req: Request) {
 
     // ✅ Generate a 4-digit OTP
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
 
     // Upsert OTP
     await saveOtpRecord(phone, {

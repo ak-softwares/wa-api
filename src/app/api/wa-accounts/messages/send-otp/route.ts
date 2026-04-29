@@ -1,6 +1,5 @@
 import { getDefaultWaAccount } from "@/services/apiHelper/getDefaultWaAccount";
 import { handleSendMessage } from "@/services/message/handleSendMessage";
-import { checkMessageCreditsAvailability } from "@/services/wallet/checkMessageCreditsAvailability";
 import { ApiResponse } from "@/types/apiResponse";
 import { ChatParticipant } from "@/types/Chat";
 import { MessagePayload, MessageType } from "@/types/MessageType";

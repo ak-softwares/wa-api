@@ -1,4 +1,4 @@
-import { redis } from "@/lib/redis/redis";
+import { getRedis } from "@/lib/redis/redis";
 
 // Key per chat
 const getKey = (chatId: string) => `activeChat:${chatId}`;
@@ -6,16 +6,19 @@ const getKey = (chatId: string) => `activeChat:${chatId}`;
 // ✅ OPEN CHAT
 export async function markChatOpen(chatId: string) {
   // set with expiry (auto-close if no activity)
+  const redis = getRedis();
   await redis.set(getKey(chatId), "1", "EX", 600); // 5 min
 }
 
 // ❌ CLOSE CHAT
 export async function markChatClosed(chatId: string) {
+  const redis = getRedis();
   await redis.del(getKey(chatId));
 }
 
 // 🔍 CHECK
 export async function isChatOpen(chatId: string): Promise<boolean> {
+  const redis = getRedis();
   const result = await redis.exists(getKey(chatId));
   return result === 1;
 }

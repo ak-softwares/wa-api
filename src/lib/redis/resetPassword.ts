@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { redis } from "@/lib/redis/redis";
+import { getRedis } from "@/lib/redis/redis";
 
 interface ResetPasswordRecord {
   tokenHash: string;
@@ -14,6 +14,7 @@ export function hashResetToken(token: string): string {
 }
 
 export async function getResetPasswordRecord(email: string): Promise<ResetPasswordRecord | null> {
+  const redis = getRedis();
   const record = await redis.get(getResetPasswordKey(email));
   if (!record) return null;
 
@@ -31,10 +32,12 @@ export async function saveResetPasswordRecord(email: string, data: ResetPassword
     Math.floor((new Date(data.expiresAt).getTime() - Date.now()) / 1000)
   );
 
+  const redis = getRedis();
   await redis.set(getResetPasswordKey(email), JSON.stringify(data), "EX", ttlInSeconds);
 }
 
 export async function clearResetPasswordRecord(email: string) {
+  const redis = getRedis();
   await redis.del(getResetPasswordKey(email));
 }
 

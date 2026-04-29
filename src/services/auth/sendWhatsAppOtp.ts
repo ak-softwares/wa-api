@@ -22,6 +22,8 @@ export async function sendWhatsAppOtp({
     const payload = {
       number: phone,
       code: otp,
+      templateName: "auth",
+      language: "en"
     };
 
     const res = await axios.post(url, payload, {
@@ -44,7 +46,7 @@ export async function sendWhatsAppOtp({
       message: "Unexpected response from WhatsApp API",
     };
   } catch (error: any) {
-    console.error("WhatsApp API error:", error?.response?.data || error.message);
+    // console.error("WhatsApp API error:", error?.response?.data || error.message);
 
     return {
       success: false,

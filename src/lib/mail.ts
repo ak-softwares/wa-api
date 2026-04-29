@@ -1,4 +1,4 @@
-import { resend } from "@/lib/resend"; // make sure you configured resend SDK
+import { getResend } from "@/lib/resend"; // make sure you configured resend SDK
 import { ApiResponse } from "@/types/apiResponse";
 
 interface SendMailOptions {
@@ -9,7 +9,7 @@ interface SendMailOptions {
 
 export async function sendMail({ to, subject, react }: SendMailOptions): Promise<ApiResponse> {
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: "WA API <support@wa-api.me>",
       to: [to],
       subject,

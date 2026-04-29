@@ -1,4 +1,4 @@
-import { redis } from "@/lib/redis/redis";
+import { getRedis } from "@/lib/redis/redis";
 
 interface OtpRecord {
   code: string;
@@ -10,6 +10,7 @@ interface OtpRecord {
 const getOtpKey = (phone: string) => `otp:${phone}`;
 
 export async function getOtpRecord(phone: string): Promise<OtpRecord | null> {
+  const redis = getRedis();
   const record = await redis.get(getOtpKey(phone));
   if (!record) return null;
 
@@ -22,6 +23,8 @@ export async function getOtpRecord(phone: string): Promise<OtpRecord | null> {
 }
 
 export async function saveOtpRecord(phone: string, data: OtpRecord) {
+  const redis = getRedis();
+
   const ttlInSeconds = Math.max(
     1,
     Math.floor((new Date(data.expiresAt).getTime() - Date.now()) / 1000)
@@ -31,5 +34,6 @@ export async function saveOtpRecord(phone: string, data: OtpRecord) {
 }
 
 export async function clearOtpRecord(phone: string) {
+  const redis = getRedis();
   await redis.del(getOtpKey(phone));
 }

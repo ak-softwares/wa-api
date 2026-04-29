@@ -1,5 +1,5 @@
-import { SignupCrmJobData } from "@/types/Crm";
-import { getZohoAccessToken } from "@/services/crm/zohoTokenManager";
+import { SignupCrmJobData } from "../../types/Crm";
+import { getZohoAccessToken } from "./zohoTokenManager";
 
 const ZOHO_CRM_BASE_URL = process.env.ZOHO_CRM_BASE_URL || "https://www.zohoapis.in";
 const ZOHO_CRM_MODULE = process.env.ZOHO_CRM_MODULE || "Leads";
@@ -7,8 +7,10 @@ const ZOHO_CRM_MODULE = process.env.ZOHO_CRM_MODULE || "Leads";
 export async function sendSignupToCrm(payload: SignupCrmJobData) {
   const accessToken = await getZohoAccessToken();
 
-  const [firstName, ...lastNameParts] = payload.name.trim().split(/\s+/);
-  const lastName = lastNameParts.join(" ") || firstName || payload.email;
+const name = payload.name?.trim() || "";
+const [firstName, ...lastNameParts] = name.split(/\s+/);
+
+const lastName = lastNameParts.join(" ") || firstName || payload.email;
 
   const response = await fetch(`${ZOHO_CRM_BASE_URL}/crm/v2/${ZOHO_CRM_MODULE}`, {
     method: "POST",

@@ -1,0 +1,1 @@
+export const CRM_SIGNUP_QUEUE_NAME = "crm-signup-queue";

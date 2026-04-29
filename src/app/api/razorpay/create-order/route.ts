@@ -8,16 +8,16 @@ import { PaymentStatus, WalletTransaction, WalletTransactionType } from '@/types
 import { amountToCredits } from '@/lib/wallet/pricing';
 import { WalletModel } from '@/models/Wallet';
 
-// Initialize Razorpay with your keys
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
-
 export async function POST(req: NextRequest) {
   try {
     const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
+
+    // Initialize Razorpay with your keys
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
 
     const { amount, currency } = await req.json();
     if (typeof amount !== "number" || amount <= 0 || !currency) {

@@ -20,7 +20,7 @@ class ApiClient {
       body: JSON.stringify(body),
     })
     if (!res.ok) throw new Error("Failed to fetch")
-    return res.json()
+    return res.json() as Promise<T>
   }
 }
 
