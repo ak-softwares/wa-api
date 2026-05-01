@@ -9,6 +9,8 @@ export function useAiAssistant() {
   const [aiAssistant, setAiAssistant] = useState<AIAssistant>({
     prompt: "",
     isActive: false,
+    messageLimit: 20,
+    limitWindowInHours: 1,
   });
 
   const getAIAssistantConfig = useCallback(async () => {
@@ -19,8 +21,8 @@ export function useAiAssistant() {
       if (!response.ok) throw new Error("Failed to load AI Assistant config");
 
       const result = await response.json();
-      const data = result.data ?? { prompt: "", isActive: false };
-
+      const data = result.data ?? { prompt: "", isActive: false, messageLimit: 20, limitWindowInHours: 1 };
+      
       setAiAssistant(data);
       return data;
     } catch (error: any) {

@@ -18,13 +18,16 @@ export default function AIAssistantPage() {
   const { isSaving, updateAIAssistantConfig } = useUpdateAiAssistant(() => ({
     prompt: aiAssistant.prompt,
     isActive: aiAssistant.isActive,
+    messageLimit: aiAssistant.messageLimit,
+    limitWindowInHours: aiAssistant.limitWindowInHours,
   }));
 
-  // ✅ Save prompt button
   const handleSaveConfig = async () => {
     const updated = await updateAIAssistantConfig({
       prompt: aiAssistant.prompt,
       isActive: aiAssistant.isActive,
+      messageLimit: aiAssistant.messageLimit,
+      limitWindowInHours: aiAssistant.limitWindowInHours,
     });
 
     // update local state after save
@@ -51,6 +54,16 @@ export default function AIAssistantPage() {
     setSelectedAiMenu(null);
   };
   
+  
+  const handleLimitChange = (field: "messageLimit" | "limitWindowInHours", value: string) => {
+    const parsed = Number(value);
+
+    setAiAssistant((prev) => ({
+      ...prev,
+      [field]: Number.isFinite(parsed) && parsed > 0 ? parsed : 1,
+    }));
+  };
+
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#161717]">
       {/* Header */}
@@ -101,6 +114,34 @@ export default function AIAssistantPage() {
                   </div>
                 </div>
 
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <Label className="text-sm mb-2 block text-gray-900 dark:text-white">
+                      Max AI Replies
+                    </Label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={aiAssistant.messageLimit ?? 20}
+                      onChange={(e) => handleLimitChange("messageLimit", e.target.value)}
+                      className="w-full h-10 px-3 text-sm border-2 border-gray-300 dark:border-[#3a3b3b] rounded-lg bg-white dark:bg-[#2E2F2F] text-gray-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm mb-2 block text-gray-900 dark:text-white">
+                      Time Window (hours)
+                    </Label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={aiAssistant.limitWindowInHours ?? 1}
+                      onChange={(e) => handleLimitChange("limitWindowInHours", e.target.value)}
+                      className="w-full h-10 px-3 text-sm border-2 border-gray-300 dark:border-[#3a3b3b] rounded-lg bg-white dark:bg-[#2E2F2F] text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+                
                 {/* Save Button */}
                 <div className="flex justify-end">
                   <Button

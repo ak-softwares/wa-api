@@ -1,6 +1,8 @@
 export type AIAssistant = {
   prompt?: string;
   isActive?: boolean;
+  messageLimit?: number;
+  limitWindowInHours?: number;
   createdAt?: string;
   updatedAt?: string;
 }
