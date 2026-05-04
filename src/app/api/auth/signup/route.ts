@@ -52,6 +52,7 @@ export async function POST(req: Request) {
     });
     await user.save();
 
+    // ✅ Await the enqueue — adds ~5ms but guarantees the job reaches Redis
     await enqueueSignupToCrmJob({
       userId: user._id.toString(),
       name: user.name,
@@ -84,7 +85,7 @@ export async function POST(req: Request) {
         success: false,
         message: "User already exists",
       };
-      return NextResponse.json(response, { status: 500 });
+      return NextResponse.json(response, { status: 409 });
     }
     const response: ApiResponse = {
       success: false,

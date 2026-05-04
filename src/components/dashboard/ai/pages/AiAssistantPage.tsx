@@ -114,7 +114,7 @@ export default function AIAssistantPage() {
                   </div>
                 </div>
 
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div>
                     <Label className="text-sm mb-2 block text-gray-900 dark:text-white">
                       Max AI Replies
@@ -141,7 +141,7 @@ export default function AIAssistantPage() {
                     />
                   </div>
                 </div>
-                
+
                 {/* Save Button */}
                 <div className="flex justify-end">
                   <Button

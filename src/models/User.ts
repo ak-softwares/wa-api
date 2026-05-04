@@ -3,11 +3,12 @@ import bcrypt from "bcryptjs";
 
 export interface IUser {
   _id: Types.ObjectId;
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
   phone: number;
   company?: string;
-  password: string;
+  password?: string;
+  isVerified: boolean;
   defaultWaAccountId?: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
@@ -15,11 +16,12 @@ export interface IUser {
 
 const UserSchema = new Schema<IUser>(
   {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    name: { type: String },
+    email: { type: String, unique: true, sparse: true },  // sparse allows multiple null values
     phone: { type: Number, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { type: String },
     company: { type: String },
+    isVerified: { type: Boolean, default: false },
     defaultWaAccountId: { type: mongoose.Schema.Types.ObjectId, ref: "WaAccount" },
   },
   { 
@@ -28,6 +30,7 @@ const UserSchema = new Schema<IUser>(
 );
 
 UserSchema.pre("save", async function (next) {
+  if (!this.password) return next();
   if (!this.isModified("password")) return next();
 
   const salt = await bcrypt.genSalt(10);

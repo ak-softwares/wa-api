@@ -39,7 +39,6 @@ export const authOptions: NextAuthOptions = {
             },
         }),
 
-        // 📌 New OTP login provider
         Credentials({
           id: "phone-otp",
           name: "Phone OTP",

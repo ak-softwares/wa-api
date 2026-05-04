@@ -21,7 +21,6 @@ export const crmSignupQueue = new Queue<SignupCrmJobData>(
 );
 
 export async function enqueueSignupToCrmJob(data: SignupCrmJobData) {
-  await crmSignupQueue.add("signup-created", data, {
-    jobId: data.phone,
-  });
+  const job = await crmSignupQueue.add("signup-created", data);
+  // console.log(`Enqueued CRM signup job with ID ${job.id} for user ${data.userId}`);
 }
