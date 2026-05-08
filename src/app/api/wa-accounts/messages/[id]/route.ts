@@ -9,8 +9,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { user, errorResponse } = await fetchAuthenticatedUser();
-    if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
+    if (errorResponse) return errorResponse;
 
     const { id: messageId } = await params;
 

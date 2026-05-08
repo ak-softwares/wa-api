@@ -7,7 +7,7 @@ import { MessageModel } from "@/models/Message";
 export async function POST(req: NextRequest) {
   try {
     // ✅ Authenticate user
-    const { user, errorResponse } = await fetchAuthenticatedUser();
+    const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse;
 
     // ✅ Parse request body
