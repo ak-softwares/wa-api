@@ -11,7 +11,7 @@ export default function DashboardPage() {
     <div>
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
-        <CreditStatsDemo />
+        {/* <CreditStatsDemo /> */}
 
         {/* Platform Features Card - Compact Horizontal Layout */}
         <AnalyticsCard />

@@ -1,4 +1,4 @@
-import { Plans } from "@/types/Pricing";
+import { Plans } from "@/types/Plans";
 
 export const PLAN_CONFIG: Plans = {
   FREE: {

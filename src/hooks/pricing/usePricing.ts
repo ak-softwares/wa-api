@@ -7,7 +7,7 @@ import {
   Currency,
   PlanTier,
   Plans,
-} from "@/types/Pricing"
+} from "@/types/Plans"
 import { ApiResponse } from "@/types/apiResponse";
 
 interface UsePricingOptions {

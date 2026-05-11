@@ -1,5 +1,5 @@
 import { Schema, model, models, Types } from 'mongoose';
-import { BillingCycle, Currency, PlanTier } from '@/types/Pricing';
+import { BillingCycle, Currency, PlanTier } from '@/types/Plans';
 
 export enum SubscriptionStatus {
   CREATED = 'created',

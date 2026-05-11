@@ -1,34 +1,4 @@
-export type Currency = "INR" | "USD";
-export type BillingCycle = "MONTHLY" | "YEARLY";
-
-export interface PriceMap {
-  INR: number;
-  USD: number;
-}
-
-export interface PlanConfig {
-  name: string;
-  messagesPerMonth: number;
-  monthlyPrice: PriceMap | null;
-  yearlyPrice: PriceMap | null;
-  features: string[];
-  description: string;
-  cta: string;
-  highlighted: boolean;
-  badge: string | null;
-}
-
-export type PlanTier =
-  | "FREE"
-  | "STARTER"
-  | "GROWTH"
-  | "ENTERPRISE";
-
-export type Plans = Record<PlanTier, PlanConfig>;
-
-
-
-
+export type Currency = "INR" | "USD" | "EUR" | "GBP";
 
 export type PricingBillingCycle = "monthly" | "yearly"
 

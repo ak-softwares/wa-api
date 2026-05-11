@@ -1,6 +1,6 @@
 import { Schema, model, models, Types } from 'mongoose';
 import { SubscriptionPaymentStatus } from '@/types/SubscriptionPaymentHistory';
-import { BillingCycle, Currency, PlanTier } from '@/types/Pricing';
+import { BillingCycle, Currency, PlanTier } from '@/types/Plans';
 
 export interface ISubscriptionPaymentHistory {
   userId: Types.ObjectId;
