@@ -62,10 +62,10 @@ export const PRICING_DATA: PricingPageData = {
     USD: { symbol: "$", name: "US Dollar", rate: 1 },
     EUR: { symbol: "€", name: "Euro", rate: 0.93 },
     GBP: { symbol: "£", name: "British Pound", rate: 0.79 },
-    INR: { symbol: "₹", name: "Indian Rupee", rate: 95.2 },
+    INR: { symbol: "₹", name: "Indian Rupee", rate: 94.7 },
   },
-  supportedCurrencies: ["USD", "EUR", "GBP", "INR"],
   yearlyDiscount: 0.2,
+  supportedCurrencies: ["USD", "EUR", "GBP", "INR"],
   allFeatures: [
     { icon: "🤖", label: "AI Assistant (24/7 smart replies)" },
     { icon: "🧠", label: "AI Agent (autonomous workflows)" },

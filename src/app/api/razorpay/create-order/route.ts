@@ -41,7 +41,6 @@ export async function POST(req: NextRequest) {
     };
 
     const order = await razorpay.orders.create(options);
-    // const orderAmount = Math.round((Number(order.amount) / 100) * 10) / 10;
     const orderAmount = Math.round((Number(order.amount) / 100) * 10) / 10;
 
     // Find user's wallet

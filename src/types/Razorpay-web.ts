@@ -52,3 +52,26 @@ export interface RazorpayInstance {
     }) => void
   ): void;
 }
+
+export interface RazorpayCreateSubscriptionRequest {
+  plan_id:         string;
+  total_count:     number;
+  quantity?:       number;
+  customer_notify?: 0 | 1;
+  notes?:          Record<string, string>;
+}
+
+export interface CreatedSubscriptionResponse {
+  id:        string;
+  plan_id:   string;
+  status:    string;           // 'created' | 'authenticated' | 'active' | ...
+  short_url: string | null;    // Razorpay-hosted payment page
+  currency:  string;
+  tier:      string;
+  billing:   string;
+  user: {
+    name:  string;
+    email: string;
+    phone: string;
+  };
+}

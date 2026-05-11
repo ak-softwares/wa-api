@@ -1,6 +1,43 @@
-export type Currency = "USD" | "EUR" | "GBP" | "INR";
+export type Currency = "INR" | "USD";
+export type BillingCycle = "MONTHLY" | "YEARLY";
 
-export type BillingCycle = "monthly" | "yearly";
+export interface PriceMap {
+  INR: number;
+  USD: number;
+}
+
+export interface PlanConfig {
+  name: string;
+  messagesPerMonth: number;
+  monthlyPrice: PriceMap | null;
+  yearlyPrice: PriceMap | null;
+  features: string[];
+  description: string;
+  cta: string;
+  highlighted: boolean;
+  badge: string | null;
+}
+
+export type PlanTier =
+  | "FREE"
+  | "STARTER"
+  | "GROWTH"
+  | "ENTERPRISE";
+
+export type Plans = Record<PlanTier, PlanConfig>;
+
+
+
+
+
+export type PricingBillingCycle = "monthly" | "yearly"
+
+export type UsePricingPlansState = {
+  pricing: PricingPageData | null
+  error: string | null
+  currency: Currency
+  setCurrency: (currency: Currency) => void
+}
 
 export type PricingPlan = {
   id: "free" | "starter" | "growth" | "pro" | "enterprise";
