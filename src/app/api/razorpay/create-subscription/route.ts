@@ -3,13 +3,10 @@ import { CreatedSubscriptionResponse, RazorpayCreateSubscriptionRequest } from '
 import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { ApiResponse } from '@/types/apiResponse';
-import { WalletTransactionModel } from '@/models/WalletTransaction';
-import { PaymentStatus, WalletTransaction, WalletTransactionType } from '@/types/WalletTransaction';
-import { amountToCredits } from '@/lib/wallet/pricing';
-import { WalletModel } from '@/models/Wallet';
 import { SubscriptionPaymentHistoryModel } from '@/models/SubscriptionPaymentHistory';
 import { SubscriptionPaymentStatus } from '@/types/SubscriptionPaymentHistory';
-
+import { SubscriptionStatus, UserSubscriptionModel } from '@/models/Subscription';
+ 
 // ─── Plan config ────────────────────────────────────────────────────────────
  
 type PlanTier     = 'STARTER' | 'GROWTH';
@@ -81,6 +78,20 @@ export async function POST(req: NextRequest) {
     };
  
     const subscription = await razorpay.subscriptions.create(options);
+
+    await UserSubscriptionModel.create({
+      userId: user._id,
+      subscriptionId: subscription.id,
+      planId,
+      tier,
+      billing,
+      currency,
+      status: SubscriptionStatus.CREATED,
+      totalCount: TOTAL_COUNT[billing],
+      paidCount: 0,
+      remainingCount: TOTAL_COUNT[billing],
+      shortUrl: subscription.short_url,
+    });
 
     await SubscriptionPaymentHistoryModel.create({
       userId: user._id,
