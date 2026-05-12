@@ -45,9 +45,12 @@ export function usePricing({defaultCurrency = "INR", defaultBillingCycle = "MONT
     if (!plans) return [];
 
     return Object.entries(plans).map(([tier, plan]) => {
-      const price =  billingCycle === "MONTHLY"
+      const price =
+        billingCycle === "MONTHLY"
           ? plan.monthlyPrice?.[currency]
-          : plan.yearlyPrice?.[currency];
+          : plan.yearlyPrice?.[currency] != null
+            ? Math.round(plan.yearlyPrice[currency]! / 12)
+            : undefined;
 
       return {
         tier: tier as PlanTier,

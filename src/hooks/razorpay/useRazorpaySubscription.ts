@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { ApiResponse } from '@/types/apiResponse';
-import { CreatedSubscriptionResponse } from '@/types/Razorpay-web';
+import { CreatedSubscriptionResponse, RazorpayHandlerResponse, RazorpayOptions } from '@/types/Razorpay-web';
+import { loadRazorpayScript } from '@/utiles/scripts/loadRazorpayScript';
+import { razorpayHandler } from './useRazorpayPayment';
 
 interface UseRazorpaySubscriptionParams {
   tier: string;      // "STARTER" | "GROWTH"
@@ -38,11 +40,46 @@ export function useRazorpaySubscription() {
       }
 
       const subscriptionData = subscriptionBody.data;
-      onSuccess?.(subscriptionData);
-
-      if (subscriptionData.short_url) {
-        window.location.href = subscriptionData.short_url;
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        throw new Error('Unable to load Razorpay Checkout');
       }
+
+      const options: RazorpayOptions = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        name: 'WA API',
+        description: `${subscriptionData.tier} ${subscriptionData.billing} subscription`,
+        subscription_id: subscriptionData.id,
+        prefill: {
+          name: subscriptionData.user.name ?? 'User',
+          email: subscriptionData.user.email ?? 'customer@example.com',
+          contact: subscriptionData.user.phone ?? '919999999999',
+        },
+        theme: { color: '#3399cc' },
+        // notes: {
+        //     address: "Razorpay Corporate Office"
+        // },
+        // callback_url: 'https://yourapp.com/payment-success',
+        handler: (response: RazorpayHandlerResponse) => razorpayHandler({
+            response,
+            onSuccess: () => {
+                // onSuccess?.();
+                // console.log('Paid:', );
+            },
+            onFailure: (error) => {
+                onFailure?.(error);
+                // console.error('Failed:', error);
+            },
+        })
+      };
+
+      const paymentObject = new window.Razorpay(options);
+
+      paymentObject.on('payment.failed', (response: { error: { description: string } }) => {
+        onFailure?.(response.error.description || 'Subscription payment failed');
+      });
+
+      paymentObject.open();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'There was an error creating subscription';
       onFailure?.(errorMessage);

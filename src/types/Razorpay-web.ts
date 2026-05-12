@@ -24,11 +24,12 @@ export interface RazorpayHandlerResponse {
 
 export interface RazorpayOptions {
   key: string | undefined;
-  amount: number;
-  currency: string;
+  amount?: number;
+  currency?: string;
   name: string;
   description?: string;
-  order_id: string;
+  order_id?: string;
+  subscription_id?: string;
   handler: (response: RazorpayHandlerResponse) => void | Promise<void>;
   prefill?: {
     name?: string;
