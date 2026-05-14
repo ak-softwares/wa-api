@@ -4,10 +4,9 @@ import { useState } from 'react';
 import { ApiResponse } from '@/types/apiResponse';
 import { CreatedSubscriptionResponse, RazorpayHandlerResponse, RazorpayOptions } from '@/types/Razorpay-web';
 import { loadRazorpayScript } from '@/utiles/scripts/loadRazorpayScript';
-import { razorpayHandler } from './useRazorpayPayment';
 
 interface UseRazorpaySubscriptionParams {
-  tier: string;      // "STARTER" | "GROWTH"
+  tier: string;      //  "FREE" | "STARTER" | "GROWTH"
   billing: string;   // "MONTHLY" | "YEARLY"
   currency: string;  // "INR" | "USD"
   onSuccess?: (data: CreatedSubscriptionResponse) => void;
@@ -56,21 +55,6 @@ export function useRazorpaySubscription() {
           contact: subscriptionData.user.phone ?? '919999999999',
         },
         theme: { color: '#3399cc' },
-        // notes: {
-        //     address: "Razorpay Corporate Office"
-        // },
-        // callback_url: 'https://yourapp.com/payment-success',
-        handler: (response: RazorpayHandlerResponse) => razorpayHandler({
-            response,
-            onSuccess: () => {
-                // onSuccess?.();
-                // console.log('Paid:', );
-            },
-            onFailure: (error) => {
-                onFailure?.(error);
-                // console.error('Failed:', error);
-            },
-        })
       };
 
       const paymentObject = new window.Razorpay(options);

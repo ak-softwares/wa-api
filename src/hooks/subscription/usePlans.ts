@@ -26,7 +26,7 @@ export function usePricing({defaultCurrency = "INR", defaultBillingCycle = "MONT
     const fetchPlans = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/plans");
+        const res = await fetch("/api/subscription/plans");
         const json: ApiResponse<Plans> = await res.json();
         if (json.success && json.data) {
           setPlans(json.data);

@@ -240,6 +240,23 @@ export default function WhatsAppSetupCard() {
                     key={phoneNumber?.id}
                     className="flex flex-wrap items-center justify-between gap-2 p-3 border rounded-lg"
                   >
+
+                  {/* AVATAR WITH HOVER EXTERNAL LINK */}
+                  <Link
+                    href="https://business.facebook.com/latest/whatsapp_manager/phone_numbers/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative group flex-shrink-0"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-muted dark:bg-[#272828] border border-border flex items-center justify-center text-muted-foreground font-semibold text-sm select-none">
+                      {phoneNumber?.verified_name?.charAt(0)?.toUpperCase() || "W"}
+                    </div>
+                    {/* Hover overlay with external link icon */}
+                    <div className="absolute inset-0 rounded-full bg-[#272828]/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <ExternalLink className="h-4 w-4 text-white" />
+                    </div>
+                  </Link>
+                    
                     {/* 1) NAME */}
                     <div className="min-w-[120px]">
                       <p className="text-muted-foreground">Name</p>

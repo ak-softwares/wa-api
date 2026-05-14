@@ -5,6 +5,7 @@ import AnalyticsCard from '../analytics/AnalyticsCard';
 import CreditStatsDemo from '../wallet/WalletCard';
 import { YouTubeHelpCard } from '@/components/common/iframe/youTubeEmbedIframe';
 import { YOUTUBE_VIDEOS } from '@/utiles/constans/youtubeHelp';
+import SubscriptionUsageCard from '../subscription/SubscriptionUsageCard';
 
 export default function DashboardPage() {
   return (
@@ -12,6 +13,9 @@ export default function DashboardPage() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
         {/* <CreditStatsDemo /> */}
+
+        {/* Subscription and monthly limit usage */}
+        <SubscriptionUsageCard />
 
         {/* Platform Features Card - Compact Horizontal Layout */}
         <AnalyticsCard />

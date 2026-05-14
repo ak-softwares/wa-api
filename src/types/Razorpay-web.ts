@@ -30,7 +30,7 @@ export interface RazorpayOptions {
   description?: string;
   order_id?: string;
   subscription_id?: string;
-  handler: (response: RazorpayHandlerResponse) => void | Promise<void>;
+  handler?: (response: RazorpayHandlerResponse) => void | Promise<void>;
   prefill?: {
     name?: string;
     email?: string;
@@ -66,7 +66,7 @@ export interface CreatedSubscriptionResponse {
   id:        string;
   plan_id:   string;
   status:    string;           // 'created' | 'authenticated' | 'active' | ...
-  short_url: string | null;    // Razorpay-hosted payment page
+  short_url: string | null;    // Razorpay-hosted payment page; null for free subscriptions
   currency:  string;
   tier:      string;
   billing:   string;

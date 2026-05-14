@@ -85,12 +85,6 @@ export default function ProfilePage() {
             border soldid white">
             <img src={"/assets/icons/user.svg"} className="w-25 h-25 dark:invert opacity-40" alt={"user"} />
           </div>
-            <div className="text-center">
-              <Button variant="outline" className="mt-4 mb-2">
-                Add profile photo
-              </Button>
-              <p className="text-sm text-gray-500">Click to change your profile picture</p>
-            </div>
         </div>
 
         {/* Profile Form */}

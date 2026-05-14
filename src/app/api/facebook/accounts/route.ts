@@ -7,6 +7,7 @@ import { getWabaDetails } from "@/services/whatsappApi/getPhoneNumber";
 import { subscribeApp } from "@/services/whatsappApi/subscribeApp";
 import { deregisterPhoneNumber, registerPhoneNumber } from "@/services/whatsappApi/registerPhoneNumber";
 import { exchangeFacebookToken } from "@/services/whatsappApi/exchangeFacebookToken";
+import { createOrActivateFreeSubscription } from "@/services/subscription/freeSubscription";
 
 // 📌 Full WhatsApp setup: exchange token → register phone → subscribe app
 export async function POST(req: NextRequest) {
@@ -57,6 +58,9 @@ export async function POST(req: NextRequest) {
     user.defaultWaAccountId = waAccount._id;
     await user.save();
 
+
+    // 7️⃣ Ensure every connected WhatsApp account has a free app subscription
+    await createOrActivateFreeSubscription(user._id);
 
     // ---------------- Final Response ----------------
     return NextResponse.json(

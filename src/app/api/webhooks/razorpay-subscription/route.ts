@@ -1,10 +1,9 @@
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
-import { SubscriptionPaymentHistoryModel } from '@/models/SubscriptionPaymentHistory';
-import { UserSubscriptionModel, SubscriptionStatus } from '@/models/Subscription';
-import { SubscriptionPaymentStatus } from '@/types/SubscriptionPaymentHistory';
-
-const toDate = (unix?: number) => (unix ? new Date(unix * 1000) : undefined);
+import { PaymentHistoryModel } from '@/models/PaymentHistory';
+import { SubscriptionModel, SubscriptionStatus } from '@/models/Subscription';
+import { PaymentStatus, RazorpayWebhookEvent } from '@/types/PaymentHistory';
+import { resolvePaymentHistory, upsertSubscription } from '@/services/razorpay/subscriptionHelpers';
 
 export async function POST(req: Request) {
   try {
@@ -39,117 +38,76 @@ export async function POST(req: Request) {
     }
 
     const payload = JSON.parse(body);
-    const event = payload.event as string;
-    console.log(`Received Razorpay webhook event: ${event}`);
+    const event = payload.event as RazorpayWebhookEvent;
     const subscription = payload.payload?.subscription?.entity;
-
+    console.log(`Received Razorpay webhook: ${event} for subscription ${subscription?.id}`);
     if (!subscription?.id) {
       return NextResponse.json({ success: true }, { status: 200 });
     }
 
     const subscriptionId = subscription.id as string;
 
+    // ── 3. Handle events ─────────────────────────────────────────────────
     switch (event) {
-      case 'subscription.authenticated':
-        await UserSubscriptionModel.findOneAndUpdate(
-          { subscriptionId },
-          { $set: { status: SubscriptionStatus.AUTHENTICATED } }
-        );
-        break;
 
-      case 'subscription.activated':
-        await UserSubscriptionModel.findOneAndUpdate(
-          { subscriptionId },
-          {
-            $set: {
-              status: SubscriptionStatus.ACTIVE,
-              currentStart: toDate(subscription.current_start),
-              currentEnd: toDate(subscription.current_end),
-            },
-          }
+      // ✅ First event after user authenticates card (before payment)
+      case 'subscription.authenticated': {
+        await PaymentHistoryModel.findOneAndUpdate(
+          { subscriptionId, status: PaymentStatus.PENDING },
+          { $set: { status: PaymentStatus.AUTHENTICATED } }
         );
-        break;
-
-      case 'subscription.charged': {
-        const userSubscription = await UserSubscriptionModel.findOneAndUpdate(
-          { subscriptionId },
-          {
-            $set: {
-              status: SubscriptionStatus.ACTIVE,
-              paidCount: subscription.paid_count ?? 0,
-              remainingCount: subscription.remaining_count ?? 0,
-              currentStart: toDate(subscription.current_start),
-              currentEnd: toDate(subscription.current_end),
-            },
-          },
-          { new: true }
-        );
-
-        if (userSubscription) {
-          await SubscriptionPaymentHistoryModel.create({
-            userId: userSubscription.userId,
-            subscriptionId: userSubscription.subscriptionId,
-            planId: userSubscription.planId,
-            tier: userSubscription.tier,
-            billing: userSubscription.billing,
-            currency: userSubscription.currency,
-            totalCount: userSubscription.totalCount,
-            quantity: 1,
-            status: SubscriptionPaymentStatus.PAID,
-            shortUrl: userSubscription.shortUrl,
-          });
-        }
         break;
       }
 
-      case 'subscription.halted':
-        await UserSubscriptionModel.findOneAndUpdate(
+      // ✅ First payment succeeded — CREATE subscription in DB (upsert)
+      case 'subscription.activated': {
+        await upsertSubscription({ subscription, status: SubscriptionStatus.ACTIVE });
+        await resolvePaymentHistory({ subscriptionId, status: PaymentStatus.PAID });
+        break;
+      }
+
+      // ✅ Recurring charge (2nd payment onwards)
+      case 'subscription.charged': {
+        await upsertSubscription({ subscription, status: SubscriptionStatus.ACTIVE });
+        await resolvePaymentHistory({ subscriptionId, status: PaymentStatus.PAID });
+        break;
+      }
+
+      case 'subscription.pending': {
+        await PaymentHistoryModel.findOneAndUpdate(
+          { subscriptionId, status: PaymentStatus.AUTHENTICATED },
+          { $set: { status: PaymentStatus.PENDING } }
+        );
+        break;
+      }
+
+      case 'subscription.halted': {
+        await SubscriptionModel.findOneAndUpdate(
           { subscriptionId },
           { $set: { status: SubscriptionStatus.HALTED } }
         );
         break;
+      }
 
-      case 'subscription.cancelled':
-        await UserSubscriptionModel.findOneAndUpdate(
+      case 'subscription.cancelled': {
+        await SubscriptionModel.findOneAndUpdate(
           { subscriptionId },
           { $set: { status: SubscriptionStatus.CANCELLED } }
         );
         break;
+      }
 
-      case 'subscription.completed':
-        await UserSubscriptionModel.findOneAndUpdate(
+      case 'subscription.completed': {
+        await SubscriptionModel.findOneAndUpdate(
           { subscriptionId },
           { $set: { status: SubscriptionStatus.COMPLETED } }
         );
         break;
-
-      case 'payment.failed': {
-        const userSubscription = await UserSubscriptionModel.findOne({ subscriptionId });
-
-        if (userSubscription) {
-          await SubscriptionPaymentHistoryModel.create({
-            userId: userSubscription.userId,
-            subscriptionId: userSubscription.subscriptionId,
-            planId: userSubscription.planId,
-            tier: userSubscription.tier,
-            billing: userSubscription.billing,
-            currency: userSubscription.currency,
-            totalCount: userSubscription.totalCount,
-            quantity: 1,
-            status: SubscriptionPaymentStatus.FAILED,
-            shortUrl: userSubscription.shortUrl,
-          });
-        }
-        break;
       }
-
-      default:
-        break;
     }
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error('Razorpay Subscription Webhook Error:', error);
     return NextResponse.json(
       { success: false, message: 'Webhook processing failed' },
       { status: 500 }

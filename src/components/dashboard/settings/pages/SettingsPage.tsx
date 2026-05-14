@@ -40,8 +40,8 @@ export default function SettingsPage() {
           // icon={<img src="/assets/icons/setting.svg" className="w-6 h-6 dark:invert" alt="User" />}
           label="Payment history"
           subtitle="View and manage your payments"
-          onClick={() => setSelectedSettingsMenu("transaction-history")}
-          selected={selectedSettingsMenu === "transaction-history"}
+          onClick={() => setSelectedSettingsMenu("payment-history")}
+          selected={selectedSettingsMenu === "payment-history"}
         />
         <MenuTile
           icon={<img src="/assets/icons/block.svg" className="w-6 h-6 dark:invert" alt="User" />}

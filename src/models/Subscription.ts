@@ -10,11 +10,11 @@ export enum SubscriptionStatus {
   COMPLETED = 'completed',
 }
 
-export interface IUserSubscription {
+export interface ISubscription {
   userId: Types.ObjectId;
   subscriptionId: string;
   planId: string;
-  tier: Extract<PlanTier, 'STARTER' | 'GROWTH'>;
+  tier: Extract<PlanTier, 'FREE' | 'STARTER' | 'GROWTH'>;
   billing: BillingCycle;
   currency: Currency;
   status: SubscriptionStatus;
@@ -24,14 +24,15 @@ export interface IUserSubscription {
   paidCount: number;
   remainingCount: number;
   shortUrl?: string;
+  price: number;
 }
 
-const UserSubscriptionSchema = new Schema<IUserSubscription>(
+const SubscriptionSchema = new Schema<ISubscription>(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     subscriptionId: { type: String, required: true, unique: true, index: true },
     planId: { type: String, required: true },
-    tier: { type: String, enum: ['STARTER', 'GROWTH'], required: true },
+    tier: { type: String, enum: ['FREE', 'STARTER', 'GROWTH'], required: true },
     billing: { type: String, enum: ['MONTHLY', 'YEARLY'], required: true },
     currency: { type: String, enum: ['INR', 'USD'], required: true },
     status: {
@@ -45,10 +46,9 @@ const UserSubscriptionSchema = new Schema<IUserSubscription>(
     paidCount: { type: Number, default: 0 },
     remainingCount: { type: Number, default: 0 },
     shortUrl: { type: String },
+    price: { type: Number },
   },
   { timestamps: true }
 );
 
-export const UserSubscriptionModel =
-  models.UserSubscription ||
-  model<IUserSubscription>('UserSubscription', UserSubscriptionSchema);
+export const SubscriptionModel = models.Subscription || model<ISubscription>('Subscription', SubscriptionSchema);

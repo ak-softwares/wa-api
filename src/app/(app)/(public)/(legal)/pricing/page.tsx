@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 
-import { usePricing } from "@/hooks/pricing/usePricing"
+import { usePricing } from "@/hooks/subscription/usePlans"
 
 // ── Display-only helpers ──────────────────────────────────────────────────────
 

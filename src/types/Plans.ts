@@ -1,5 +1,8 @@
-export type Currency = "INR" | "USD";
-export type BillingCycle = "MONTHLY" | "YEARLY";
+export const BILLING_CYCLES = ['MONTHLY', 'YEARLY'] as const;
+export type BillingCycle = typeof BILLING_CYCLES[number];
+
+export const CURRENCIES = ['INR', 'USD'] as const;
+export type Currency = typeof CURRENCIES[number]; // "INR" | "USD"
 
 export interface PriceMap {
   INR: number;

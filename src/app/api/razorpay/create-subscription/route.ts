@@ -3,15 +3,10 @@ import { CreatedSubscriptionResponse, RazorpayCreateSubscriptionRequest } from '
 import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { ApiResponse } from '@/types/apiResponse';
-import { SubscriptionPaymentHistoryModel } from '@/models/SubscriptionPaymentHistory';
-import { SubscriptionPaymentStatus } from '@/types/SubscriptionPaymentHistory';
-import { SubscriptionStatus, UserSubscriptionModel } from '@/models/Subscription';
- 
-// ─── Plan config ────────────────────────────────────────────────────────────
- 
-type PlanTier     = 'STARTER' | 'GROWTH';
-type BillingCycle = 'MONTHLY' | 'YEARLY';
-type Currency     = 'INR' | 'USD';
+import { PaymentHistoryModel } from '@/models/PaymentHistory';
+import { PaymentStatus } from '@/types/PaymentHistory';
+import { BILLING_CYCLES, CURRENCIES, BillingCycle, Currency, PlanTier } from '@/types/Plans';
+import { createOrActivateFreeSubscription } from '@/services/subscription/freeSubscription';
  
 /** Maps (tier, billing, currency) → Razorpay plan ID from env */
 function resolvePlanId(tier: PlanTier, billing: BillingCycle, currency: Currency): string {
@@ -32,11 +27,6 @@ export async function POST(req: NextRequest) {
     const { user, errorResponse } = await fetchAuthenticatedUser(req);
     if (errorResponse) return errorResponse; // 🚫 Handles all auth, DB, and token errors
 
-    // Initialize Razorpay with your keys
-    const razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-    });
     // ── Validate body ──────────────────────────────────────────────────────
     const body = await req.json();
     const { tier, billing, currency } = body as {
@@ -45,14 +35,12 @@ export async function POST(req: NextRequest) {
       currency: Currency;
     };
  
-    const validTiers    = ['STARTER', 'GROWTH']  as const;
-    const validBillings = ['MONTHLY', 'YEARLY']  as const;
-    const validCurrencies = ['INR', 'USD']        as const;
+    const validTiers = ['FREE', 'STARTER', 'GROWTH'] as const satisfies readonly PlanTier[];
  
     if (
-      !validTiers.includes(tier)         ||
-      !validBillings.includes(billing)   ||
-      !validCurrencies.includes(currency)
+      !(validTiers     as readonly string[]).includes(tier)     ||
+      !(BILLING_CYCLES as readonly string[]).includes(billing)  ||
+      !(CURRENCIES     as readonly string[]).includes(currency)
     ) {
       const response: ApiResponse = {
         success: false,
@@ -61,9 +49,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(response, { status: 400 });
     }
  
+    if (tier === 'FREE') {
+      const freeSubscription = await createOrActivateFreeSubscription(user._id);
+
+      const response: ApiResponse<CreatedSubscriptionResponse> = {
+        success: true,
+        message: 'Free subscription activated successfully',
+        data: {
+          id: freeSubscription.subscriptionId,
+          plan_id: freeSubscription.planId,
+          status: freeSubscription.status,
+          short_url: null,
+          currency: freeSubscription.currency,
+          tier: freeSubscription.tier,
+          billing: freeSubscription.billing,
+          user: {
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+          },
+        },
+      };
+
+      return NextResponse.json(response, { status: 200 });
+    }
+
+    // Initialize Razorpay with your keys
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+
     // ── Resolve plan ───────────────────────────────────────────────────────
     const planId = resolvePlanId(tier, billing, currency);
-    console.log(`Creating Razorpay subscription for user ${user._id} with planId ${planId}`);
     const options: RazorpayCreateSubscriptionRequest = {
       plan_id:         planId,
       total_count:     TOTAL_COUNT[billing],
@@ -78,22 +96,10 @@ export async function POST(req: NextRequest) {
     };
  
     const subscription = await razorpay.subscriptions.create(options);
+    const plan = await razorpay.plans.fetch(planId);
+    const price = typeof plan.item?.amount === 'number' ? plan.item.amount : undefined;
 
-    await UserSubscriptionModel.create({
-      userId: user._id,
-      subscriptionId: subscription.id,
-      planId,
-      tier,
-      billing,
-      currency,
-      status: SubscriptionStatus.CREATED,
-      totalCount: TOTAL_COUNT[billing],
-      paidCount: 0,
-      remainingCount: TOTAL_COUNT[billing],
-      shortUrl: subscription.short_url,
-    });
-
-    await SubscriptionPaymentHistoryModel.create({
+    await PaymentHistoryModel.create({
       userId: user._id,
       subscriptionId: subscription.id,
       planId: subscription.plan_id,
@@ -102,7 +108,8 @@ export async function POST(req: NextRequest) {
       currency,
       totalCount: TOTAL_COUNT[billing],
       quantity: 1,
-      status: SubscriptionPaymentStatus.PENDING,
+      price: price,
+      status: PaymentStatus.PENDING,
       shortUrl: subscription.short_url,
     });
 
@@ -113,7 +120,7 @@ export async function POST(req: NextRequest) {
         id:          subscription.id,
         plan_id:     subscription.plan_id,
         status:      subscription.status,
-        short_url:   subscription.short_url,  // hosted payment page from Razorpay
+        short_url:   subscription.short_url,
         currency,
         tier,
         billing,
@@ -127,11 +134,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(response, { status: 200 });
 
   } catch (error: any) {
-    console.error("❌ Razorpay subscription creation failed:", {
-      message: error?.message,
-      stack: error?.stack,
-      razorpay: error?.error,
-    });
+    // console.error("❌ Razorpay subscription creation failed:", {
+    //   message: error?.message,
+    //   stack: error?.stack,
+    //   razorpay: error?.error,
+    // });
 
     // Razorpay specific error
     if (error?.error?.description) {

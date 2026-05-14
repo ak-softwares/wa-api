@@ -55,6 +55,10 @@ export default function PusherListener() {
         } else if (eventType === NotificationEventType.NEW_MESSAGE) {
           setNewMessageData(msg, chat);
         
+          // 🔕 Notify only for inbound participant messages
+          const isIncomingMessage = String(msg?.from || "") === String(chat?.participants?.[0]?.number || "");
+          if (!isIncomingMessage) return;
+
           // 🛑 Skip notification for AI messages
           const isAIMessage = msg?.tag === MESSAGE_TAGS.AI_ASSISTANT || msg?.tag === MESSAGE_TAGS.AI_AGENT;
           if (isAIMessage) return;
