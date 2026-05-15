@@ -41,7 +41,7 @@ export const PRICING_DATA: PricingPageData = {
       monthlyUSD: 99,
       messages: 15000,
       messagesLabel: "15,000 msgs / mo",
-      description: "For power users with high engagement",
+      description: "For power users with high engagement needs",
       cta: "Go Pro",
       highlighted: false,
       badge: null,

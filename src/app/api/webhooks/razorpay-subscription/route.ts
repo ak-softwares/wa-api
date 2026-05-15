@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     const payload = JSON.parse(body);
     const event = payload.event as RazorpayWebhookEvent;
     const subscription = payload.payload?.subscription?.entity;
-    console.log(`Received Razorpay webhook: ${event} for subscription ${subscription?.id}`);
+    // console.log(`Received Razorpay webhook: ${event} for subscription ${subscription?.id}`);
     if (!subscription?.id) {
       return NextResponse.json({ success: true }, { status: 200 });
     }

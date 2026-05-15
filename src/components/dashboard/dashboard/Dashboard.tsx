@@ -6,34 +6,39 @@ import CreditStatsDemo from '../wallet/WalletCard';
 import { YouTubeHelpCard } from '@/components/common/iframe/youTubeEmbedIframe';
 import { YOUTUBE_VIDEOS } from '@/utiles/constans/youtubeHelp';
 import SubscriptionUsageCard from '../subscription/SubscriptionUsageCard';
+import CurrentSubscriptionCard from '../subscription/CurrentSubscriptionCard';
+import { SubscriptionUsageProvider } from '@/context/subscription/SubscriptionUsageContext';
 
 export default function DashboardPage() {
   return (
-    <div>
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
-        {/* <CreditStatsDemo /> */}
+    <SubscriptionUsageProvider>
+      <div>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
+          {/* <CreditStatsDemo /> */}
 
-        {/* Subscription and monthly limit usage */}
-        <SubscriptionUsageCard />
+          {/* Subscription and monthly limit usage */}
+          {/* <SubscriptionUsageCard /> */}
+          <CurrentSubscriptionCard />
 
-        {/* Platform Features Card - Compact Horizontal Layout */}
-        <AnalyticsCard />
+          {/* Platform Features Card - Compact Horizontal Layout */}
+          <AnalyticsCard />
 
-        {/* First Row: WhatsApp Setup Card */}
-        <WhatsAppSetupCard />
+          {/* First Row: WhatsApp Setup Card */}
+          <WhatsAppSetupCard />
 
-        {/* Second Row: YouTube Help Card */}
-        <YouTubeHelpCard
-          title={YOUTUBE_VIDEOS.setup.title}
-          description={YOUTUBE_VIDEOS.setup.description}
-          videos={[
-            { title: "Setup Number", videoId: YOUTUBE_VIDEOS.setup.videoId },
-            { title: "Send Broadcast", videoId: YOUTUBE_VIDEOS.broadcast.videoId },
-            { title: "n8n Integration", videoId: YOUTUBE_VIDEOS.n8nIntegration.videoId },
-          ]}
-        />
+          {/* Second Row: YouTube Help Card */}
+          <YouTubeHelpCard
+            title={YOUTUBE_VIDEOS.setup.title}
+            description={YOUTUBE_VIDEOS.setup.description}
+            videos={[
+              { title: "Setup Number", videoId: YOUTUBE_VIDEOS.setup.videoId },
+              { title: "Send Broadcast", videoId: YOUTUBE_VIDEOS.broadcast.videoId },
+              { title: "n8n Integration", videoId: YOUTUBE_VIDEOS.n8nIntegration.videoId },
+            ]}
+          />
+        </div>
       </div>
-    </div>
+    </SubscriptionUsageProvider>
   );
 }

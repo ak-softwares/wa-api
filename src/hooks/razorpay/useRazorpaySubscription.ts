@@ -39,6 +39,14 @@ export function useRazorpaySubscription() {
       }
 
       const subscriptionData = subscriptionBody.data;
+
+      // If it's a free subscription, we can skip Razorpay checkout
+      if (tier === 'FREE') {
+        onSuccess?.(subscriptionData);
+        return;
+      }
+
+      // For paid subscriptions, proceed to Razorpay checkout
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
         throw new Error('Unable to load Razorpay Checkout');

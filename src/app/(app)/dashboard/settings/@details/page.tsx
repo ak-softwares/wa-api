@@ -1,7 +1,7 @@
 "use client";
 
 import DefaultSettingsPage from "@/components/dashboard/settings/pages/DefaultSettingsPage";
-import PaymentHistoryPage from "@/components/dashboard/subscription/PaymentHistory";
+import PaymentHistoryPage from "@/components/dashboard/subscription/paymentHistory/PaymentHistoryPage";
 import { useSettingsStore } from "@/store/settingsStore";
 
 export default function SettingsDetailPage() {
