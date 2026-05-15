@@ -1,6 +1,6 @@
 import { BillingCycle, Currency, PlanTier } from "@/types/Plans";
 
-export type SubscriptionUsage = {
+export type SubscriptionUsageResponse = {
   tier: PlanTier;
   planName: string;
   status: string;
@@ -13,7 +13,6 @@ export type SubscriptionUsage = {
   usedMessages: number;
   remainingMessages: number | null;
   usagePercent: number;
-  isUnlimited: boolean;
   year: number;
   month: number;
 };

@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { ApiResponse } from "@/types/apiResponse";
-import { SubscriptionUsage } from "@/types/SubscriptionUsage";
+import { SubscriptionUsageResponse } from "@/types/SubscriptionUsage";
 
 export function useSubscriptionUsage() {
-  const [data, setData] = useState<SubscriptionUsage | null>(null);
+  const [data, setData] = useState<SubscriptionUsageResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,7 +16,7 @@ export function useSubscriptionUsage() {
 
     try {
       const res = await fetch("/api/subscription/usage");
-      const json: ApiResponse<SubscriptionUsage> = await res.json();
+      const json: ApiResponse<SubscriptionUsageResponse> = await res.json();
 
       if (!res.ok || !json.success || !json.data) {
         throw new Error(json.message || "Failed to fetch subscription usage");

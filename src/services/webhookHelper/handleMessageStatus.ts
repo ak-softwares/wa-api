@@ -5,6 +5,7 @@ import { debitMessageCredits } from "../wallet/debitMessageCredits";
 import { INotificationPayload } from "@/types/Notification";
 import { NotificationEventType } from "@/utiles/enums/notification";
 import { emitPusherEvent } from "../notification/emitPusherEvent";
+import { incrementMessageUsage } from "../subscription/usageService";
 
 interface HandleMessageStatusParams {
   statusPayload: any;
@@ -99,7 +100,8 @@ export async function handleMessageStatus({ statusPayload }: HandleMessageStatus
 
         const cost = 1;
 
-        await debitMessageCredits({ userId: lockedMessage.userId, cost, session});
+        await incrementMessageUsage({ userId: lockedMessage.userId, session });
+        // await debitMessageCredits({ userId: lockedMessage.userId, cost, session});
       });
     } finally {
       session.endSession();

@@ -58,10 +58,6 @@ export async function POST(req: NextRequest) {
     user.defaultWaAccountId = waAccount._id;
     await user.save();
 
-
-    // 7️⃣ Ensure every connected WhatsApp account has a free app subscription
-    await createOrActivateFreeSubscription(user._id);
-
     // ---------------- Final Response ----------------
     return NextResponse.json(
       {

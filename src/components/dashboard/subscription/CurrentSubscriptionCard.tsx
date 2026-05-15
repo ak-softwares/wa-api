@@ -114,7 +114,6 @@ export default function CurrentSubscriptionCard({
 
   // ── Derived values ────────────────────────────────────────────────────────
   const isFree          = data.tier === "FREE";
-  const isUnlimited     = data.isUnlimited;
   const planDisplayName = data.planName;
   const usagePercent    = data.usagePercent;
   const usedMessages    = data.usedMessages;
@@ -147,9 +146,7 @@ export default function CurrentSubscriptionCard({
               {planDisplayName}
             </p>
             <p className="text-xs text-gray-400">
-              {isUnlimited
-                ? "Unlimited messages / month"
-                : `${messageLimit.toLocaleString()} messages / month`}
+              {`${messageLimit.toLocaleString()} messages / month`}
               {" · "}
               {isFree
                 ? "Resets every 1st"
@@ -169,26 +166,23 @@ export default function CurrentSubscriptionCard({
             Active
           </span>
 
-          {/* Usage bar (hidden for unlimited plans) */}
-          {!isUnlimited && (
-            <div className="rounded-lg border border-[#e5e7eb] bg-gray-50 px-4 py-2 dark:border-white/10 dark:bg-white/5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-                Messages used
-              </p>
-              <div className="mt-1.5 flex items-center gap-2">
-                <div className="h-1.5 w-28 overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
-                  <div
-                    className="h-full rounded-full bg-emerald-500 transition-all"
-                    style={{ width: `${usagePercent}%` }}
-                  />
-                </div>
-                <span className="text-xs font-bold tabular-nums">
-                  {usedMessages.toLocaleString()} /{" "}
-                  {messageLimit.toLocaleString()}
-                </span>
+          <div className="rounded-lg border border-[#e5e7eb] bg-gray-50 px-4 py-2 dark:border-white/10 dark:bg-white/5">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+              Messages used
+            </p>
+            <div className="mt-1.5 flex items-center gap-2">
+              <div className="h-1.5 w-28 overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
+                <div
+                  className="h-full rounded-full bg-emerald-500 transition-all"
+                  style={{ width: `${usagePercent}%` }}
+                />
               </div>
+              <span className="text-xs font-bold tabular-nums">
+                {usedMessages.toLocaleString()} /{" "}
+                {messageLimit.toLocaleString()}
+              </span>
             </div>
-          )}
+          </div>
 
           {/* Renews / Resets date */}
           <div className="rounded-lg border border-[#e5e7eb] bg-gray-50 px-4 py-2 dark:border-white/10 dark:bg-white/5">

@@ -10,7 +10,8 @@ import {
 import { fetchAuthenticatedUser } from "@/services/apiHelper/getDefaultWaAccount";
 import { ApiResponse } from "@/types/apiResponse";
 import { PlanTier } from "@/types/Plans";
-import { SubscriptionUsage } from "@/types/SubscriptionUsage";
+import { SubscriptionUsageResponse } from "@/types/SubscriptionUsage";
+import { getCurrentUsage } from "@/services/subscription/usageService";
 
 const LIVE_SUBSCRIPTION_STATUSES = [
   SubscriptionStatus.ACTIVE,
@@ -26,33 +27,25 @@ export async function GET(req: NextRequest) {
     const year = now.getFullYear();
     const month = now.getMonth() + 1;
 
-    const [subscription, monthlyUsage] = await Promise.all([
-      SubscriptionModel.findOne({
+    const subscription = await SubscriptionModel.findOne({
         userId: user._id,
         status: { $in: LIVE_SUBSCRIPTION_STATUSES },
       })
         .sort({ currentEnd: -1, updatedAt: -1 })
-        .lean<ISubscription>(),
-      MonthlyUsageModel.findOne({
-        userId: user._id,
-        year,
-        month,
-      }).lean<IMonthlyUsage>(),
-    ]);
+        .lean<ISubscription>();
+
+    const usage = await getCurrentUsage(user._id);
 
     const tier = (subscription?.tier ?? "FREE") as PlanTier;
     const plan = PLAN_CONFIG[tier];
     const messageLimit = plan.messagesPerMonth;
-    const usedMessages = monthlyUsage?.used ?? 0;
-    const isUnlimited = messageLimit < 0;
-    const remainingMessages = isUnlimited
-      ? null
-      : Math.max(messageLimit - usedMessages, 0);
-    const usagePercent = isUnlimited || messageLimit <= 0
+    const usedMessages = usage?.messagesUsed ?? 0;
+    const remainingMessages = Math.max(messageLimit - usedMessages, 0);
+    const usagePercent = messageLimit <= 0
       ? 0
       : Math.min(Math.round((usedMessages / messageLimit) * 100), 100);
 
-    const data: SubscriptionUsage = {
+    const data: SubscriptionUsageResponse = {
       tier,
       planName: plan.name,
       status: subscription?.status ?? "free",
@@ -65,12 +58,11 @@ export async function GET(req: NextRequest) {
       usedMessages,
       remainingMessages,
       usagePercent,
-      isUnlimited,
       year,
       month,
     };
 
-    const response: ApiResponse<SubscriptionUsage> = {
+    const response: ApiResponse<SubscriptionUsageResponse> = {
       success: true,
       message: "Subscription usage fetched successfully",
       data,
