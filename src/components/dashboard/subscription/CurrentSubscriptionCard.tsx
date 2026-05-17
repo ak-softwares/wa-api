@@ -149,7 +149,7 @@ export default function CurrentSubscriptionCard({
               {`${messageLimit.toLocaleString()} messages / month`}
               {" · "}
               {isFree
-                ? "Resets every 1st"
+                ? `Resets ${renewsAt}`
                 : data.billing === "YEARLY"
                 ? "Billed yearly"
                 : "Billed monthly"}
@@ -208,8 +208,7 @@ export default function CurrentSubscriptionCard({
       {isFree && (
         <div className="border-t border-dashed border-gray-200 px-6 py-3 dark:border-white/10">
           <p className="text-xs text-gray-400">
-            🔄 Your 100-message quota resets automatically on the 1st of every
-            month — no action needed.
+            🔄 Your 100-message quota resets automatically on {renewsAt} — no action needed.
           </p>
         </div>
       )}

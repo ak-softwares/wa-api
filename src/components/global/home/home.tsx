@@ -56,7 +56,7 @@ export default function LandingPage() {
           <div className="z-10">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-background/50 px-3 py-1 text-xs text-emerald-500">
               <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-              Free • No Subscription • Mobile App
+              Free • WhatsApp Automation • Mobile App
             </div>
             <h1 className="mb-4 text-3xl font-semibold leading-tight tracking-tight md:text-5xl">
               Automate & Broadcast Your Business with WhatsApp API
@@ -101,6 +101,33 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Bar */}
+      <section className="border-b border-border bg-card/50">
+        <div className="mx-auto max-w-7xl px-4 py-5">
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl font-bold text-emerald-500">5,000+</span>
+              <span className="text-sm text-muted-foreground">Happy Customers</span>
+            </div>
+            <div className="hidden h-6 w-px bg-border md:block" />
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl font-bold text-emerald-500">75+</span>
+              <span className="text-sm text-muted-foreground">Countries Served</span>
+            </div>
+            <div className="hidden h-6 w-px bg-border md:block" />
+            <div className="flex items-center gap-2.5">
+              {/* Meta verified badge */}
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
+                  <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.491 4.491 0 01-3.498-1.307 4.491 4.491 0 01-1.307-3.497A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.491 4.491 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+                </svg>
+                Meta Verified Business Partner
+              </span>
             </div>
           </div>
         </div>
@@ -214,19 +241,22 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="rounded-3xl border border-border bg-card p-6">
-            <div className="grid grid-cols-2 gap-3 text-center text-xs">
-              {[
-                { label: "Campaigns Sent", value: "1.2M+" },
-                { label: "Avg. Delivery", value: "96%" },
-                { label: "Avg. Response", value: "32%" },
-                { label: "Active Users", value: "25k+" },
-              ].map((s) => (
-                <div key={s.label} className="rounded-xl border border-border bg-muted p-4">
-                  <div className="text-xl font-semibold">{s.value}</div>
-                  <div className="text-muted-foreground">{s.label}</div>
-                </div>
-              ))}
-            </div>
+          {/* Replace the existing 4-stat grid in the CTA section */}
+          <div className="grid grid-cols-2 gap-3 text-center text-xs">
+            {[
+              { label: "Campaigns Sent", value: "1.2M+" },
+              { label: "Avg. Delivery", value: "96%" },
+              { label: "Avg. Response", value: "32%" },
+              { label: "Active Users", value: "25k+" },
+              { label: "Happy Customers", value: "5,000+" },
+              { label: "Countries Served", value: "75+" },
+            ].map((s) => (
+              <div key={s.label} className="rounded-xl border border-border bg-muted p-4">
+                <div className="text-xl font-semibold">{s.value}</div>
+                <div className="text-muted-foreground">{s.label}</div>
+              </div>
+            ))}
+          </div>
           </div>
         </div>
       </section>

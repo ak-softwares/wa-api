@@ -2,7 +2,6 @@
 
 import WhatsAppSetupCard from '../setup/WhatsAppSetupCard';
 import AnalyticsCard from '../analytics/AnalyticsCard';
-import CreditStatsDemo from '../wallet/WalletCard';
 import { YouTubeHelpCard } from '@/components/common/iframe/youTubeEmbedIframe';
 import { YOUTUBE_VIDEOS } from '@/utiles/constans/youtubeHelp';
 import CurrentSubscriptionCard from '../subscription/CurrentSubscriptionCard';
